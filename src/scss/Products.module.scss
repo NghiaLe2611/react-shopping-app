@@ -116,3 +116,22 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 20px;
+    }
+    .product-list {
+        margin-left: -10px;
+        .product-item {
+            width: calc(100% * 1/2 - 10px);
+            margin: 0 0 20px 10px;
+            .product-name {
+                font-size: 11px;
+            }
+            .product-price {
+                font-size: 13px;
+            }
+        }
+    }
+}

@@ -10,11 +10,12 @@ import { useDelayUnmount } from '../hooks/useDelayUnmount';
 import { formatCurrency } from '../helpers/helpers';
 import { useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
+import { useCheckMobile } from '../hooks/useCheckMobile';
 
 const Header = () => {
     const dispatch = useDispatch();
     const cart = useSelector((state) => state.cart);
-    
+
     const [showCart, setShowCart] = useState(false);
     const shouldRenderModal = useDelayUnmount(showCart, 350);
 
@@ -54,35 +55,68 @@ const Header = () => {
         )
     );
 
+    const headerPC = (
+        <div className={classes['wrap-header']}>
+            <div className={classes.logo}>
+                <a href="#">
+                    <span>
+                        <img src={iconMobile} alt="" />
+                    </span>
+                    Redux Shopping Cart
+                </a>
+            </div>
+            <ul className={classes.menu}>
+                <li>
+                    <a href="#smartphone">Điện thoại</a>
+                    <a href="#tablet">Máy tính bảng</a>
+                    <a href="#">Laptop</a>
+                    <a href="#">Phụ kiện</a>
+                    <a href="#">Tin tức</a>
+                </li>
+            </ul>
+            <div className={classes.cart} onClick={showCartHandler}>
+                <span>
+                    <img src={iconCart} alt="" />
+                </span>
+                <span className={classes.quantity}>{cart.totalQuantity}</span>
+            </div>
+            {cartModal}
+        </div>
+    );
+
+    const headerSP = (
+        <div className={classes['wrap-header']}>
+            <div className={classes.logo}>
+                <a href="#">
+                    <span>
+                        <img src={iconMobile} alt="" />
+                    </span>Redux Shopping Cart
+                </a>
+            </div>
+            {/* <ul className={classes.menu}>
+                <li>
+                    <a href="#smartphone">Điện thoại</a>
+                    <a href="#tablet">Máy tính bảng</a>
+                    <a href="#">Laptop</a>
+                    <a href="#">Phụ kiện</a>
+                    <a href="#">Tin tức</a>
+                </li>
+            </ul> */}
+            <div className={classes.cart} onClick={showCartHandler}>
+                <span>
+                    <img src={iconCart} alt="" />
+                </span>
+                <span className={classes.quantity}>{cart.totalQuantity}</span>
+            </div>
+            {cartModal}
+        </div>
+    );
+
     return (
         <div className={classes.header}>
             <div className="container">
-                <div className={classes['wrap-header']}>
-                    <div className={classes.logo}>
-                        <a href="#">
-                            <span>
-                                <img src={iconMobile} alt="" />
-                            </span>
-                            Redux Shopping Cart
-                        </a>
-                    </div>
-                    <ul className={classes.menu}>
-                        <li>
-                            <a href="#smartphone">Điện thoại</a>
-                            <a href="#tablet">Máy tính bảng</a>
-                            <a href="#">Laptop</a>
-                            <a href="#">Phụ kiện</a>
-                            <a href="#">Tin tức</a>
-                        </li>
-                    </ul>
-                    <div className={classes.cart} onClick={showCartHandler}>
-                        <span>
-                            <img src={iconCart} alt="" />
-                        </span>
-                        <span className={classes.quantity}>{cart.totalQuantity}</span>
-                    </div>
-                    {cartModal}
-                </div>
+                { useCheckMobile() && headerSP }
+                { !useCheckMobile() && headerPC }
             </div>
         </div>
     )

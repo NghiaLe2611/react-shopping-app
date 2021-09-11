@@ -83,3 +83,12 @@ img {
 .slideDown {
     animation: slideDown 300ms ease-out forwards;
 }
+
+@media (max-width: 1200px) {
+    .container {
+        padding: 0 10px;
+    }
+    .banner .container {
+        padding: 0;
+    }
+}
