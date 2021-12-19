@@ -1,0 +1,101 @@
+.slides-section {
+    margin-top: 30px;
+}
+
+.slides-content {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.wrap-slides {
+    width: 100%;
+}
+
+.slides {
+    flex: 1 1 0;
+    &:hover .arrow {
+        opacity: 1;
+        background-color: #fff;
+    }
+    .arrow {
+        background-color: rgba(255, 255, 255, .9);
+        height: 60px;
+        width: 30px;
+        opacity: 0.4;
+        z-index: 9;
+        &:before {
+            content: '' !important;
+            display: inline-block;
+            font-family: inherit;
+            border-top: 3px solid #666;
+            border-right: 3px solid #666;
+            height: 20px;
+            width: 20px;
+            position: relative;
+        }
+        &.next {
+            right: 0;
+            box-shadow: -6px 0 4px rgba(0, 0, 0, 0.05), -4px 0 4px rgba(0, 0, 0, 0.09);
+            border-radius: 4px 0 0 4px;
+            &:before {
+                right: 4px;
+                transform: rotate(45deg);
+            }
+        }
+        &.prev {
+            left: 0;
+            box-shadow: 6px 0 4px rgba(0, 0, 0, 0.05), 4px 0 4px rgba(0, 0, 0, 0.09);
+            border-radius: 0 4px 4px 0;
+            &:before {
+                left: 4px;
+                transform: rotate(-135deg);
+            }
+        }
+    }
+}
+
+.nav-slides {
+    background-color: #fff;
+    border: 1px solid #ebebeb;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+    .item {
+        position: relative;
+        cursor: pointer;
+        p {
+            font-size: 13px;
+            padding: 10px 0;
+            line-height: 1.4;
+            text-align: center;
+        }
+        &:before {
+            background-color: #e5e5e5;
+            content: '';
+            height: 30px;
+            position: absolute;
+            top: calc(50% - 15px);
+            right: 0;
+            width: 1px;
+        }
+    }
+}
+
+.sub-slides {
+    display: flex;
+    flex: 1 1 0;
+    flex-wrap: wrap;
+    .item {
+        margin-bottom: 5px;
+        padding-left: 5px;
+        width: 50%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .wrap-slides {
+        width: 830px;
+        margin-right: 8px;
+    }
+}

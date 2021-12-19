@@ -1,0 +1,94 @@
+body {
+    font-family: 'roboto', serif;
+}
+
+html.modal-open {
+    overflow: hidden;
+}
+
+body.modal-open {
+    overflow-y: scroll;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    list-style-type: none;
+}
+
+button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+input {
+    outline: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+}
+
+.banner {
+    margin-bottom: 30px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-3rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-3rem);
+    }
+}
+
+.slideUp {
+    animation: slideUp 300ms ease-out forwards;
+}
+
+.slideDown {
+    animation: slideDown 300ms ease-out forwards;
+}
+
+@media (max-width: 1200px) {
+    .container {
+        padding: 0 10px;
+    }
+    .banner .container {
+        padding: 0;
+    }
+}

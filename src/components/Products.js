@@ -1,93 +1,92 @@
-import { useState, useEffect } from 'react';
-import { fetchProducts } from '../hooks/useHttp';
+import { useState, useEffect, useCallback } from 'react';
 import ProductItem from './ProductItem';
-import classes from '../scss/Products.module.scss';
 import SkeletonElement from './UI/Skeleton';
+import classes from '../scss/Products.module.scss';
+import useFetch from '../hooks/useFetch';
 
 const Products = () => {
 
-    const [smartphones, setSmartphones] = useState([]);
-    const [tablets, setTablets] = useState([]);
+    const [products, setProducts] = useState([]);
+
+    const { isLoading, error, fetchData: fetchProducts } = useFetch();
 
     useEffect(() => {
-        console.log('fetch smartphones');
         fetchProducts({
-            url: 'smartphones.json'
+            url: "http://localhost:5000/getProducts"
         }, data => {
             if (data) {
-                setSmartphones(prevProducts => prevProducts = data);
+                setProducts(data.results);
             }
-        })
-    }, []);
+        });
+    }, [fetchProducts]);
 
-    useEffect(() => {
-        console.log('fetch tablets');
-        fetchProducts({
-            url: 'tablets.json'
-        }, data => {
-            if (data) {
-                setTablets(prevProducts => prevProducts = data);
-            }
-        })
-    }, []);
-
-    let smartphonesContent = [1,2,3,4,5].map((item, index) => (
-        <div key={index} className={`${classes['item']} ${classes['product-item']}`}>
-            <SkeletonElement type="image" />
-            <SkeletonElement type="title" />
-            <SkeletonElement type="text" />
-        </div>
-    ));
-
-    let tabletsContent = [1,2,3,4,5].map((item, index) => (
-        <div key={index} className={`${classes['item']} ${classes['product-item']}`}>
-            <SkeletonElement type="image" />
-            <SkeletonElement type="title" />
-            <SkeletonElement type="text" />
-        </div>
-    ));
-
-    if (smartphones.length > 0) {
-        smartphonesContent = smartphones.map((item, index) => (
-            <ProductItem key={item.id}
-                // index={index}
-                id={item.id}
-                name={item.name}
-                price={item.price}
-                img={item.img}
-                colors={item.colors}
-            />
+    let smartphonesContent = isLoading && (
+        Array(10).fill().map((item ,index) => (
+            <div key={index} className={classes.item}>
+                <SkeletonElement type="image" />
+                <SkeletonElement type="title" />
+                <SkeletonElement type="text" />
+            </div>
         ))
+    );
+
+    let tabletsContent = isLoading && (
+        Array(10).fill().map((item ,index) => (
+            <div key={index} className={classes.item}>
+                <SkeletonElement type="image" />
+                <SkeletonElement type="title" />
+                <SkeletonElement type="text" />
+            </div>
+        ))
+    );
+
+    if (error) {
+        smartphonesContent = <p>{error}</p>;
+        tabletsContent = <p>{error}</p>
     }
 
-    if (tablets.length > 0) {
-        tabletsContent = tablets.map((item, index) => (
-            <ProductItem key={item.id}
-                // index={index}
-                id={item.id}
-                name={item.name}
-                price={item.price}
-                img={item.img}
-                colors={item.colors}
-            />
-        ))
+    if (products.length > 0) {
+        smartphonesContent = (
+            products.filter(product => product.category === 'smartphone').map((item) => (
+                <ProductItem key={item._id}
+                    item={item}
+                />
+            ))
+        );
+
+        tabletsContent = (
+            products.filter(product => product.category === 'tablet').map((item) => (
+                <ProductItem key={item._id}
+                    item={item}
+                />
+            ))
+        )
     }
 
     return (
-        <section>
-            <div className="container">
-                <h2 className={classes.title} id="smartphone">Điện thoại</h2>
-                <div className={classes['product-list']}>
-                    {smartphonesContent}
-                </div>
-                <h2 className={classes.title} id="tablet">Máy tính bảng</h2>
-                <div className={classes['product-list']}>
-                    {tabletsContent}
-                </div>
+		<section className='products-section'>
+			<div className='card'>
+                <div className={classes['wrap-title']}>
+					<h2 className={classes.title} id='smartphone'>
+						Điện thoại nổi bật
+					</h2>
+					{/* <Filter products='smartphone' setFilterProducts={handleSetFilter}/> */}
+				</div>
+				<div className={classes['product-list']}>
+					{smartphonesContent}
+				</div>
+			</div>
+            <div className="card">
+                <div className={classes['wrap-title']}>
+					<h2 className={classes.title} id='tablet'>
+						Tablet nổi bật
+					</h2>
+					{/* <Filter products='tablet'/> */}
+				</div>
+				<div className={classes['product-list']}>{tabletsContent}</div>
             </div>
-        </section>
-        
-    )
+		</section>
+	);
 }
 
 export default Products;

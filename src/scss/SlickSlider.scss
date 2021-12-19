@@ -1,0 +1,17 @@
+.nav-slides {
+    margin-top: -4px;
+    .slick-current {
+        position: relative;
+        font-weight: 500;
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: inline-block;
+            width: 100%;
+            height: 4px;
+            background-color: #fed100;
+        }
+    }
+}
