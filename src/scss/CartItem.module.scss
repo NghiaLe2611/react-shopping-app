@@ -1,8 +1,9 @@
 .cart-item {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     &:not(:last-child) {
-        margin-bottom: 10px;
+        margin-bottom: 20px;
     }
     .img {
         margin-right: 10px;
@@ -11,12 +12,14 @@
         }
     }
     .wrap-name {
-        min-width: 190px;
-        margin-right: 20px;
+        flex: 1;
         .name {
             margin-bottom: 5px;
             font-size: 14px;
-            font-weight: 500;
+            color: #333;
+            &:hover{
+                color: #2f80ed;
+            }
         }
         .color {
             display: block;
@@ -25,9 +28,14 @@
     }
     .price {
         font-size: 14px;
-        color: #ee4d2d;
+        font-weight: 500;
+        color: #333;
         width: 90px;
-        margin-right: 20px;
+    }
+    .totalPrice{
+        font-size: 14px;
+        font-weight: 500;
+        color: #ff424e;
     }
     .remove {
         display: inline-block;
@@ -38,7 +46,6 @@
     .wrap-quantity {
         display: flex;
         height: 32px;
-        margin-right: 20px;
         .input,
         .quantity {
             display: flex;
@@ -47,6 +54,7 @@
             text-align: center;
             border-radius: 2px;
             border: 1px solid rgba(0, 0, 0, 0.09);
+            background-color: #fff;
             font-size: 13px;
             height: 32px;
         }
@@ -54,7 +62,7 @@
             border-left: 0;
             border-right: 0;
             border-radius: 0;
-            width: 45px;
+            width: 35px;
         }
         .input {
             width: 32px;
@@ -71,10 +79,31 @@
     }
 }
 
+.col-1,.col-2,.col-3,.col-4{
+    margin-right: 20px;
+}
+.col-1{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 220px;
+}
+.col-2,.col-4{
+    width: 15%;
+}
+.col-3{
+    width: 20%;
+}
+.col-5{
+    flex: 1;
+    text-align: right;
+}
+// Custom checkbox
+
 .checkbox {
     display: block;
     position: relative;
-    padding-left: 35px;
+    padding-left: 30px;
     cursor: pointer;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -97,6 +126,7 @@
     width: 20px;
     border-radius: 2px;
     border: 1px solid rgba(0, 0, 0, .14);
+    background-color: #fff;
     &:after {
         content: '';
         position: absolute;
@@ -115,7 +145,7 @@
 }
 
 .checkbox input:checked~.checkmark {
-    background-color: #ee4d2d;
+    background-color: #182e70;
 }
 
 .checkbox input:checked~.checkmark:after {

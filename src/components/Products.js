@@ -41,8 +41,8 @@ const Products = () => {
     );
 
     if (error) {
-        smartphonesContent = <p>{error}</p>;
-        tabletsContent = <p>{error}</p>
+        smartphonesContent = <p className='error'>{error}</p>;
+        tabletsContent = <p className='error'>{error}</p>
     }
 
     if (products.length > 0) {

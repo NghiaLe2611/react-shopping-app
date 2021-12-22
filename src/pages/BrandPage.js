@@ -60,7 +60,7 @@ const BrandPage = () => {
     );
 
     if (error) {
-        content = <p>{error}</p>;
+        content = <p className='error'>{error}</p>;
     }
 
     if (!isLoading && !error && products.length) {

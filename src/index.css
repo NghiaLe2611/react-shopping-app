@@ -107,6 +107,10 @@ img {
     opacity: 0.5;
 }
 
+.error {
+    padding: 0 20px;
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -281,13 +285,6 @@ img {
         padding: 30px;
         margin-bottom: 50px;
     }
-}
-
-.card {
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 0 0 3px 0 #dee2e6;
 }
 
 .is-sorting {

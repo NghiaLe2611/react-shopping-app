@@ -52,6 +52,7 @@ const DetailPage = () => {
     const unmountedBtnStyle = { animation: "fadeOut 250ms ease-out forwards" };
 
     const compareModalRef = useRef();
+    const sliderRef = useRef([]);
 
     useEffect(() => {
         fetchProducts({
@@ -149,7 +150,8 @@ const DetailPage = () => {
 
     const addToCartHandler = () => {
         dispatch(cartActions.addItemToCart({
-            _id: product._id, 
+            _id: product._id,
+            category: product.category,
             quantity: 1, 
             img: product.img, 
             name: product.name, 
@@ -179,7 +181,11 @@ const DetailPage = () => {
     const closeModalInfo = () => {
         setshowInfoModal(false);
         setActiveModalTab('');
-    }
+    };
+
+    const gotoSlide = () => {
+
+    };
 
     let productContent = isLoading && (
         <Fragment>
@@ -254,8 +260,7 @@ const DetailPage = () => {
                                 }
                             </Slider>
                         ) : <img src={product.featureImgs[0]} alt={product.name} />
-                    }
-                    
+                    }      
                 </div>
                 {
                     tabContent.length > 0 && (
@@ -277,6 +282,7 @@ const DetailPage = () => {
                 {productTab}
             </div>
         );
+
     }
 
     if (!error && product) {
@@ -341,7 +347,7 @@ const DetailPage = () => {
                     }
                     <button className={classes['cart-btn']} onClick={addToCartHandler}>MUA NGAY</button>
                     <div className={classes['product-specs']}>
-                        <h4>Cấu hình {getCategoryName(product.category)}{product.name}</h4>
+                        <h4>Cấu hình {getCategoryName(product.category)} {product.name}</h4>
                         <ul>
                             <li>
                                 <p className={classes.left}>Màn hình</p>
@@ -409,7 +415,22 @@ const DetailPage = () => {
                         {
                             product.featureImgs.length > 0 && (
                                 <div className={`${classes['modal-tab']} ${activeModalTab === 'highlight' ? classes.show : ''}`} id='highlight'>
-                                    Điểm nổi bật
+                                    <div className={classes['modal-slider']}>
+                                        {
+                                            product.featureImgs.length >= 2 ? (
+                                                <Slider {...settings} >
+                                                    {
+                                                        product.featureImgs.map((image, index) => (
+                                                            <div className="item" key={index} onClick={() => setActiveModalTab('highlight')}>
+                                                                <img src={image} alt=""/>
+                                                            </div>
+                                                        ))
+                                                    }
+                                                </Slider>
+                                            ) : <img src={product.featureImgs[0]} alt={product.name} />
+                                        }
+                                    </div>
+                                    <button onClick={gotoSlide}>Go to slide</button>
                                 </div>
                             )
                         }
@@ -422,7 +443,7 @@ const DetailPage = () => {
                                 ))
                             ) : null
                         }
-                        <div className={`${classes['modal-tab']} ${activeModalTab === 'thong-so' ? classes.show : ''}`} id='thong-so'>
+                        <div className={`${classes['modal-tab']} ${activeModalTab === 'thong-so' ? classes.show : ''}`} id={classes['thong-so']}>
                             <div className={classes.item}>
                                 <p className={classes.specs}>Màn hình</p>
                                 <ul className={classes.list}>
@@ -541,8 +562,7 @@ const DetailPage = () => {
                                         </ul>
                                     </div>
                                 )
-                            }
-    
+                            } 
                             <div className={classes.item}>
                                 <p className={classes.specs}>Kết nối</p>
                                 <ul className={classes.list}>
