@@ -111,6 +111,31 @@ img {
     padding: 0 20px;
 }
 
+.nav-slides .slick-list {
+    margin: 0 -5px;
+}
+
+.nav-slides .slick-slide {
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+.slick-no-slide .slick-track {
+    display: flex;
+    align-items: center;
+    width: 100% !important;
+    text-align: center;
+}
+
+.slick-no-slide .slick-slide {
+    float: none;
+    display: inline-block;
+}
+
+.nav-slides .slick-current {
+    border: 2px solid #2d9cdb;
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;

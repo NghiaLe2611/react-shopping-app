@@ -53,6 +53,7 @@ const DetailPage = () => {
 
     const compareModalRef = useRef();
     const sliderRef = useRef([]);
+    const navRef = useRef([]);
 
     useEffect(() => {
         fetchProducts({
@@ -83,24 +84,28 @@ const DetailPage = () => {
         }
     }, [activeModalTab]);
 
+    const goPrevSlide = () => {
+        sliderRef.current[0].slickPrev();
+    };
+
+    const goNextSlide = () => {
+        sliderRef.current[0].slickNext();
+    };
+
     function SampleNextArrow(props) {
-        const { className, style, onClick } = props;
+        const { className, style, clickFunc } = props;
         return (
-            <button
+            <button style={{ ...style }} onClick={clickFunc}
                 className={`${className} ${classes.arrow} ${classes.next}`}
-                style={{ ...style }}
-                onClick={onClick}
             />
         );
     }
     
     function SamplePrevArrow(props) {
-        const { className, style, onClick } = props;
+        const { className, style, clickFunc } = props;
         return (
-            <button
+            <button style={{ ...style }} onClick={clickFunc}
                 className={`${className} ${classes.arrow} ${classes.prev}`}
-                style={{ ...style }}
-                onClick={onClick}
             />
         );
     }
@@ -115,6 +120,42 @@ const DetailPage = () => {
         className: classes['wrap-slider'],
         nextArrow: <SampleNextArrow/>,
         prevArrow: <SamplePrevArrow/>
+    };
+
+    const settingsModal = {
+        dots: false,
+        infinite: false,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        className: classes['wrap-slider'],
+        nextArrow: <SampleNextArrow clickFunc={goNextSlide}></SampleNextArrow>,
+        prevArrow: <SamplePrevArrow clickFunc={goPrevSlide}></SamplePrevArrow>,
+        beforeChange: (current, next) => {
+            navRef.current[0].slickGoTo(next);
+        }
+        // afterChange: (current, next) => {
+        //     navRef.current[0].slickGoTo(current);
+        // },
+    };
+
+    const settingsNavSlides = {
+        dots: false,
+        infinite: false,
+        slidesToShow: 10,
+        slidesToScroll: 10,
+        focusOnSelect: true,
+        className: classes['wrap-slider'],
+        beforeChange: (current, next) => {
+            // sliderRef.current[0].slickGoTo(next);
+        },
+        afterChange: (current, next) => {
+            // console.log(current);
+        }
+    };
+
+    const handleNavSlide = (e) => {
+        const slideIndex = e.target.closest('.slick-slide').getAttribute('data-index');
+        sliderRef.current[0].slickGoTo(parseInt(slideIndex));
     };
 
     const getListCompare = (data) => {
@@ -183,10 +224,6 @@ const DetailPage = () => {
         setActiveModalTab('');
     };
 
-    const gotoSlide = () => {
-
-    };
-
     let productContent = isLoading && (
         <Fragment>
             <div className={classes['wrap-product-img']}>
@@ -253,7 +290,7 @@ const DetailPage = () => {
                             <Slider {...settings}>
                                 {
                                     product.featureImgs.map((image, index) => (
-                                        <div className="item" key={index} onClick={() => setActiveModalTab('highlight')}>
+                                        <div key={index} onClick={() => setActiveModalTab('highlight')}>
                                             <img src={image} alt=""/>
                                         </div>
                                     ))
@@ -269,7 +306,7 @@ const DetailPage = () => {
                                 <Slider {...settings}>
                                     {
                                         item.images.map((image, index) => (
-                                            <div className="item" key={index} onClick={() => setActiveModalTab(`color-${item.color}`)}>
+                                            <div key={index} onClick={() => setActiveModalTab(`color-${item.color}`)}>
                                                 <img src={image} alt={product.name + '-' + item.color} />
                                             </div>
                                         ))
@@ -418,19 +455,60 @@ const DetailPage = () => {
                                     <div className={classes['modal-slider']}>
                                         {
                                             product.featureImgs.length >= 2 ? (
-                                                <Slider {...settings} >
-                                                    {
-                                                        product.featureImgs.map((image, index) => (
-                                                            <div className="item" key={index} onClick={() => setActiveModalTab('highlight')}>
-                                                                <img src={image} alt=""/>
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </Slider>
+                                                <Fragment>
+                                                    <div className={classes['main-slider']}>
+                                                        <Slider {...settingsModal} ref={el => (sliderRef.current[0] = el)}>
+                                                            {
+                                                                product.featureImgs.map((image, index) => (
+                                                                    <div key={index} onClick={() => setActiveModalTab('highlight')}>
+                                                                        <img src={image} alt=""/>
+                                                                    </div>
+                                                                ))
+                                                            }
+
+                                                            {/* {
+                                                                 Array(12).fill().map((item ,index) => (
+                                                                    <div key={index} className={classes.item}>
+                                                                        Main Slide {index + 1}
+                                                                    </div>
+                                                                ))
+                                                            } */}
+                                                        </Slider>
+                                                    </div>
+                                                   
+                                                    <Slider {...settingsNavSlides} ref={el => (navRef.current[0] = el)}
+                                                        className={`${classes['nav-slides']} ${product.featureImgs.length <= 10 ? 'slick-no-slide nav-slides' : 'nav-slides'}`}
+                                                    >
+                                                        {
+                                                            product.featureImgs.map((image, index) => (
+                                                                <div key={index} ref={el => (navRef.current[index + 1] = el)} onClick={handleNavSlide}>
+                                                                    <img src={image} alt=""/>
+                                                                </div>
+                                                            ))
+                                                        }
+
+                                                        {/* {
+                                                                Array(12).fill().map((item ,index) => (
+                                                                <div key={index} className={classes.item}>
+                                                                    Nav Slide {index + 1}
+                                                                </div>
+                                                            ))
+                                                        } */}
+                                                    </Slider>
+
+                                                    {/* <div className={`${classes['nav-slides']} 'nav-slides'}`} ref={el => (navRef.current[0] = el)} >
+                                                        {
+                                                            product.featureImgs.map((image, index) => (
+                                                                <div key={index}>
+                                                                    <img src={image} alt=""/>
+                                                                </div>
+                                                            ))
+                                                        }
+                                                    </div> */}
+                                                </Fragment>
                                             ) : <img src={product.featureImgs[0]} alt={product.name} />
                                         }
                                     </div>
-                                    <button onClick={gotoSlide}>Go to slide</button>
                                 </div>
                             )
                         }
@@ -635,7 +713,7 @@ const DetailPage = () => {
                 return
         }
     }
-    
+
     return (
 		<Fragment>
 			<div className='container'>
