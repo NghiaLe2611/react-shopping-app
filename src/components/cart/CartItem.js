@@ -105,12 +105,20 @@ const CartItem = (props) => {
                 </label>
                 <span className={classes.img}><img src={item.img} alt={item.name} /></span>
                 <div className={classes['wrap-name']}>
-                    <a href={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`} className={classes.name}>{item.name}</a>
-                    {/* { item.color !== null && <span className={classes.color}>Màu: {item.color}</span> } */}
+                    <a href={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`} className={classes.name}>
+                        {item.name}{ item.color && ` - ${item.color}` }
+                    </a>
                 </div>
             </div>
             <div className={classes['col-2']}>
-            <span className={classes.price}>{formatCurrency(item.price)}<small>đ</small></span>
+            {
+                item.sale ? (
+                    <p className={classes.price}>
+                        <del>{formatCurrency(item.price + item.sale)}đ</del>
+                        {formatCurrency(item.price)}đ
+                    </p>
+                ) : <p className={classes.price}>{formatCurrency(item.price)}đ</p>
+            }
             </div>
             <div className={classes['col-3']}>
                 <div className={classes['wrap-quantity']}>

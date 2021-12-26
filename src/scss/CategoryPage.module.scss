@@ -1,0 +1,13 @@
+@import "./ProductItem.module.scss";
+.wrap-category {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 50px;
+}
+
+@media (min-width: 1200px) {
+    .item,
+    .product-item {
+        width: calc(100% * 1/4 - 20px);
+    }
+}

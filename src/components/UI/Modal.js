@@ -40,7 +40,8 @@ const ModalOverlay = (props) => {
     let modal = (
         <div className={`${classes.modal} ${props.contentClass ? props.contentClass : ''}`} style={props.isShowModal ? mountedStyle : unmountedStyle}>
             { props.backdrop !== false && !props.close && <span className={classes.close} onClick={props.onCloseModal}>&times;</span> }
-            <div className={classes.content}>{props.children}</div>
+            {/* <div className={classes.content}>{props.children}</div> */}
+            <Fragment>{props.children}</Fragment>
         </div>
     );
 
@@ -48,7 +49,7 @@ const ModalOverlay = (props) => {
         modal = (
             <div className={classes.popup} style={props.isShowModal ? mountedStyle : unmountedStyle} ref={componentRef}>
                 { props.backdrop !== false && !props.close && <span className={classes.close} onClick={props.onCloseModal}>&times;</span> }
-                <div className={classes.content}>{props.children}</div>
+                <Fragment>{props.children}</Fragment>
             </div>
         )
     }
@@ -57,7 +58,7 @@ const ModalOverlay = (props) => {
         modal = (
             <div className={classes.alert} style={props.isShowModal ? mountedStyle : unmountedStyle}>
                 { props.backdrop !== false && !props.close && <span className={classes.close} onClick={props.onCloseModal}>&times;</span> }
-                <div className={classes.content}>{props.children}</div>
+                <Fragment>{props.children}</Fragment>
             </div>
         )
     }

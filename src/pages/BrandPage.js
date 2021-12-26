@@ -39,9 +39,11 @@ const BrandPage = () => {
         }, data => {
             if (data) {
                 if (data) {
-                    setProducts(data.results);
-                } else {
-                    navigate('/not-found');
+                    if (data.results.length) {
+                        setProducts(data.results);
+                    } else {
+                        navigate('/not-found');
+                    }
                 }
             }
         });

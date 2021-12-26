@@ -68,7 +68,8 @@ const cartSlice = createSlice({
                     quantity: newItem.quantity, 
                     price: newItem.price, 
                     totalPrice: newItem.price,
-                    color: newItem.color ? newItem.color : null
+                    sale: newItem.sale,
+                    color: newItem.color
                 });
                 state.totalQuantity++;
             } else {

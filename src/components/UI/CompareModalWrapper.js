@@ -117,7 +117,9 @@ const CompareModalWrapper = forwardRef((props, ref) => {
             const found = list.findIndex(val => val._id === product._id);
            
             if (found >= 0) {
-                removeItemCompare(product._id);
+                if (isComparing) {
+                    removeItemCompare(product._id);
+                }
                 // alert('Sản phẩm đã đc được so sánh. Vui lòng chọn lại.');
             } else {
              

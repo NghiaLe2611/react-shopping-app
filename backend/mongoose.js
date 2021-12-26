@@ -35,10 +35,13 @@ const getProducts = async (req, res, next) => {
 
     // const count = await Product.countDocuments({}).exec();
 
-    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
     const category = req.query.category;
     const brand = req.query.brand;
+    const price = req.query.price;
+    const battery = req.query.battery;
     const sort = req.query.sort;
 
     let query = {};
@@ -48,7 +51,54 @@ const getProducts = async (req, res, next) => {
     }
 
     if (brand) {
-        query['brand'] = brand;
+        query['brand'] = brand.split(",");
+        console.log(query['brand']);
+    }
+
+    if (price) {
+        const priceArr = price.split(",");
+
+        let prices = [];
+
+        priceArr.forEach(val => {
+            if (val === 'duoi-2-trieu') {
+                prices.push({ price: { $lte: 2000000 }});
+            } else if (val === 'tu-2-5-trieu') {
+                prices.push({ price: { $gt: 2000000, $lte: 5000000 }});
+            } else if (val === 'tu-5-10-trieu') {
+                prices.push({ price: { $gt: 5000000, $lte: 10000000 } });
+            } else if (val === 'tu-10-20-trieu') {
+                prices.push({ price: { $gt: 10000000, $lte: 20000000 }});
+            } else if (val === 'tren-20-trieu') {
+                prices.push({ price: { $gt: 20000000 }});
+            }
+        });
+
+        if (prices.length > 0){ 
+            query['$or'] = prices;
+            console.log(query);
+        }
+    }
+
+    if (battery) {
+        const batteryArr = battery.split(",");
+
+        let batteries = [];
+        batteryArr.forEach(val => {
+            let key = 'specs.pin';
+
+            if (val === 'duoi-3000-mah') {
+                batteries.push({ [key]: { $lte: 3000 }});
+            } else if (val === 'tu-3000-4000-mah') {
+                batteries.push({ [key]: { $gt: 3000, $lte: 4000 }});
+            } else if (val === 'tren-4000-mah') {
+                batteries.push({ [key]: { $gt: 4000 }});
+            }
+        });
+
+        if (batteries.length > 0){ 
+            query['$or'] = batteries;
+        }
     }
 
     switch (sort) {
@@ -91,47 +141,6 @@ const getProducts = async (req, res, next) => {
         }
             
     }
-
-    // if (!sort) {
-    //     Product.find(query).exec(function (err, data) {
-    //         if (err) {
-    //             res.json(err);
-    //         } else {
-    //             res.json({
-    //                 results: data
-    //             });
-    //         }
-    //     });
-    // } else {
-    //     const criteria = sort === 'priceAscending' ? 1 : sort === 'priceDescending' ? -1 : '';
-    //     Product.find(query).sort({price: criteria}).exec(function (err, data) {
-    //         if (err) {
-    //             res.json(err);
-    //         } else {
-    //             res.json({
-    //                 results: data
-    //             });
-    //         }
-    //     });
-    // }
-
-    // Product.find(query).limit(limit).skip(offset).exec(function (err, data) {
-    //     if (err) {
-    //         res.json(err);
-    //     } else {
-    //         if (!category) {
-    //             res.json({
-    //                 results: data,
-    //                 count
-    //             });
-    //         } else {
-    //             res.json({
-    //                 results: data
-    //             });
-    //         }
-    //     }
-    // });
-
 };
 
 const searchProduct = async (req, res, next) => {
@@ -142,7 +151,6 @@ const searchProduct = async (req, res, next) => {
     }
     const limit = category ? 4 : 5;
     query['name'] = { $regex : new RegExp('.*' + escapeRegExp(req.query.name) + '.*', 'i') };
-
 
     Product.find(query).limit(limit).exec(function (err, data) {
         if (err) {
@@ -182,8 +190,15 @@ const compareProduct = async (req, res, next) => {
     res.json(queryListId);
 };
 
+const getBrandList = async (req, res, next) => {
+    const category = req.query.category;
+    const brand = await Product.find({category: category}).distinct('brand');
+    res.json(brand)
+};
+
 exports.getFeaturedProducts = getFeaturedProducts;
 exports.getProducts = getProducts;
 exports.getProductDetail = getProductDetail;
 exports.searchProduct = searchProduct;
 exports.compareProduct = compareProduct;
+exports.getBrandList = getBrandList;

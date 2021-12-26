@@ -6,7 +6,7 @@ const NotFound = () => {
 		<div className={classes.content}>
 			<div className='container'>
                 <img src={NotFoundImage} alt="not-found" className={classes.img}/>
-				<p>Xin lỗi, chúng tôi không tìm thấy trang mà bạn cần!</p>
+				<p>Rất tiếc, trang bạn tìm kiếm không tồn tại.</p>
 				<a href='/'>Trở về trang chủ</a>
 			</div>
 		</div>

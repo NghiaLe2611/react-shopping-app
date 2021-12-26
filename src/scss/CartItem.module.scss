@@ -17,12 +17,13 @@
             margin-bottom: 5px;
             font-size: 14px;
             color: #333;
-            &:hover{
+            &:hover {
                 color: #2f80ed;
             }
         }
         .color {
             display: block;
+            color: #2f80ed;
             font-size: 13px;
         }
     }
@@ -31,8 +32,13 @@
         font-weight: 500;
         color: #333;
         width: 90px;
+        del {
+            color: #999;
+            font-size: 12px;
+            display: block;
+        }
     }
-    .totalPrice{
+    .totalPrice {
         font-size: 14px;
         font-weight: 500;
         color: #ff424e;
@@ -79,27 +85,35 @@
     }
 }
 
-.col-1,.col-2,.col-3,.col-4{
+.col-1,
+.col-2,
+.col-3,
+.col-4 {
     margin-right: 20px;
 }
-.col-1{
+
+.col-1 {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     width: 220px;
 }
-.col-2,.col-4{
+
+.col-2,
+.col-4 {
     width: 15%;
 }
-.col-3{
+
+.col-3 {
     width: 20%;
 }
-.col-5{
+
+.col-5 {
     flex: 1;
     text-align: right;
 }
-// Custom checkbox
 
+// Custom checkbox
 .checkbox {
     display: block;
     position: relative;

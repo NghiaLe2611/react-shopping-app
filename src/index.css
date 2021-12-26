@@ -1,6 +1,12 @@
 body {
-    font-family: 'Roboto', sans-serif;
     background-color: #f8f9fa;
+}
+
+body,
+input,
+textarea,
+button {
+    font-family: 'Roboto', sans-serif;
 }
 
 html.modal-open {
@@ -99,6 +105,7 @@ img {
     padding: 10px;
     border-radius: 4px;
     box-shadow: 0 0 3px 0 #dee2e6;
+    flex: 1;
 }
 
 .is-sorting {
@@ -109,31 +116,6 @@ img {
 
 .error {
     padding: 0 20px;
-}
-
-.nav-slides .slick-list {
-    margin: 0 -5px;
-}
-
-.nav-slides .slick-slide {
-    margin: 0 5px;
-    cursor: pointer;
-}
-
-.slick-no-slide .slick-track {
-    display: flex;
-    align-items: center;
-    width: 100% !important;
-    text-align: center;
-}
-
-.slick-no-slide .slick-slide {
-    float: none;
-    display: inline-block;
-}
-
-.nav-slides .slick-current {
-    border: 2px solid #2d9cdb;
 }
 
 @keyframes slideDown {

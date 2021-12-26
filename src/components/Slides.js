@@ -6,45 +6,9 @@ import 'slick-carousel/slick/slick-theme.css';
 import '../scss/SlickSlider.scss';
 import { useCheckMobile } from '../hooks/useCheckMobile';
 
-const slides = [
-    {
-        url: "images/slide1.jpg",
-        desc: "Mua iPhone 13 Pro <br/>Giảm Đến 1,5 Triệu"
-    },
-    {
-        url: "images/slide2.jpg",
-        desc: "Galaxy Z Fold3 | Flip3 5G <br/>Ưu Đãi Đặc Quyền"
-    },
-    {
-        url: "images/slide3.jpg",
-        desc: "Xiaomi 11T 5G <br/>Trả Góp 0%"
-    },
-    {
-        url: "images/slide4.jpg",
-        desc: "OPPO Reno6 Series 5G <br/>Giá Từ 9.490.000đ"
-    },
-    {
-        url: "images/slide5.jpg",
-        desc: "Apple Watch S6 <br/>Giảm đến 15%"
-    }
-];
+const Slides = (props) => {
+    const { slides, subSlides, full } = props;
 
-const subSlides = [
-    {
-        url: "images/subslide1.jpg"
-    },
-    {
-        url: "images/subslide2.jpg"
-    },
-    {
-        url: "images/subslide3.jpg"
-    },
-    {
-        url: "images/subslide4.jpg"
-    }
-];
-
-const Slides = () => {
     const [nav1, setNav1] = useState();
     const [nav2, setNav2] = useState();
 
@@ -92,46 +56,56 @@ const Slides = () => {
 
     const navSlides = (
         slides.map((img, index) => (
-            <div key={index} className={classes.item}>
-                <p dangerouslySetInnerHTML={{ __html: img.desc }} />
-            </div>
+            img.desc ? (
+                    <div key={index} className={classes.item}>
+                    <p dangerouslySetInnerHTML={{ __html: img.desc }} />
+                </div>
+            ) : null
         ))
     );
 
     return (
         <section className={classes['slides-section']}>
             <div className={classes['slides-content']}>
-                <div className={classes['wrap-slides']}>
-                    <Slider {...settings} asNavFor={nav2} ref={(slider1) => setNav1(slider1)}>
+                <div className={`${classes['wrap-slides']} ${full ? classes.full : ''}`}>
+                    <Slider {...settings} asNavFor={nav2} ref={(slider1) => setNav1(slider1)} dots={full ? true : false}>
                         {mainSlides}
                     </Slider>
-                    { !useCheckMobile() && (
-                        <Slider
-                            asNavFor={nav1}
-                            ref={(slider2) => setNav2(slider2)}
-                            slidesToShow={5}
-                            swipeToSlide={true}
-                            focusOnSelect={true}
-                            className={`${classes['nav-slides']} nav-slides`}
-                        >
-                            {navSlides}
-                        </Slider>
-                    )}
+                    {
+                        !useCheckMobile() ? (
+                            slides && (
+                                <Slider
+                                    asNavFor={nav1}
+                                    ref={(slider2) => setNav2(slider2)}
+                                    slidesToShow={5}
+                                    swipeToSlide={true}
+                                    focusOnSelect={true}
+                                    className={`${classes['nav-slides']} nav-slick`}
+                                >
+                                    {navSlides}
+                                </Slider>
+                            )
+                        ) : null
+                    }
                 </div>
                 
-                { !useCheckMobile() && (
-                    <div className={classes['sub-slides']}>
-                       {
-                           subSlides.map((img, index) => (
-                               <div key={index} className={classes.item}>
-                                   <a href="/#">
-                                       <img src={img.url} alt="" />
-                                   </a>
-                               </div>
-                           ))
-                       }
-                   </div>
-                )}
+                { 
+                    !useCheckMobile() ? (
+                        subSlides && (
+                            <div className={classes['sub-slides']}>
+                                {
+                                    subSlides.map((img, index) => (
+                                        <div key={index} className={classes.item}>
+                                            <a href="/#">
+                                                <img src={img.url} alt="" />
+                                            </a>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )
+                    ) : null
+                }
             </div>
         </section>
     )

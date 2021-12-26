@@ -61,7 +61,7 @@ const ProductItem = (props) => {
     );
 
     return (
-		<div className={classes['product-item']}>
+		<div className={`${classes['product-item']} ${props.col ? classes[`col-${props.col}`] : ''}`}>
 			<a
 				href={`${
 					category === 'smartphone'

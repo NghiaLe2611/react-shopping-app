@@ -33,7 +33,7 @@ app.get('/getProducts', mongoPractice.getFeaturedProducts);
 // Get product detail
 app.get('/product/:productId', mongoPractice.getProductDetail);
 
-// Get products by category, brand...
+// Get products by category, brand, filter...
 app.get('/products', mongoPractice.getProducts);
 
 // Search product
@@ -42,14 +42,8 @@ app.get('/productSearch', mongoPractice.searchProduct);
 // Compare product
 app.get('/compare', mongoPractice.compareProduct);
 
-
-// app.get('/test', async function(req, res, next) {
-//     const categories = await Product.distinct('brand');
-//     console.log(categories);
-//     res.json(categories)
-// });
-
-
+// Get brand list
+app.get('/getBrandList', mongoPractice.getBrandList);
 
 
 app.use((req, res, next) => {

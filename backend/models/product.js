@@ -13,7 +13,8 @@ const productSchema = mongoose.Schema({
     specs: Object,
     sale: Number,
     featured: Boolean,
-    released: String
+    released: String,
+    description: String
 }, { collection : 'products1' });
 
 module.exports = mongoose.model('Product', productSchema);

@@ -97,5 +97,9 @@
     .wrap-slides {
         width: 830px;
         margin-right: 8px;
+        &.full {
+            width: 100%;
+            margin-right: 0;
+        }
     }
 }

@@ -13,6 +13,7 @@ import { cartActions } from '../store/cart';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
 import Modal from '../components/UI/Modal';
 import CompareModalWrapper from '../components/UI/CompareModalWrapper';
+import ModalSlides from '../components/slides/ModalSlides';
 
 function BoxThumbnail({ children }) {
     return (
@@ -52,8 +53,6 @@ const DetailPage = () => {
     const unmountedBtnStyle = { animation: "fadeOut 250ms ease-out forwards" };
 
     const compareModalRef = useRef();
-    const sliderRef = useRef([]);
-    const navRef = useRef([]);
 
     useEffect(() => {
         fetchProducts({
@@ -66,7 +65,6 @@ const DetailPage = () => {
         });
     }, [fetchProducts, productId]);
 
-   
     useEffect(() => {
         if (showInfoModal) {
             document.querySelector('html').classList.add('modal-open');
@@ -80,82 +78,37 @@ const DetailPage = () => {
 
     useEffect(() => {
         if (activeModalTab) {
+            setIsComparing(false);
             setshowInfoModal(true);
         }
     }, [activeModalTab]);
 
-    const goPrevSlide = () => {
-        sliderRef.current[0].slickPrev();
-    };
-
-    const goNextSlide = () => {
-        sliderRef.current[0].slickNext();
-    };
-
     function SampleNextArrow(props) {
-        const { className, style, clickFunc } = props;
+        const { className, style, onClick } = props;
         return (
-            <button style={{ ...style }} onClick={clickFunc}
+            <button style={{ ...style }} onClick={onClick} 
                 className={`${className} ${classes.arrow} ${classes.next}`}
             />
         );
-    }
+    };
     
     function SamplePrevArrow(props) {
-        const { className, style, clickFunc } = props;
+        const { className, style, onClick } = props;
         return (
-            <button style={{ ...style }} onClick={clickFunc}
+            <button style={{ ...style }} onClick={onClick}
                 className={`${className} ${classes.arrow} ${classes.prev}`}
             />
         );
-    }
+    };
 
     const settings = {
         dots: false,
         infinite: false,
         slidesToShow: 1,
         slidesToScroll: 1,
-        // accessibility: false,
-        // focusOnSelect: false,
         className: classes['wrap-slider'],
         nextArrow: <SampleNextArrow/>,
         prevArrow: <SamplePrevArrow/>
-    };
-
-    const settingsModal = {
-        dots: false,
-        infinite: false,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        className: classes['wrap-slider'],
-        nextArrow: <SampleNextArrow clickFunc={goNextSlide}></SampleNextArrow>,
-        prevArrow: <SamplePrevArrow clickFunc={goPrevSlide}></SamplePrevArrow>,
-        beforeChange: (current, next) => {
-            navRef.current[0].slickGoTo(next);
-        }
-        // afterChange: (current, next) => {
-        //     navRef.current[0].slickGoTo(current);
-        // },
-    };
-
-    const settingsNavSlides = {
-        dots: false,
-        infinite: false,
-        slidesToShow: 10,
-        slidesToScroll: 10,
-        focusOnSelect: true,
-        className: classes['wrap-slider'],
-        beforeChange: (current, next) => {
-            // sliderRef.current[0].slickGoTo(next);
-        },
-        afterChange: (current, next) => {
-            // console.log(current);
-        }
-    };
-
-    const handleNavSlide = (e) => {
-        const slideIndex = e.target.closest('.slick-slide').getAttribute('data-index');
-        sliderRef.current[0].slickGoTo(parseInt(slideIndex));
     };
 
     const getListCompare = (data) => {
@@ -196,8 +149,9 @@ const DetailPage = () => {
             quantity: 1, 
             img: product.img, 
             name: product.name, 
-            price: product.price, 
-            sale: product.sale ? product.sale : 0
+            price: product.sale ? product.price - product.sale : product.price, 
+            sale: product.sale ? product.sale : 0,
+            color: product.variations && product.variations.colors ? product.variations.colors[selectedColor].color : null
         }));
 
         setTimeout(() => {
@@ -206,7 +160,9 @@ const DetailPage = () => {
     };
 
     const addItemToCompare = (product) => {
-        setIsComparing(true);
+        if (!isComparing) {
+            setIsComparing(true);
+        }
         compareModalRef.current.addItemToCompare(product);
     };
   
@@ -450,73 +406,17 @@ const DetailPage = () => {
                             </ul>
                         </div>
                         {
-                            product.featureImgs.length > 0 && (
+                            product.featureImgs && (
                                 <div className={`${classes['modal-tab']} ${activeModalTab === 'highlight' ? classes.show : ''}`} id='highlight'>
-                                    <div className={classes['modal-slider']}>
-                                        {
-                                            product.featureImgs.length >= 2 ? (
-                                                <Fragment>
-                                                    <div className={classes['main-slider']}>
-                                                        <Slider {...settingsModal} ref={el => (sliderRef.current[0] = el)}>
-                                                            {
-                                                                product.featureImgs.map((image, index) => (
-                                                                    <div key={index} onClick={() => setActiveModalTab('highlight')}>
-                                                                        <img src={image} alt=""/>
-                                                                    </div>
-                                                                ))
-                                                            }
-
-                                                            {/* {
-                                                                 Array(12).fill().map((item ,index) => (
-                                                                    <div key={index} className={classes.item}>
-                                                                        Main Slide {index + 1}
-                                                                    </div>
-                                                                ))
-                                                            } */}
-                                                        </Slider>
-                                                    </div>
-                                                   
-                                                    <Slider {...settingsNavSlides} ref={el => (navRef.current[0] = el)}
-                                                        className={`${classes['nav-slides']} ${product.featureImgs.length <= 10 ? 'slick-no-slide nav-slides' : 'nav-slides'}`}
-                                                    >
-                                                        {
-                                                            product.featureImgs.map((image, index) => (
-                                                                <div key={index} ref={el => (navRef.current[index + 1] = el)} onClick={handleNavSlide}>
-                                                                    <img src={image} alt=""/>
-                                                                </div>
-                                                            ))
-                                                        }
-
-                                                        {/* {
-                                                                Array(12).fill().map((item ,index) => (
-                                                                <div key={index} className={classes.item}>
-                                                                    Nav Slide {index + 1}
-                                                                </div>
-                                                            ))
-                                                        } */}
-                                                    </Slider>
-
-                                                    {/* <div className={`${classes['nav-slides']} 'nav-slides'}`} ref={el => (navRef.current[0] = el)} >
-                                                        {
-                                                            product.featureImgs.map((image, index) => (
-                                                                <div key={index}>
-                                                                    <img src={image} alt=""/>
-                                                                </div>
-                                                            ))
-                                                        }
-                                                    </div> */}
-                                                </Fragment>
-                                            ) : <img src={product.featureImgs[0]} alt={product.name} />
-                                        }
-                                    </div>
+                                    <ModalSlides featureImgs={product.featureImgs} name={product.name}/>
                                 </div>
                             )
                         }
                         {
                             product.variations && product.variations.colors.length ? (
-                                product.variations.colors.map(item => (
+                                product.variations.colors.map((item, colorIndex) => (
                                     <div key={item.color} className={`${classes['modal-tab']} ${activeModalTab === `color-${item.color}` ? classes.show : ''}`} id={`color-${item.color}`}>
-                                        {item.color}
+                                        <ModalSlides images={item.images} color={item.color} />
                                     </div>
                                 ))
                             ) : null
@@ -694,8 +594,11 @@ const DetailPage = () => {
                             </div>
                         </div>
                         <div className={`${classes['modal-tab']} ${activeModalTab === 'danh-gia' ? classes.show : ''}`} id='danh-gia'>
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                            Et, suscipit molestiae praesentium autem eos ex qui illum fugiat ullam dignissimos rem hic, eligendi officia illo nisi placeat ratione commodi ad!
+                            <p className={classes.desc}>
+                                {
+                                    product.description ? product.description : 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Numquam, saepe! Ea, labore suscipit! Inventore incidunt mollitia error nemo atque placeat cumque reiciendis rerum deleniti, distinctio cum animi quasi quam? Modi aperiam suscipit fugiat voluptatum similique, placeat vitae! Consectetur voluptate recusandae in corrupti, eligendi ipsum laborum quasi magni placeat officia natus.'
+                                }
+                            </p>
                         </div>
                     </div>
                 </Modal>

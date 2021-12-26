@@ -20,3 +20,14 @@ export const usePrevious = (value) => {
     });
     return ref.current;
 };
+
+export const removeQueryParam = (name, _url) => {
+    var reg = new RegExp("((&)*" + name + "=([^&]*))","g");
+    return _url.replace(reg,'');
+};
+
+export const removeAccents = (str) => {
+    return str.normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+};

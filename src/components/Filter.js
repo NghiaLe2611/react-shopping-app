@@ -32,6 +32,7 @@ const Filter = (props) => {
     }
 
     const sortHandler = (e, val) => {
+        props.setIsFiltering('sort');
         setSortBy(e.target.innerText);
         setShowDropdown(false);
         props.sortProducts(val);
