@@ -16,9 +16,7 @@ const batteryList = [
 const FilterSidebar = (props) => {
     const navigate = useNavigate();
     
-    const { filter, setFilter, filterUrl } = props;
-
-    const { category } = props;
+    const { filter, setFilter, category } = props;
     const [brandList, setBrandList] = useState([]);
     const [queryUrl, setQueryUrl] = useState('');
     const { isLoading, fetchData: fetchBrandList } = useFetch();

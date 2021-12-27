@@ -1,16 +1,16 @@
 @import "./ProductItem.module.scss";
-
 .wrap-category {
     display: flex;
     flex-wrap: wrap;
     margin-top: 50px;
-    .title{
+    .title {
         margin-bottom: 20px;
     }
 }
+
 .list-view {
     margin-left: 0;
-    > div {
+    >div {
         width: 100% !important;
         margin: 0 0 20px 0;
         a {
@@ -26,7 +26,7 @@
     }
 }
 
-.wrap-filter-sidebar{
+.wrap-filter-sidebar {
     position: fixed;
     z-index: 11;
     right: -100%;
@@ -36,25 +36,27 @@
     background-color: #fff;
     overflow-x: hidden;
     transition: 0.4s;
-    &.active{
+    padding: 20px;
+    &.active {
         right: 0;
     }
 }
 
 @media (max-width: 768px) {
     .list-view {
-        > div{
+        >div {
             padding: 0;
         }
     }
 }
+
 @media (min-width: 1200px) {
     .item,
     .product-item {
         width: calc(100% * 1/4 - 20px);
     }
     .list-view {
-        > div {
+        >div {
             a {
                 img {
                     max-width: 200px;

@@ -222,11 +222,9 @@ const CategoryPage = () => {
             {
                 isMobile && (
                     <div className={`${classes['wrap-filter-sidebar']} ${isShowFilter ? classes.active : ''}`}>
-                        <FilterSidebar category={categoryName} filterUrl={filterUrl} 
+                        <FilterSidebar category={categoryName}
                             filter={filter} setFilter={setFilter} 
                             setIsFiltering={setIsFiltering}
-                            setFilterProducts={setFilterProducts} 
-                            setIsSorting={setIsSorting} 
                         />
                     </div>
                 )
@@ -253,10 +251,9 @@ const CategoryPage = () => {
                 <div className={classes['wrap-category']}>
                     {
                         !isMobile && (
-                            <FilterSidebar category={categoryName} filterUrl={filterUrl} 
+                            <FilterSidebar category={categoryName}
                                 filter={filter} setFilter={setFilter} 
                                 setIsFiltering={setIsFiltering}
-                                setFilterProducts={setFilterProducts} 
                                 setIsSorting={setIsSorting} 
                             />
                         )
@@ -269,7 +266,7 @@ const CategoryPage = () => {
                             )
                         }
                         <Filter viewBy={viewBy} setIsFiltering={setIsFiltering} isMobile={isMobile}
-                            sortProducts={sortProductsHandler} 
+                            sortProducts={sortProductsHandler} showFilterSidebar={showFilterSidebar}
                             setViewProducts={setViewProductsHandler}
                         />
                         {
