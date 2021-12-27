@@ -70,21 +70,21 @@ const FilterSidebar = (props) => {
 
     // useEffect(() => {
     //     const params = new URLSearchParams(queryUrl);
-    //     if (filter.sort) {
+    //     if (filter.sort !== null) {
     //         if (queryUrl.includes('?')) {
     //             if (params.has('sort')) {
     //                 params.delete('sort');
-    //                 params.append('sort', filter.sort.toString());
+    //                 params.append('sort', filter.sort);
     //                 setQueryUrl(`?${params.toString()}`);
     //             } else {
-    //                 params.append('hang-san-xuat', filter.brand.toString());
+    //                 params.append('sort', filter.sort);
     //                 setQueryUrl(`?${params.toString()}`);
     //             }
     //         } else {
-    //             setQueryUrl(`?hang-san-xuat=${filter.brand.toString()}`);
+    //             setQueryUrl(`?sort=${filter.sort}`);
     //         }
     //     } else {
-    //         params.delete('hang-san-xuat');
+    //         params.delete('sort');
     //         setQueryUrl('?' + params.toString());
     //     }
     // }, [filter.sort]);

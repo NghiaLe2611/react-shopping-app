@@ -133,16 +133,18 @@ const CategoryPage = () => {
 
     }, [isFiltering, filter]);
 
-    // useEffect(() => {
-    //     const query = new URLSearchParams(location.search);
-    //     const sort = query.get('sort');
+    useEffect(() => {
+        const query = new URLSearchParams(location.search);
+        const sort = query.get('sort');
+        
+        console.log(sort);
 
-    //     if (sort) {
-    //         setFilter({...filter, sort: sort});
-    //     } else {
-    //         setFilter({...filter, sort: null});
-    //     }
-    // }, [location.search]);
+        if (sort) {
+            setFilter({...filter, sort: sort});
+        } else {
+            setFilter({...filter, sort: null});
+        }
+    }, [location.search]);
     
     const setFilterProducts = (data) => {    
         setTimeout(() => {
