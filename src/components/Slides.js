@@ -4,13 +4,14 @@ import classes from '../scss/Slides.module.scss';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import '../scss/SlickSlider.scss';
-import { useCheckMobile } from '../hooks/useCheckMobile';
+import useCheckMobile from '../hooks/useCheckMobile';
 
 const Slides = (props) => {
     const { slides, subSlides, full } = props;
-
+    
     const [nav1, setNav1] = useState();
     const [nav2, setNav2] = useState();
+    const { isMobile } = useCheckMobile();
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;
@@ -48,7 +49,9 @@ const Slides = (props) => {
         slides.map((img, index) => (
             <div key={index} className={classes.item}>
                 <a href="/#">
-                    <img src={img.url} alt="" />
+                    <img src={img.url} alt="" 
+                        onError={(e)=>{e.target.onError = null; e.target.src=`https://dummyimage.com/1200x300/000/fff`}}
+                    />
                 </a>
             </div>
         ))
@@ -72,7 +75,7 @@ const Slides = (props) => {
                         {mainSlides}
                     </Slider>
                     {
-                        !useCheckMobile() ? (
+                        !isMobile ? (
                             slides && (
                                 <Slider
                                     asNavFor={nav1}
@@ -90,7 +93,7 @@ const Slides = (props) => {
                 </div>
                 
                 { 
-                    !useCheckMobile() ? (
+                    !isMobile ? (
                         subSlides && (
                             <div className={classes['sub-slides']}>
                                 {

@@ -44,6 +44,13 @@ const Filter = (props) => {
 
     return (
         <div className={classes.filter}>
+            {
+                props.isMobile && (
+                    <div className={classes['wrap-select']}>
+                        <p className={classes['filter-txt']} onClick={props.showFilterSidebar}>Bộ lọc</p>
+                    </div>
+                )
+            }
             <div className={`${classes['wrap-select']} ${showDropdown ? classes.selected : ''}`} ref={componentRef}>
                 <p onClick={dropdownHandler}>{sortBy ? sortBy : 'Sắp xếp theo'}</p>
                 <ul className={classes.list}>

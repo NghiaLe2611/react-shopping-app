@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { capitalizeFirstLetter, convertProductLink, removeAccents } from '../helpers/helpers';
 import useFetch from '../hooks/useFetch';
@@ -15,20 +15,14 @@ const batteryList = [
 
 const FilterSidebar = (props) => {
     const navigate = useNavigate();
-    const location = useLocation();
     
     const { filter, setFilter, filterUrl } = props;
 
     const { category } = props;
     const [brandList, setBrandList] = useState([]);
-    // const [filter, setFilter] = useState({
-    //     brand: 'all',
-    //     price: 'all',
-    //     battery: 'all'
-    // });
     const [queryUrl, setQueryUrl] = useState('');
     const { isLoading, fetchData: fetchBrandList } = useFetch();
-
+      
     useEffect(() => {
         if (category) {
             fetchBrandList({
@@ -41,38 +35,59 @@ const FilterSidebar = (props) => {
         }
     }, [category, fetchBrandList]);
 
-    const filterQueryUrlHandler = (type) => {
-        const params = new URLSearchParams(queryUrl);
-        let queryName = '';
+    // const filterQueryUrlHandler = (type) => {
+    //     const params = new URLSearchParams(queryUrl);
+    //     let queryName = '';
 
-        if (type === 'brand') {
-            queryName ='hang-san-xuat';
-        }
-        if (type === 'price') {
-            queryName ='gia';
-        }
-        if (type === 'battery') {
-            queryName ='pin';
-        }
+    //     if (type === 'brand') {
+    //         queryName ='hang-san-xuat';
+    //     }
+    //     if (type === 'price') {
+    //         queryName ='gia';
+    //     }
+    //     if (type === 'battery') {
+    //         queryName ='pin';
+    //     }
 
-        if (filter[type] !== 'all') {
-            if (queryUrl.includes('?')) {
-                if (params.has(queryName)) {
-                    params.delete(queryName);
-                    params.append(queryName, filter[type].toString());
-                    setQueryUrl(`?${params.toString()}`);
-                } else {
-                    params.append(queryName, filter[type].toString());
-                    setQueryUrl(`?${params.toString()}`);
-                }
-            } else {
-                setQueryUrl(`?${queryName}=${filter[type].toString()}`);
-            }
-        } else {
-            params.delete(queryName);
-            setQueryUrl('?' + params.toString());
-        }
-    };
+    //     if (filter[type] !== 'all') {
+    //         if (queryUrl.includes('?')) {
+    //             if (params.has(queryName)) {
+    //                 params.delete(queryName);
+    //                 params.append(queryName, filter[type].toString());
+    //                 setQueryUrl(`?${params.toString()}`);
+    //             } else {
+    //                 params.append(queryName, filter[type].toString());
+    //                 setQueryUrl(`?${params.toString()}`);
+    //             }
+    //         } else {
+    //             setQueryUrl(`?${queryName}=${filter[type].toString()}`);
+    //         }
+    //     } else {
+    //         params.delete(queryName);
+    //         setQueryUrl('?' + params.toString());
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     const params = new URLSearchParams(queryUrl);
+    //     if (filter.sort) {
+    //         if (queryUrl.includes('?')) {
+    //             if (params.has('sort')) {
+    //                 params.delete('sort');
+    //                 params.append('sort', filter.sort.toString());
+    //                 setQueryUrl(`?${params.toString()}`);
+    //             } else {
+    //                 params.append('hang-san-xuat', filter.brand.toString());
+    //                 setQueryUrl(`?${params.toString()}`);
+    //             }
+    //         } else {
+    //             setQueryUrl(`?hang-san-xuat=${filter.brand.toString()}`);
+    //         }
+    //     } else {
+    //         params.delete('hang-san-xuat');
+    //         setQueryUrl('?' + params.toString());
+    //     }
+    // }, [filter.sort]);
 
     useEffect(() => {
         const params = new URLSearchParams(queryUrl);
@@ -139,8 +154,9 @@ const FilterSidebar = (props) => {
     }, [filter.battery]);
 
     useEffect(() => {
+        console.log(queryUrl);
         navigate(queryUrl);
-        props.setFilterQuery(filter);
+        // props.setFilterQuery(filter);
         // console.log(queryUrl);
     }, [queryUrl, navigate]);
 

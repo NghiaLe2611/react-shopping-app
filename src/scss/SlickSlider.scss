@@ -21,8 +21,11 @@
 }
 
 .nav-slides .slick-slide {
-    margin: 0 5px;
     cursor: pointer;
+}
+
+.nav-slides .slick-slide>div {
+    padding: 0 5px;
 }
 
 .slick-no-slide .slick-track {
@@ -37,6 +40,9 @@
     display: inline-block;
 }
 
+.nav-slides .slick-slide{
+    border: 2px transparent;
+}
 .nav-slides .slick-current {
     border: 2px solid #2d9cdb;
 }

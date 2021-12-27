@@ -4,11 +4,6 @@
     margin-left: -20px;
 }
 
-.title {
-    font-size: 24px;
-    margin-bottom: 30px;
-}
-
 .item {
     width: calc(100% * 1/2 - 10px);
     margin: 0 0 10px 10px;
@@ -76,23 +71,6 @@
     }
 }
 
-.list-view {
-    margin-left: 0;
-    .product-item {
-        width: 100%;
-        margin: 0 0 20px 0;
-        a {
-            display: flex;
-            img {
-                max-width: 200px;
-            }
-            .desc .specs {
-                background-color: #fff;
-            }
-        }
-    }
-}
-
 .banner {
     margin-bottom: 20px;
 }
@@ -104,10 +82,6 @@
 }
 
 @media (min-width: 1200px) {
-    .title {
-        font-size: 30px;
-        margin-bottom: 10px;
-    }
     .product-item {
         padding: 20px 15px;
     }

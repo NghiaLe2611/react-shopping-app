@@ -10,6 +10,7 @@ const CartPage = () => {
     const dispatch = useDispatch();
     const showCart = useSelector(state => state.cart.isShowCart);
     const cart = useSelector((state) => state.cart);
+    const [isSelectAll, setIsSelectAll] = useState(false);
     const selectAlInput = useRef();
 
     useEffect(() => {
@@ -18,17 +19,15 @@ const CartPage = () => {
         }
     }, []);
 
-    const checkInputSelectHandler = () => {
-        // if (cart.finalItems.length === 0) {
-        //     selectAlInput.current.checked = false;
-        // } else {
-        //     if (cart.finalItems.length === cart.items.length) {
-        //         selectAlInput.current.checked = true;
-        //     } else if (cart.finalItems.length < cart.items.length) {
-        //         selectAlInput.current.checked = false;
-        //     }
-        // }
+    useEffect(() => {
+        if (isSelectAll) {
+            dispatch(cartActions.updateCartItems({
+                updatedItems: cart.items
+            })); 
+        }
+    }, [cart.items]);
 
+    const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {
             selectAlInput.current.checked = true;
         } else if ( cart.finalItems.length === 0 || cart.finalItems.length < cart.items.length) {
@@ -39,9 +38,17 @@ const CartPage = () => {
     const selectAllHandler = (e) => {
         
         if (e.target.checked) {
+            setIsSelectAll(true);
             for (let i = 0; i < cart.items.length; i++) {
                 const item = cart.items[i];
-                const isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;
+                let isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;;
+
+                // if (item.color) {
+                //     isExist = cart.finalItems.filter(val => (val.color === item.color && val._id === item._id)).length > 0;
+                // } else {
+                //     isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;
+                // }
+
                 if (isExist) {
                     continue;
                 }
@@ -50,6 +57,7 @@ const CartPage = () => {
                 }));
             }
         } else {
+            setIsSelectAll(false);
             cart.items.forEach(item => {
                 dispatch(cartActions.confirmChooseCart({
                     type: 'REMOVE', item
@@ -59,14 +67,19 @@ const CartPage = () => {
     };
 
     const removeCartHandler = () => {
-        let r = window.confirm("Bạn có chắc muốn xóa sản phẩm này ?");
+        if (cart.finalItems.length > 0) {
+            let r = window.confirm("Bạn có chắc muốn xóa sản phẩm này ?");
         
-        if (r) {
-            // cart.finalItems.forEach(item => {
-            //     dispatch(cartActions.confirmChooseCart({
-            //         type: 'REMOVE', item
-            //     }));
-            // });
+            if (r) {
+                cart.finalItems.forEach(item => {
+                    // dispatch(cartActions.removeCartItem({
+                    //     type: 'REMOVE', item
+                    // }));
+                    dispatch(cartActions.removeCartItem(item._id));
+                });
+            }
+        } else {
+            alert('Vui lòng chọn sản phẩm để xoá');
         }
     };
 
@@ -76,7 +89,7 @@ const CartPage = () => {
     }
     
     return (
-        <div className="container" style={{marginTop: 30}}>
+        <div className="container">
             <Fragment>
                 <h2 onClick={test}>GIỎ HÀNG</h2>
                 {
@@ -87,7 +100,7 @@ const CartPage = () => {
                                     <div className={`${classes['cart-heading']} ${classes.box}`}>
                                         <p className={classes['col-1']}>
                                             <label className={classes.checkbox}>
-                                                <input type="checkbox" onChange={(e) => selectAllHandler(e)} ref={selectAlInput}/>
+                                                <input type="checkbox" onChange={(e) => selectAllHandler(e)} ref={selectAlInput} />
                                                 <span className={classes.checkmark}></span>
                                                 <span className="txt">Tất cả ({cart.items.length} sản phẩm)</span>
                                             </label>
@@ -102,7 +115,7 @@ const CartPage = () => {
                                     <ul className={`${classes['cart-list']} ${classes.box}`}>
                                         {
                                             cart.items.length > 0 && cart.items.map((item) => (
-                                                <CartItem key={item._id}
+                                                <CartItem key={item._id} isSelectAll={isSelectAll}
                                                     item={item} checkInputSelect={checkInputSelectHandler}
                                                 />
                                             ))

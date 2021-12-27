@@ -65,7 +65,7 @@ const Products = () => {
 
     return (
 		<section className='products-section'>
-			<div className='card'>
+			<div className='card' style={{marginBottom: '40px'}}>
                 <div className={classes['wrap-title']}>
 					<h2 className={classes.title} id='smartphone'>
 						Điện thoại nổi bật

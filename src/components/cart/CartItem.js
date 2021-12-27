@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { convertProductLink, formatCurrency } from '../../helpers/helpers';
 import { cartActions } from '../../store/cart';
 import { useSelector, useDispatch } from 'react-redux';
@@ -11,8 +11,32 @@ const CartItem = (props) => {
     const { item } = props;
     const [isAddToCart, setIsAddToCart] = useState(false);
 
+    const inputRef = useRef();
+
     useEffect(() => {
         props.checkInputSelect();
+    }, [cart.finalItems]);
+
+    // useEffect(() => {
+    //     if (isAddToCart) {
+    //         dispatch(cartActions.confirmChooseCart({
+    //             type: 'ADD', item
+    //         }));  
+    //     } else {
+    //         dispatch(cartActions.confirmChooseCart({
+    //             type: 'REMOVE', item
+    //         })); 
+    //     }
+    // }, [isAddToCart]);
+
+    useEffect(() => {
+        let isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;;
+
+        if (isExist) {
+            inputRef.current.checked = true;
+        } else {
+            inputRef.current.checked = false;
+        }
     }, [cart.finalItems]);
 
     const increaseQuantityHandler = () => {
@@ -21,7 +45,7 @@ const CartItem = (props) => {
                 _id: item._id,
                 price: item.price
             }));  
-            if (isAddToCart) {
+            if (inputRef.current.checked) {
                 dispatch(cartActions.confirmChooseCart({
                     type: 'INCREASE', item
                 }));  
@@ -34,7 +58,7 @@ const CartItem = (props) => {
     const decreaseQuantityHandler = () => {
         if (item.quantity !== 1) {
             dispatch(cartActions.decreaseCartQuantity(item._id));
-            if (isAddToCart) {
+            if (inputRef.current.checked) {
                 dispatch(cartActions.confirmChooseCart({
                     type: 'DECREASE', item
                 }));  
@@ -61,7 +85,7 @@ const CartItem = (props) => {
                 dispatch(cartActions.changeQuantity({
                     _id: item._id, quantity: parseInt(value)
                 }));
-                if (isAddToCart) {
+                if (inputRef.current.checked) {
                     dispatch(cartActions.confirmChooseCart({
                         type: 'CHANGE', item
                     }));  
@@ -84,23 +108,45 @@ const CartItem = (props) => {
 
     const checkCartHandler = (e) => {
         if (e.target.checked) {
-            setIsAddToCart(true);
+            // setIsAddToCart(true);
             dispatch(cartActions.confirmChooseCart({
                 type: 'ADD', item
             }));  
         } else {
-            setIsAddToCart(false);
+            // setIsAddToCart(false);
             dispatch(cartActions.confirmChooseCart({
                 type: 'REMOVE', item
-            })); 
+            }));
         }
+
+        console.log(inputRef.current.checked);
+
     };
+
+    const checkItemIsChecked = useCallback(() => {
+        let isExist = false;
+
+        if (item.color) {
+            isExist = cart.finalItems.filter(val => (val.color === item.color && val._id === item._id)).length > 0;
+        } else {
+            isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;
+        }
+
+        if (isExist) {
+            return true;
+        }
+
+        return false;
+    }, [cart.finalItems]);
+
+    const cartItemChecked = useMemo(() => checkItemIsChecked(), [checkItemIsChecked]);
 
     return (
         <li className={classes['cart-item']}>
             <div className={classes['col-1']}>
                 <label className={classes.checkbox}>
-                    <input type="checkbox" onChange={(e) => checkCartHandler(e)} checked={cart.finalItems.filter(val => val._id === item._id).length > 0 ? true : false}/>
+                    <input type="checkbox" onChange={(e) => checkCartHandler(e)} ref={inputRef} />
+                    {/* checked={cartItemChecked} */}
                     <span className={classes.checkmark}></span>&nbsp;
                 </label>
                 <span className={classes.img}><img src={item.img} alt={item.name} /></span>

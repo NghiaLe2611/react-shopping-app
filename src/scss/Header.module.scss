@@ -50,7 +50,7 @@
         justify-content: start;
         margin: 0 0 10px 0;
         padding: 5px;
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: rgba(0, 25, 96, 0.9);
     }
     .menu {
         >li {
@@ -88,6 +88,9 @@
                 .sub-menu {
                     max-height: 500px;
                     transition: max-height .5s ease-in-out;
+                    ul{
+                        margin-bottom: 15px;
+                    }
                 }
             }
             .sub-menu {

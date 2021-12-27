@@ -143,15 +143,23 @@ const DetailPage = () => {
     };
 
     const addToCartHandler = () => {
+        const color = product.variations && product.variations.colors ? product.variations.colors[selectedColor].color : null;
+        let img = product.img;
+
+        if (color) {
+            const mapItem = product.variations.colors.find(val => val.color === color);
+            img = mapItem.thumbnail;
+        }
+   
         dispatch(cartActions.addItemToCart({
-            _id: product._id,
+            _id: color ? product._id + '-' + color : product._id,
             category: product.category,
             quantity: 1, 
-            img: product.img, 
+            img: img, 
             name: product.name, 
             price: product.sale ? product.price - product.sale : product.price, 
             sale: product.sale ? product.sale : 0,
-            color: product.variations && product.variations.colors ? product.variations.colors[selectedColor].color : null
+            color: color
         }));
 
         setTimeout(() => {
@@ -199,8 +207,11 @@ const DetailPage = () => {
             <div className={classes['product-detail']}>
                 <Skeleton className={classes['title-skeleton']}/>
                 <Skeleton className={classes['price-skeleton']}/>
+                <Skeleton className={classes['price-skeleton']}/>
                 <Skeleton className={classes['button-skeleton']}/>
+                <Skeleton className={classes['title-skeleton']}/>
                 <Skeleton count={8} height={35}/>
+                <Skeleton height={35} style={{display: 'block', width: '70%', margin: '20px auto'}}/>
             </div>
         </Fragment>
     );

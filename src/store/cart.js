@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, current } from "@reduxjs/toolkit";
 
 const cartSlice = createSlice({
     name: 'cart',
@@ -11,6 +11,12 @@ const cartSlice = createSlice({
     },
 
     reducers: {
+        updateCartItems(state, action) {
+            const payload = action.payload;
+            state.finalItems = payload.updatedItems;
+            state.totalQuantity = payload.updatedItems.length;
+            state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
+        },
         confirmChooseCart(state, action) {
             const payload = action.payload;
             // console.log(payload);
@@ -22,9 +28,11 @@ const cartSlice = createSlice({
                     break;
                 }
                 case 'REMOVE': {
-                    state.finalItems = state.finalItems.filter(val => val._id !== payload.item._id);
+                    const updatedItem = payload.item;
+                    state.finalItems = state.finalItems.filter(val => val._id !== updatedItem._id);
+                    
                     if (state.totalPrice > 0) {
-                        state.totalPrice -= payload.item.totalPrice;
+                        state.totalPrice -= updatedItem.totalPrice;
                     }
                     break;
                 }
@@ -32,12 +40,14 @@ const cartSlice = createSlice({
                     const finalItemIndex = state.finalItems.findIndex(val => val._id === payload.item._id);
                     state.finalItems[finalItemIndex] = payload.item;
                     state.totalPrice += payload.item.price;
+                    // state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
                     break;
                 } 
                 case 'DECREASE': {                   
                     const finalItemIndex = state.finalItems.findIndex(val => val._id === payload.item._id);
                     state.finalItems[finalItemIndex] = payload.item;
                     state.totalPrice -= payload.item.price;
+                    // state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
                     break;
                 } 
                 case 'CHANGE': {
@@ -59,7 +69,7 @@ const cartSlice = createSlice({
             const newItem = action.payload;
             const existingItem = state.items.find(item => item._id === newItem._id);
 
-            if (!existingItem) {
+            const addNewItemHandler = () => {
                 state.items.push({
                     _id: newItem._id,
                     category: newItem.category,
@@ -72,9 +82,22 @@ const cartSlice = createSlice({
                     color: newItem.color
                 });
                 state.totalQuantity++;
+            }
+
+            if (!existingItem) {
+                addNewItemHandler();
             } else {
-                existingItem.quantity++;
-                existingItem.totalPrice = existingItem.totalPrice + newItem.price;
+                if (newItem.color) {
+                    if (newItem.color === existingItem.color) {
+                        existingItem.quantity++;
+                        existingItem.totalPrice = existingItem.totalPrice + newItem.price;
+                    } else {
+                        addNewItemHandler();
+                    }
+                } else {
+                    existingItem.quantity++;
+                    existingItem.totalPrice = existingItem.totalPrice + newItem.price;
+                }
             }
         },
         changeQuantity(state, action) {
@@ -93,10 +116,10 @@ const cartSlice = createSlice({
                 existingItem.quantity--;
                 existingItem.totalPrice = existingItem.totalPrice - existingItem.price;
             }
-
         },
         removeCartItem(state, action) {
             const _id = action.payload;
+            console.log(action.payload, current(state));
             const existingItem = state.items.find(item => item._id === _id);
             state.totalQuantity -= existingItem.quantity;
             state.items = state.items.filter(item => item._id !==_id);

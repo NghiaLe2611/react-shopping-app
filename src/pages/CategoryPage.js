@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'; // Redirect -> Navigate in v6
 import useFetch from '../hooks/useFetch';
 import ProductItem from '../components/ProductItem';
 import SkeletonElement from '../components/UI/Skeleton';
-import classes from '../scss/CategoryPage.module.scss';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import Filter from '../components/Filter';
@@ -11,6 +10,8 @@ import FilterSidebar from '../components/FilterSidebar';
 import Slides from '../components/Slides';
 import { removeQueryParam } from '../helpers/helpers';
 import NotiSearch from '../assets/images/noti-search.png';
+import useCheckMobile from '../hooks/useCheckMobile';
+import classes from '../scss/CategoryPage.module.scss';
 
 const slides = [
     {
@@ -48,8 +49,9 @@ const CategoryPage = () => {
         sort: null
     });
     const [isFiltering, setIsFiltering] = useState(null);
-
+    const [isShowFilter, setIsShowFilter] = useState(false);
     const { isLoading, error, fetchData: fetchProducts } = useFetch();
+    const { isMobile } = useCheckMobile();
 
     useEffect(() => {
         if (!categoryName) {
@@ -132,19 +134,15 @@ const CategoryPage = () => {
     }, [isFiltering, filter]);
 
     // useEffect(() => {
-    //     console.log(filterUrl);
-    // }, [filterUrl]);
+    //     const query = new URLSearchParams(location.search);
+    //     const sort = query.get('sort');
 
-    useEffect(() => {
-        const query = new URLSearchParams(location.search);
-        const sort = query.get('sort');
-
-        if (sort) {
-            setFilter({...filter, sort: sort});
-        } else {
-            setFilter({...filter, sort: null});
-        }
-    }, [location.search]);
+    //     if (sort) {
+    //         setFilter({...filter, sort: sort});
+    //     } else {
+    //         setFilter({...filter, sort: null});
+    //     }
+    // }, [location.search]);
     
     const setFilterProducts = (data) => {    
         setTimeout(() => {
@@ -155,23 +153,31 @@ const CategoryPage = () => {
 
     const setQueryFilterHandler = (val) => {
         // setQueryFilter(val);
-    }
+        // console.log(val);
+    };
 
     const sortProductsHandler = (val) => {
         setIsSorting(true);
 
         if (val === 0) {
             navigate('?sort=priceAscending');
+            // setFilter({...filter, sort: 'priceAscending'});
         } else if (val === 1) {
             navigate('?sort=priceDescending');
+            // setFilter({...filter, sort: 'priceDescending'});
         } else {
             navigate('');
+            // setFilter({...filter, sort: null});
         }
 
         setTimeout(() => {
             setIsSorting(false);
         }, 300);
-    }
+    };
+
+    const showFilterSidebar = () => {
+        setIsShowFilter(true);
+    };
 
     const setViewProductsHandler = (val) => {
         setIsSorting(true);
@@ -228,50 +234,73 @@ const CategoryPage = () => {
     }
 
     return (
-        <div className='container'>
+        <Fragment>
             {
-                products && products.length ? (
-                    <ul className="breadcrumbs">
-                        <li>
-                            <Link to="/">Trang chủ</Link>
-                        </li>
-                        <li>{breadcrumbsCate}</li>
-                    </ul>
-                ) : ( 
-                    <div style={{padding: '15px 0'}}>
-                        <Skeleton height={20}/>
+                isMobile && (
+                    <div className={`${classes['wrap-filter-sidebar']} ${isShowFilter ? classes.active : ''}`}>
+                        <FilterSidebar category={categoryName} filterUrl={filterUrl} 
+                            filter={filter} setFilter={setFilter} 
+                            setIsFiltering={setIsFiltering}
+                            setFilterQuery={setQueryFilterHandler}
+                            setFilterProducts={setFilterProducts} 
+                            setIsSorting={setIsSorting} 
+                        />
                     </div>
                 )
             }
-            <Slides slides={slides} full={true} />
-            <div className={classes['wrap-category']}>
-                <FilterSidebar category={categoryName} filterUrl={filterUrl} 
-                    filter={filter} setFilter={setFilter} 
-                    setIsFiltering={setIsFiltering}
-                    setFilterQuery={setQueryFilterHandler}
-                    setFilterProducts={setFilterProducts} 
-                    setIsSorting={setIsSorting} 
-                />
-                <div className={`card ${isSorting ? 'is-sorting' : ''}`}>
+            <div className='container'>
+                {
+                    products && products.length ? (
+                        <ul className="breadcrumbs">
+                            <li>
+                                <Link to="/">Trang chủ</Link>
+                            </li>
+                            <li>{breadcrumbsCate}</li>
+                        </ul>
+                    ) : ( 
+                        <div style={{padding: '15px 0'}}>
+                            <Skeleton height={20}/>
+                        </div>
+                    )
+                }
+                <div style={{marginTop: '-30px'}}>
+                    <Slides slides={slides} full={true} />
+                </div>
+                
+                <div className={classes['wrap-category']}>
                     {
-                        categoryName && (
-                            <h2 className={classes.title}>{categoryName === 'smartphone' ? 'Điện thoại' : categoryName === 'tablet' ? 'Máy tính bảng' : ''}</h2>
+                        !isMobile && (
+                            <FilterSidebar category={categoryName} filterUrl={filterUrl} 
+                                filter={filter} setFilter={setFilter} 
+                                setIsFiltering={setIsFiltering}
+                                setFilterQuery={setQueryFilterHandler}
+                                setFilterProducts={setFilterProducts} 
+                                setIsSorting={setIsSorting} 
+                            />
                         )
                     }
-                    <Filter viewBy={viewBy} setIsFiltering={setIsFiltering}
-                        sortProducts={sortProductsHandler} 
-                        setViewProducts={setViewProductsHandler}
-                    />
-                    {
-                        categoryName && (
-                            <div className={`${classes['product-list']} ${viewBy === 'LIST' ? classes['list-view'] : ''}`}>
-                                {content}
-                            </div>
-                        )
-                    }
+                    
+                    <div className={`card ${isSorting ? 'is-sorting' : ''}`}>
+                        {
+                            categoryName && (
+                                <h2 className={classes.title}>{categoryName === 'smartphone' ? 'Điện thoại' : categoryName === 'tablet' ? 'Máy tính bảng' : ''}</h2>
+                            )
+                        }
+                        <Filter viewBy={viewBy} setIsFiltering={setIsFiltering} isMobile={isMobile}
+                            sortProducts={sortProductsHandler} 
+                            setViewProducts={setViewProductsHandler}
+                        />
+                        {
+                            categoryName && (
+                                <div className={`${classes['product-list']} ${viewBy === 'LIST' ? classes['list-view'] : ''}`}>
+                                    {content}
+                                </div>
+                            )
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
+        </Fragment>
     )
 }
 

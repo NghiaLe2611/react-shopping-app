@@ -6,7 +6,7 @@ import { useDelayUnmount } from '../../hooks/useDelayUnmount';
 import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../../store/cart';
-import { useCheckMobile } from '../../hooks/useCheckMobile';
+import useCheckMobile from '../../hooks/useCheckMobile';
 import { Link, useLocation } from 'react-router-dom';
 import iconCheked from '../../assets/images/icon-check.svg';
 import useFetch from '../../hooks/useFetch';
@@ -33,6 +33,7 @@ const Header = () => {
 
     const shouldRenderModal = useDelayUnmount(showCart, 350);
     const { isLoading, error, fetchData: fetchSuggestProducts } = useFetch();
+    const { isMobile } = useCheckMobile();
 
     useEffect(() => {
         setHoverMenu(false);
@@ -266,8 +267,8 @@ const Header = () => {
         <Fragment>
             <div className={classes.header}>
                 <div className="container">
-                    { useCheckMobile() && headerSP }
-                    { !useCheckMobile() && headerPC }
+                    { isMobile && headerSP }
+                    { !isMobile && headerPC }
                 </div>
             </div>
             {showMenu && <div className="overlay"></div>}
