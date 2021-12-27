@@ -77,7 +77,7 @@ const CategoryPage = () => {
         const query = new URLSearchParams(location.search);
         let url = new URL(filterUrl);
         let params = new URLSearchParams(url.search);
-
+        console.log(12345);
         setIsSorting(true);
         if (isFiltering === 'brand') {
             const brand = query.get('hang-san-xuat');
@@ -131,20 +131,7 @@ const CategoryPage = () => {
             clearTimeout(timeout);
         }
 
-    }, [isFiltering, filter]);
-
-    useEffect(() => {
-        const query = new URLSearchParams(location.search);
-        const sort = query.get('sort');
-        
-        console.log(sort);
-
-        if (sort) {
-            setFilter({...filter, sort: sort});
-        } else {
-            setFilter({...filter, sort: null});
-        }
-    }, [location.search]);
+    }, [isFiltering, filter, location.search]);
     
     const setFilterProducts = (data) => {    
         setTimeout(() => {
@@ -153,23 +140,18 @@ const CategoryPage = () => {
         }, 300);
     };
 
-    const setQueryFilterHandler = (val) => {
-        // setQueryFilter(val);
-        // console.log(val);
-    };
-
     const sortProductsHandler = (val) => {
         setIsSorting(true);
 
         if (val === 0) {
-            navigate('?sort=priceAscending');
-            // setFilter({...filter, sort: 'priceAscending'});
+            // navigate('?sort=priceAscending');
+            setFilter({...filter, sort: 'priceAscending'});
         } else if (val === 1) {
-            navigate('?sort=priceDescending');
-            // setFilter({...filter, sort: 'priceDescending'});
+            // navigate('?sort=priceDescending');
+            setFilter({...filter, sort: 'priceDescending'});
         } else {
-            navigate('');
-            // setFilter({...filter, sort: null});
+            // navigate('');
+            setFilter({...filter, sort: null});
         }
 
         setTimeout(() => {
@@ -243,7 +225,6 @@ const CategoryPage = () => {
                         <FilterSidebar category={categoryName} filterUrl={filterUrl} 
                             filter={filter} setFilter={setFilter} 
                             setIsFiltering={setIsFiltering}
-                            setFilterQuery={setQueryFilterHandler}
                             setFilterProducts={setFilterProducts} 
                             setIsSorting={setIsSorting} 
                         />
@@ -275,7 +256,6 @@ const CategoryPage = () => {
                             <FilterSidebar category={categoryName} filterUrl={filterUrl} 
                                 filter={filter} setFilter={setFilter} 
                                 setIsFiltering={setIsFiltering}
-                                setFilterQuery={setQueryFilterHandler}
                                 setFilterProducts={setFilterProducts} 
                                 setIsSorting={setIsSorting} 
                             />

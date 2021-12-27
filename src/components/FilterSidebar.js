@@ -35,59 +35,26 @@ const FilterSidebar = (props) => {
         }
     }, [category, fetchBrandList]);
 
-    // const filterQueryUrlHandler = (type) => {
-    //     const params = new URLSearchParams(queryUrl);
-    //     let queryName = '';
-
-    //     if (type === 'brand') {
-    //         queryName ='hang-san-xuat';
-    //     }
-    //     if (type === 'price') {
-    //         queryName ='gia';
-    //     }
-    //     if (type === 'battery') {
-    //         queryName ='pin';
-    //     }
-
-    //     if (filter[type] !== 'all') {
-    //         if (queryUrl.includes('?')) {
-    //             if (params.has(queryName)) {
-    //                 params.delete(queryName);
-    //                 params.append(queryName, filter[type].toString());
-    //                 setQueryUrl(`?${params.toString()}`);
-    //             } else {
-    //                 params.append(queryName, filter[type].toString());
-    //                 setQueryUrl(`?${params.toString()}`);
-    //             }
-    //         } else {
-    //             setQueryUrl(`?${queryName}=${filter[type].toString()}`);
-    //         }
-    //     } else {
-    //         params.delete(queryName);
-    //         setQueryUrl('?' + params.toString());
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     const params = new URLSearchParams(queryUrl);
-    //     if (filter.sort !== null) {
-    //         if (queryUrl.includes('?')) {
-    //             if (params.has('sort')) {
-    //                 params.delete('sort');
-    //                 params.append('sort', filter.sort);
-    //                 setQueryUrl(`?${params.toString()}`);
-    //             } else {
-    //                 params.append('sort', filter.sort);
-    //                 setQueryUrl(`?${params.toString()}`);
-    //             }
-    //         } else {
-    //             setQueryUrl(`?sort=${filter.sort}`);
-    //         }
-    //     } else {
-    //         params.delete('sort');
-    //         setQueryUrl('?' + params.toString());
-    //     }
-    // }, [filter.sort]);
+    useEffect(() => {
+        const params = new URLSearchParams(queryUrl);
+        if (filter.sort !== null) {
+            if (queryUrl.includes('?')) {
+                if (params.has('sort')) {
+                    params.delete('sort');
+                    params.append('sort', filter.sort);
+                    setQueryUrl(`?${params.toString()}`);
+                } else {
+                    params.append('sort', filter.sort);
+                    setQueryUrl(`?${params.toString()}`);
+                }
+            } else {
+                setQueryUrl(`?sort=${filter.sort}`);
+            }
+        } else {
+            params.delete('sort');
+            setQueryUrl('?' + params.toString());
+        }
+    }, [filter.sort]);
 
     useEffect(() => {
         const params = new URLSearchParams(queryUrl);
@@ -154,10 +121,7 @@ const FilterSidebar = (props) => {
     }, [filter.battery]);
 
     useEffect(() => {
-        console.log(queryUrl);
         navigate(queryUrl);
-        // props.setFilterQuery(filter);
-        // console.log(queryUrl);
     }, [queryUrl, navigate]);
 
     const filterHandler = (type, e) => {
