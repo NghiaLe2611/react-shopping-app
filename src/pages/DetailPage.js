@@ -286,6 +286,12 @@ const DetailPage = () => {
 
     };
 
+    const removeReviewImg = (index) => {
+        const imgs = [...reviewImgs];
+        imgs.splice(index, 1)
+        setReviewImgs(imgs);
+    };
+
     let reviewsContent = (
         <Fragment>
             <Skeleton width={'50%'} height={30} style={{marginBottom: 25}}/>
@@ -480,17 +486,22 @@ const DetailPage = () => {
                                                 <input id="image-upload" type="file" multiple={true} onChange={chooseImage}/> 
                                             </label>
                                             <p className={classes.characters} style={{display: comment.length >= 80 ? 'none' : 'block'}}>
-                                                {comment.length} ký tự (tối thiểu 80)</p>
-                                            <ul className={classes['list-img']}>
-                                                {
-                                                    reviewImgs.map((item, index) => (
-                                                        <li key={index}>
-                                                            <img src={URL.createObjectURL(item)} alt={item.name} />
-                                                            <span>Xóa</span>
-                                                        </li>
-                                                    ))
-                                                }
-                                            </ul>
+                                                {comment.length} ký tự (tối thiểu 80)
+                                            </p>
+                                            {
+                                                reviewImgs.length && (
+                                                    <ul className={classes['list-img']}>
+                                                        {
+                                                            reviewImgs.map((item, index) => (
+                                                                <li key={index}>
+                                                                    <img src={URL.createObjectURL(item)} alt={item.name} />
+                                                                    <span onClick={() => removeReviewImg(index)}>Xóa</span>
+                                                                </li>
+                                                            ))
+                                                        }
+                                                    </ul>
+                                                )
+                                            }
                                         </div>
                                         <button className={classes.send}>Gửi đánh giá</button>
                                     </form>                         

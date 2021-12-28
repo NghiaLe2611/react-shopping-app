@@ -278,9 +278,10 @@ img {
     content: "\72";
 }
 
-i {
+
+/* i {
     line-height: 1;
-}
+} */
 
 @media (max-width: 1200px) {
     .container {
