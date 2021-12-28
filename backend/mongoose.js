@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
 const Product = require('./models/product');
+const Review = require('./models/review');
 
 function escapeRegExp(stringToGoIntoTheRegex) {
     return stringToGoIntoTheRegex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -196,9 +197,21 @@ const getBrandList = async (req, res, next) => {
     res.json(brand)
 };
 
+const getReviews = async (req, res, next) => {
+    const productId = req.params.productId;
+
+    if (ObjectId.isValid(productId)) {
+        const review = await Review.find( { productId: productId}).exec();
+        res.json(review);
+    } else {
+        res.json([]);
+    }
+};
+
 exports.getFeaturedProducts = getFeaturedProducts;
 exports.getProducts = getProducts;
 exports.getProductDetail = getProductDetail;
 exports.searchProduct = searchProduct;
 exports.compareProduct = compareProduct;
 exports.getBrandList = getBrandList;
+exports.getReviews = getReviews;

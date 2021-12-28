@@ -23,7 +23,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 function App() {
 	return (
 		<Fragment>
-            <Suspense fallback={<LoadingIndicator/>}>
+            <Suspense fallback={<LoadingIndicator type='fixed'/>}>
                 <Routes>
                     <Route exact path='/' element={<Root><HomePage /></Root>}/>
                     <Route exact path='dien-thoai/:productId' element={<Root><DetailPage/></Root>} />

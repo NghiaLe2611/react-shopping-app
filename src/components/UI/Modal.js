@@ -18,9 +18,14 @@ const Backdrop = (props) => {
 };
 
 const ModalOverlay = (props) => {
-    const mountedStyle = props.animation === 'slide' ? { animation: "slideDown 300ms ease-out forwards" } : { animation: "fadeIn 300ms ease-out forwards" };
-    const unmountedStyle = props.animation === 'slide' ? { animation: "slideUp 300ms ease-out forwards" } : { animation: "fadeOut 300ms ease-out forwards" };
+    let mountedStyle = props.animation === 'slide' ? { animation: "slideDown 300ms ease-out forwards" } : { animation: "fadeIn 300ms ease-out forwards" };
+    let unmountedStyle = props.animation === 'slide' ? { animation: "slideUp 300ms ease-out forwards" } : { animation: "fadeOut 300ms ease-out forwards" };
     
+    if (props.animation === 'none') {
+        mountedStyle = { animation: 'none'};
+        unmountedStyle = { animation: 'none'};
+    }
+
     const componentRef = useRef();
 
     useEffect(() => {

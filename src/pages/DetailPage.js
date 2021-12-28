@@ -29,6 +29,8 @@ function BoxThumbnail({ children }) {
     )
 }
 
+const starArr = [1,2,3,4,5];
+
 const DetailPage = () => {
     const { productId } = useParams();
     const dispatch = useDispatch();
@@ -44,15 +46,23 @@ const DetailPage = () => {
     const [listCompare, setListCompare] = useState([{}, {}, {}]);
     const [showInfoModal, setshowInfoModal] = useState(false);
     const [activeModalTab, setActiveModalTab] = useState('');
+    const [reviews, setReviews] = useState([]);
+    const [isWriteReview, setIsWriteReview] = useState(false);
+    const [ratingPoint, setRatingPoint] = useState(0);
+    const [comment, setComment] = useState('');
+    const [reviewImgs, setReviewImgs] = useState([]);
 
     const { isLoading, error, fetchData: fetchProducts } = useFetch();
+    const { loadingReview, reviewError, fetchData: fetchReviews } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
+    const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
 
     const mountedBtnStyle = { animation: "fadeIn 250ms ease-out forwards" };
     const unmountedBtnStyle = { animation: "fadeOut 250ms ease-out forwards" };
 
     const compareModalRef = useRef();
+    const starRating = useRef([]);
 
     useEffect(() => {
         fetchProducts({
@@ -66,6 +76,18 @@ const DetailPage = () => {
     }, [fetchProducts, productId]);
 
     useEffect(() => {
+        if (product) {
+            fetchReviews({
+                url: `http://localhost:5000/product/${product._id}/reviews`
+            }, data => {
+                if (data) {
+                    setReviews(data);
+                }
+            });
+        }
+    }, [fetchReviews, product]);
+
+    useEffect(() => {
         if (showInfoModal) {
             document.querySelector('html').classList.add('modal-open');
             document.body.classList.add('modal-open');
@@ -77,11 +99,26 @@ const DetailPage = () => {
     }, [showInfoModal]);
 
     useEffect(() => {
+        if (isWriteReview) {
+            document.querySelector('html').classList.add('modal-open');
+            document.body.classList.add('modal-open');
+        } else {
+            document.querySelector('html').classList.remove('modal-open');
+            document.body.classList.remove('modal-open');
+        }
+
+    }, [isWriteReview]);
+
+    useEffect(() => {
         if (activeModalTab) {
             setIsComparing(false);
             setshowInfoModal(true);
         }
     }, [activeModalTab]);
+
+    useEffect(() => {
+        console.log(reviewImgs);
+    }, [reviewImgs]);
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;
@@ -188,20 +225,104 @@ const DetailPage = () => {
         setActiveModalTab('');
     };
 
+    const calculatePercentReview = (rating) => {
+        const total = reviews.length;
+        const amount = reviews.filter(val => val.star === rating).length;
+
+        return parseFloat(amount/total * 100).toFixed(0)  + "%";
+    };
+
+    const hoverOnStarHandler = (rating) => {
+        for (let val of starArr) {
+            if (val <= rating) {
+                starRating.current[val].classList.add(classes.hovered);
+            }
+        }
+    };
+
+    const hoverOutStarHandler = (rating) => {
+        for (let val of starArr) {
+            if (val <= rating) {
+                if (val <= rating) {
+                    starRating.current[val].classList.remove(classes.hovered);
+                }
+            }
+        }
+    };
+
+    const setRatingHandler = (rating) => {
+        if (rating !== ratingPoint) {
+            setRatingPoint(rating);
+        } else {
+            setRatingPoint(0);
+        }
+    };
+
+    const onTypeReview = (e) => {
+        setComment(e.target.value);
+    };
+
+    const writeReviewHandler = (e) => {
+        e.preventDefault();
+        setIsWriteReview(true);
+    };
+
+    const closeWriteReviewModal = () => {
+        setIsWriteReview(false)
+        setComment('');
+    };
+
+    const chooseImage = (e) => {
+        // const nameWithoutExt = e.target.files[0].name.replace(/\.[^/.]+$/, '');
+
+        let images = [];
+
+		for (let i = 0; i < e.target.files.length; i++) {
+			images.push(e.target.files[i]);
+		}
+		if (images.length > 0) {
+			setReviewImgs(images);
+		}
+
+    };
+
+    let reviewsContent = (
+        <Fragment>
+            <Skeleton width={'50%'} height={30} style={{marginBottom: 25}}/>
+            <Skeleton count={5} width={'40%'} height={10} style={{marginBottom: 5}}/>
+            <ul className={classes['list-review']}>
+                {
+                    Array(5).fill().map((item ,index) => (
+                        <li key={index}>
+                            <Skeleton height={20} style={{marginBottom: 10}}/>
+                            <Skeleton height={20} style={{marginBottom: 10}}/>
+                            <Skeleton height={25} style={{marginBottom: 10}}/>
+                        </li>
+                    ))
+                }
+            </ul>
+        </Fragment>
+    );
+
     let productContent = isLoading && (
         <Fragment>
-            <div className={classes['wrap-product-img']}>
-                <div className={classes['img-skeleton']}>
-                    <Skeleton height={'100%'} />
+            <div className={classes.left}>
+                <div className={classes['wrap-product-img']}>
+                    <div className={classes['img-skeleton']}>
+                        <Skeleton height={'100%'} />
+                    </div>
+                    <div className={classes['thumb-skeleton']}>
+                        {
+                            Array(5).fill().map((item ,index) => (
+                                <BoxThumbnail key={index}>
+                                    <Skeleton height={'100%'} />
+                                </BoxThumbnail>
+                            ))
+                        }
+                    </div>
                 </div>
-                <div className={classes['thumb-skeleton']}>
-                    {
-                        Array(5).fill().map((item ,index) => (
-                            <BoxThumbnail key={index}>
-                                <Skeleton height={'100%'} />
-                            </BoxThumbnail>
-                        ))
-                    }
+                <div className={classes['wrap-reviews']}>
+                    {reviewsContent}
                 </div>
             </div>
             <div className={classes['product-detail']}>
@@ -244,50 +365,183 @@ const DetailPage = () => {
                 )
             }
         </div>
-    )
+    );
 
     let sliderContent, infoModalContent;
     
     if (product) {
-        sliderContent = (
-            <div className={classes['wrap-product-img']}>
-                <div className={`${classes.tab} ${activeTab === 0 ? classes.show : ''}`} id='tab-1'>
-                    {
-                        product.featureImgs.length >= 2 ? (
-                            <Slider {...settings}>
-                                {
-                                    product.featureImgs.map((image, index) => (
-                                        <div key={index} onClick={() => setActiveModalTab('highlight')}>
-                                            <img src={image} alt=""/>
+        if (reviews) {
+            reviewsContent= (
+                <Fragment>
+                    <div className={classes['wrap-reviews']}>
+                        <h5>Đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
+                            product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
+                        </h5>
+                        {
+                            reviews.length ? (
+                                <Fragment>
+                                    <div className={classes['rating-overview']}>
+                                        <div className={classes['rating-top']}>
+
                                         </div>
-                                    ))
-                                }
-                            </Slider>
-                        ) : <img src={product.featureImgs[0]} alt={product.name} />
-                    }      
-                </div>
-                {
-                    tabContent.length > 0 && (
-                        tabContent.map((item, index) => (
-                            <div key={item.color} className={`${classes.tab} ${activeTab === index + 1 ? classes.show : ''}`} id={`tab-${index + 2}`}>
+                                        <ul className={classes['rating-list']}>
+                                            {
+                                                [...starArr].reverse().map(item => (
+                                                    <li key={item}>
+                                                        <span className={classes.star}>
+                                                            {item}<i className='icon-star'></i>
+                                                        </span>
+                                                        <div className={classes['timeline-star']}>
+                                                            <p style={{width: calculatePercentReview(item)}}></p>
+                                                        </div>
+                                                        <span className={classes.percent}>{calculatePercentReview(item)}</span>
+                                                    </li>
+                                                ))
+                                            }  
+                                        </ul>
+                                    </div>
+                                    <ul className={classes['list-review']}>
+                                        {
+                                            reviews.map(item => (
+                                                <li key={item._id}>
+                                                    <strong>{item.customerName}</strong>
+                                                    <p className={classes.rating}>
+                                                        {
+                                                            Array(item.star).fill().map((item, index) => (
+                                                                <i key={index} className='icon-star'></i>
+                                                            ))
+                                                        }
+                                                        { item.star < 5 && (
+                                                            Array(5 - item.star).fill().map((item, index) => (
+                                                                <i key={index} className={`icon-star ${classes.black}`}></i>
+                                                            ))
+                                                        ) }
+                                                    </p>
+                                                    <p className={classes.comment}>{item.comment}</p>
+                                                </li>
+                                            ))
+                                        }
+                                    </ul>
+                                    <div className={classes['wrap-btn']}>
+                                        <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
+                                        <a href="/#" className={classes['show-reviews']}>Xem tất cả đánh giả</a>
+                                    </div>
+                                </Fragment>
+                            ) : (
+                                <Fragment>
+                                    <p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
+                                    <div className={classes['wrap-btn']}>
+                                        <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
+                                        <a href="/#" className={classes['show-reviews']}>Xem tất cả đánh giả</a>
+                                    </div>
+                                </Fragment>
+                            )
+                        }
+                    </div>
+                    {
+                        shouldRenderWriteReviewModal && (
+                            <Modal isShowModal={isWriteReview} closeModal={closeWriteReviewModal} animation='none' contentClass={classes.reviewModal}>
+                                <div className={classes['wrap-review-modal']}>
+                                    <h5>Đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
+                                        product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
+                                    </h5>
+                                    <form>
+                                        <input type="hidden" name="ratingPoint" id="ratingPoint" value={ratingPoint} />
+                                        <div className={classes['wrap-ratings']}>
+                                            <p>Bạn cảm thấy sản phẩm này như thế nào ?</p>
+                                            <div className={classes.ratings}>
+                                                <ul>
+                                                    {
+                                                        starArr.map(item => (
+                                                            <li key={item} className={item <= ratingPoint ? classes.selected : ''}
+                                                                onMouseEnter={() => hoverOnStarHandler(item)} 
+                                                                onMouseLeave ={() => hoverOutStarHandler(item)}
+                                                                onClick={() => setRatingHandler(item)}
+                                                                ref={ref => starRating.current[item] = ref}>
+                                                                <span className={`icon-star ${classes.inner}`}>
+                                                                    <i className={`icon-star ${classes.border}`}></i>
+                                                                </span>
+                                                            </li>
+                                                        ))
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div className={classes['wrap-ip']}>
+                                            <input className={classes.input} type='text' name='name' placeholder='Họ và tên'/>
+                                            <input className={classes.input} type='text' name='phone' placeholder='Số điện thoại'/>
+                                            <input className={classes.input} type='text' name='email' placeholder='Email'/>
+                                        </div>
+                                        <textarea className={classes.input} name='comment' id='comment' rows='8' 
+                                            placeholder='Viết nhận xét...' onChange={onTypeReview}></textarea>
+                                        <div className={classes.bottom}>
+                                            <label htmlFor="image-upload" className={classes.upload}>
+                                                <i className="icon-camera"></i>Thêm hình ảnh
+                                                <input id="image-upload" type="file" multiple={true} onChange={chooseImage}/> 
+                                            </label>
+                                            <p className={classes.characters} style={{display: comment.length >= 80 ? 'none' : 'block'}}>
+                                                {comment.length} ký tự (tối thiểu 80)</p>
+                                            <ul className={classes['list-img']}>
+                                                {
+                                                    reviewImgs.map((item, index) => (
+                                                        <li key={index}>
+                                                            <img src={URL.createObjectURL(item)} alt={item.name} />
+                                                            <span>Xóa</span>
+                                                        </li>
+                                                    ))
+                                                }
+                                            </ul>
+                                        </div>
+                                        <button className={classes.send}>Gửi đánh giá</button>
+                                    </form>                         
+                                </div>
+                            </Modal>
+                        )
+                    }
+                </Fragment>
+            );
+        }
+        sliderContent = (
+            <div className={classes.left}>
+                <div className={classes['wrap-product-img']}>
+                    <div className={`${classes.tab} ${activeTab === 0 ? classes.show : ''}`} id='tab-1'>
+                        {
+                            product.featureImgs.length >= 2 ? (
                                 <Slider {...settings}>
                                     {
-                                        item.images.map((image, index) => (
-                                            <div key={index} onClick={() => setActiveModalTab(`color-${item.color}`)}>
-                                                <img src={image} alt={product.name + '-' + item.color} />
+                                        product.featureImgs.map((image, index) => (
+                                            <div key={index} onClick={() => setActiveModalTab('highlight')}>
+                                                <img src={image} alt=""/>
                                             </div>
                                         ))
                                     }
                                 </Slider>
-                            </div>
-                        ))
-                    )
-                }
-                {productTab}
+                            ) : <img src={product.featureImgs[0]} alt={product.name} onClick={() => setActiveModalTab('highlight')}/>
+                        }      
+                    </div>
+                    {
+                        tabContent.length > 0 && (
+                            tabContent.map((item, index) => (
+                                <div key={item.color} className={`${classes.tab} ${activeTab === index + 1 ? classes.show : ''}`} id={`tab-${index + 2}`}>
+                                    <Slider {...settings}>
+                                        {
+                                            item.images.map((image, index) => (
+                                                <div key={index} onClick={() => setActiveModalTab(`color-${item.color}`)}>
+                                                    <img src={image} alt={product.name + '-' + item.color} />
+                                                </div>
+                                            ))
+                                        }
+                                    </Slider>
+                                </div>
+                            ))
+                        )
+                    }
+                    {productTab}
+                </div>
+                {reviewsContent}
             </div>
         );
-
-    }
+    };
 
     if (!error && product) {
         const specs = product.specs;
@@ -626,7 +880,7 @@ const DetailPage = () => {
             default:
                 return
         }
-    }
+    };
 
     return (
 		<Fragment>
@@ -662,8 +916,10 @@ const DetailPage = () => {
 						<Skeleton height={25} />
 					</div>
 				)}
-				<div className={`card ${classes['wrap-product-detail']}`}>
-					{productContent}
+				<div className='card'>
+                    <div className={classes['wrap-product-detail']}>
+					    {productContent}
+                    </div>
 				</div>
 			</div>
 

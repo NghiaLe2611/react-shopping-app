@@ -5,7 +5,7 @@ import 'slick-carousel/slick/slick-theme.css';
 import classes from '../../scss/ModalSlides.module.scss';
 import '../../scss/SlickSlider.scss';
 const ModalSlides = (props) => {
-    const { name, featureImgs, color, images } = props;
+    const { name, featureImgs, images } = props;
     
     const [nav1, setNav1] = useState();
     const [nav2, setNav2] = useState();

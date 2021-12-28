@@ -45,6 +45,8 @@ app.get('/compare', mongoPractice.compareProduct);
 // Get brand list
 app.get('/getBrandList', mongoPractice.getBrandList);
 
+// Get product's review
+app.get('/product/:productId/reviews', mongoPractice.getReviews);
 
 app.use((req, res, next) => {
 	const error = new Error('Not found');

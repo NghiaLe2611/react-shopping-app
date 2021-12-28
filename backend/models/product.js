@@ -15,6 +15,6 @@ const productSchema = mongoose.Schema({
     featured: Boolean,
     released: String,
     description: String
-}, { collection : 'products1' });
+}, { collection : 'products' });
 
 module.exports = mongoose.model('Product', productSchema);
