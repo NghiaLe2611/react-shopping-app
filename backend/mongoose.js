@@ -197,14 +197,50 @@ const getBrandList = async (req, res, next) => {
     res.json(brand)
 };
 
+// const getReviews = async (req, res, next) => {
+//     const productId = req.params.productId;
+
+//     if (ObjectId.isValid(productId)) {
+//         const review = await Review.find( { productId: productId}).exec();
+//         res.json(review);
+//     } else {
+//         res.json([]);
+//     }
+// };
+
 const getReviews = async (req, res, next) => {
     const productId = req.params.productId;
+    const review = await Review.findOne( { productId: productId }).exec();
+    res.json(review);
+};
 
-    if (ObjectId.isValid(productId)) {
-        const review = await Review.find( { productId: productId}).exec();
-        res.json(review);
+const submitReview = async (req, res, next) => {
+    const productId = req.params.productId;
+
+    const reviewData = {
+        customerName: req.body.customerName,
+        star: req.body.star,
+        comment: req.body.comment
+    };
+
+    if (req.body.customerName && req.body.star && req.body.comment) {
+        const query = Review.updateOne({ productId: productId }, 
+            { $push: { reviews: reviewData }}
+        );
+        query.then(async function(data) {
+            return res.json({
+                message: true
+            });
+        })
+        .catch(function(err) {
+            return res.json(err);
+        });
     } else {
-        res.json([]);
+        res.json({
+            error: {
+                message: 'Error',
+            },
+        });
     }
 };
 
@@ -215,3 +251,4 @@ exports.searchProduct = searchProduct;
 exports.compareProduct = compareProduct;
 exports.getBrandList = getBrandList;
 exports.getReviews = getReviews;
+exports.submitReview = submitReview;

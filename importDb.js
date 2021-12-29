@@ -17,11 +17,54 @@ const reviews = [
     }
 ];
 
+let reviews1 = [
+	{
+		productId: '123',
+		reviews: [
+			{
+				customerName: 'abc',
+				star: 5,
+				comment: 'lorem lorem 1'
+			},
+			{
+				customerName: 'def',
+				star: 3,
+				comment: 'lorem lorem 2'
+			},
+			{
+				customerName: 'ghi',
+				star: 2,
+				comment: 'lorem lorem 3'
+			}
+		]
+	},
+	{
+		productId: '456',
+		reviews: [
+			{
+				customerName: 'abc',
+				star: 5,
+				comment: 'lorem lorem 1'
+			},
+			{
+				customerName: 'def',
+				star: 3,
+				comment: 'lorem lorem 2'
+			},
+			{
+				customerName: 'ghi',
+				star: 2,
+				comment: 'lorem lorem 3'
+			}
+		]
+	}
+]
+
 async function main() {
 	// Use connect method to connect to the server
 	const db = client.db();
-	const myCollection = db.collection('reviews');
-	const insertResult = await myCollection.insertMany(reviews);
+	const myCollection = db.collection('reviews1');
+	const insertResult = await myCollection.insertMany(reviews1);
 
 	console.log('Inserted documents =>', insertResult);
 

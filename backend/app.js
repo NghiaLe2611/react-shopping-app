@@ -7,7 +7,7 @@ const Product = require('./models/product');
 
 // const productsRoute = require('./routes/products');
 
-// app.use(express.json());
+app.use(express.json());
 
 app.use((req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*');
@@ -47,6 +47,10 @@ app.get('/getBrandList', mongoPractice.getBrandList);
 
 // Get product's review
 app.get('/product/:productId/reviews', mongoPractice.getReviews);
+
+// Post review
+app.post('/submitReview/:productId', mongoPractice.submitReview);
+
 
 app.use((req, res, next) => {
 	const error = new Error('Not found');

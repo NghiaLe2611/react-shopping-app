@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Fragment } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import classes from '../scss/ProductDetail.module.scss';
@@ -51,9 +51,12 @@ const DetailPage = () => {
     const [ratingPoint, setRatingPoint] = useState(0);
     const [comment, setComment] = useState('');
     const [reviewImgs, setReviewImgs] = useState([]);
+    const [submitReviewForm, setSubmitReviewForm] = useState(false);
+    const [formIsValid, setFormIsValid] = useState(false);
 
     const { isLoading, error, fetchData: fetchProducts } = useFetch();
     const { loadingReview, reviewError, fetchData: fetchReviews } = useFetch();
+    const { fetchData: postReview } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
@@ -63,6 +66,11 @@ const DetailPage = () => {
 
     const compareModalRef = useRef();
     const starRating = useRef([]);
+    const reviewFormRef = useRef({
+        name: '',
+        phone: '',
+        email: ''
+    });
 
     useEffect(() => {
         fetchProducts({
@@ -81,7 +89,7 @@ const DetailPage = () => {
                 url: `http://localhost:5000/product/${product._id}/reviews`
             }, data => {
                 if (data) {
-                    setReviews(data);
+                    setReviews(data.reviews);
                 }
             });
         }
@@ -117,8 +125,25 @@ const DetailPage = () => {
     }, [activeModalTab]);
 
     useEffect(() => {
-        console.log(reviewImgs);
-    }, [reviewImgs]);
+        if (formIsValid) {
+            const reviewData = { 
+                customerName: reviewFormRef.current.name.value,
+                star: ratingPoint,
+                comment: comment
+            };
+            
+            postReview({
+                method: 'post',
+                headers: { 'Content-Type': 'application/json' },
+                url: "http://localhost:5000/submitReview/" + product._id,
+                body: reviewData
+            }, data => {
+                if (data) {
+                    console.log(22222,data);
+                }
+            });
+        }
+    }, [formIsValid, postReview]);
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;
@@ -231,6 +256,13 @@ const DetailPage = () => {
 
         return parseFloat(amount/total * 100).toFixed(0)  + "%";
     };
+    
+    // Get review's average point
+    const calculateAveragePoint = useCallback(() => {
+        const sum = reviews.reduce((n, {star}) => n + star, 0);
+        return parseFloat(sum/reviews.length).toFixed(1); 
+    }, [reviews]);
+    const averagePoint = useMemo(() => calculateAveragePoint(), [calculateAveragePoint]);
 
     const hoverOnStarHandler = (rating) => {
         for (let val of starArr) {
@@ -260,6 +292,11 @@ const DetailPage = () => {
 
     const onTypeReview = (e) => {
         setComment(e.target.value);
+        if (e.target.value.length > 0) {
+            e.target.classList.remove(classes.invalid);
+        } else {
+            e.target.classList.add(classes.invalid);
+        }
     };
 
     const writeReviewHandler = (e) => {
@@ -268,7 +305,8 @@ const DetailPage = () => {
     };
 
     const closeWriteReviewModal = () => {
-        setIsWriteReview(false)
+        setIsWriteReview(false);
+        setSubmitReviewForm(false);
         setComment('');
     };
 
@@ -290,6 +328,33 @@ const DetailPage = () => {
         const imgs = [...reviewImgs];
         imgs.splice(index, 1)
         setReviewImgs(imgs);
+    };
+
+    const handleChangeInput = (e) => {
+        if (e.target.value.length > 0) {
+            e.target.classList.remove(classes.invalid);
+        } else {
+            e.target.classList.add(classes.invalid);
+        }
+    };
+
+    const submitReview = (e) => {
+        e.preventDefault();
+        setSubmitReviewForm(true);
+    
+        if (reviewFormRef.current.name.value.length === 0) {
+            reviewFormRef.current.name.classList.add(classes.invalid);
+        }
+
+        if (comment === '' || comment.length === 0) {
+            reviewFormRef.current.comment.classList.add(classes.invalid);
+        }
+
+        if (ratingPoint !== 0 && reviewFormRef.current.name.value.length > 0 && comment.length >= 80) {
+            setFormIsValid(true);
+        } else {
+            setFormIsValid(false);
+        }
     };
 
     let reviewsContent = (
@@ -388,7 +453,21 @@ const DetailPage = () => {
                                 <Fragment>
                                     <div className={classes['rating-overview']}>
                                         <div className={classes['rating-top']}>
-
+                                            <span className={classes.point}>
+                                                {averagePoint}
+                                                {/* {calculateAveragePoint()} */}
+                                            </span>
+                                            <div className={classes['list-star']}>
+                                                {
+                                                    Array(5).fill().map((item, index) => (
+                                                        <span key={index} className={`icon-star ${classes.inner} 
+                                                            ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
+                                                            <i className={`icon-star ${classes.border}`}></i>
+                                                        </span>
+                                                    ))
+                                                }
+                                            </div>
+                                            <span className={classes.txt}>{reviews.length} đánh giá</span>
                                         </div>
                                         <ul className={classes['rating-list']}>
                                             {
@@ -456,7 +535,7 @@ const DetailPage = () => {
                                         <div className={classes['wrap-ratings']}>
                                             <p>Bạn cảm thấy sản phẩm này như thế nào ?</p>
                                             <div className={classes.ratings}>
-                                                <ul>
+                                                <ul className={classes['list-star']}>
                                                     {
                                                         starArr.map(item => (
                                                             <li key={item} className={item <= ratingPoint ? classes.selected : ''}
@@ -472,14 +551,42 @@ const DetailPage = () => {
                                                     }
                                                 </ul>
                                             </div>
+                                            {
+                                                submitReviewForm && ratingPoint === 0 && (
+                                                    <p className={classes.error}>Bạn chưa đánh giá điểm sao, vui lòng đánh giá.</p>
+                                                )
+                                            }
                                         </div>
                                         <div className={classes['wrap-ip']}>
-                                            <input className={classes.input} type='text' name='name' placeholder='Họ và tên'/>
-                                            <input className={classes.input} type='text' name='phone' placeholder='Số điện thoại'/>
-                                            <input className={classes.input} type='text' name='email' placeholder='Email'/>
+                                            <div className={classes.required}>
+                                                <input className={classes.input} type='text' name='name' placeholder='Họ và tên' spellCheck='false'
+                                                    onChange={handleChangeInput}
+                                                    onBlur={handleChangeInput}
+                                                    ref={ref => reviewFormRef.current.name = ref}/>
+                                            </div>
+                                            <div>
+                                                <input className={classes.input} type='text' name='phone' placeholder='Số điện thoại' spellCheck="false"
+                                                    ref={ref => reviewFormRef.current.phone = ref}/>
+                                            </div>
+                                            <div>
+                                                <input className={classes.input} type='text' name='email' placeholder='Email' spellCheck="false"
+                                                    ref={ref => reviewFormRef.current.email = ref}/>
+                                            </div>
                                         </div>
-                                        <textarea className={classes.input} name='comment' id='comment' rows='8' 
-                                            placeholder='Viết nhận xét...' onChange={onTypeReview}></textarea>
+                                        <div className={classes.required}>
+                                            <textarea className={classes.input} name='comment' id='comment' rows='8' spellCheck="false"
+                                                ref={ref => reviewFormRef.current.comment = ref}
+                                                placeholder='Viết nhận xét...' 
+                                                onChange={onTypeReview}
+                                                onBlur={handleChangeInput}
+                                            >
+                                            </textarea>
+                                            {
+                                                submitReviewForm && comment.length < 80 && (
+                                                    <p className={classes.error}>Nội dung đánh giá quá ít. Vui lòng nhập thêm nội dung đánh giá về sản phẩm.</p>
+                                                )
+                                            }
+                                        </div>
                                         <div className={classes.bottom}>
                                             <label htmlFor="image-upload" className={classes.upload}>
                                                 <i className="icon-camera"></i>Thêm hình ảnh
@@ -489,7 +596,7 @@ const DetailPage = () => {
                                                 {comment.length} ký tự (tối thiểu 80)
                                             </p>
                                             {
-                                                reviewImgs.length && (
+                                                reviewImgs.length > 0 && (
                                                     <ul className={classes['list-img']}>
                                                         {
                                                             reviewImgs.map((item, index) => (
@@ -503,7 +610,7 @@ const DetailPage = () => {
                                                 )
                                             }
                                         </div>
-                                        <button className={classes.send}>Gửi đánh giá</button>
+                                        <button className={classes.send} onClick={submitReview}>Gửi đánh giá</button>
                                     </form>                         
                                 </div>
                             </Modal>

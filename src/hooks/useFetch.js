@@ -9,9 +9,14 @@ const useFetch = () => {
         setIsLoading(true);
 		setError(null);
 
-        await axios[method ? method : 'get'](url, JSON.parse(headers), JSON.parse(body))
+        await axios[method ? method : 'get'](url, JSON.parse(headers), JSON.parse(JSON.stringify(body))
+        ) // JSON.parse(body)
             .then((res) => {
-                applyData(res.data);
+                if (method === 'post') {
+                    console.log(res);
+                } else {
+                    applyData(res.data);
+                }
             })
             .catch((err) => {
                 setError('Something went wrong. Please try again!');
