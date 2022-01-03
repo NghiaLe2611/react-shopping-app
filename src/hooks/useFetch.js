@@ -1,29 +1,49 @@
 import { useState, useCallback } from 'react';
-import axios from 'axios';
+import axiosClient from '../api/AxiosClient';
 
 const useFetch = () => {
 	const [error, setError] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const fetchData = useCallback(async ({ url, method, body = null, headers = null }, applyData) => {
+	const fetchData = useCallback(async ({ url, method, body = null, headers = {} }, applyData) => {
         setIsLoading(true);
 		setError(null);
 
-        await axios[method ? method : 'get'](url, JSON.parse(headers), JSON.parse(JSON.stringify(body))
-        ) // JSON.parse(body)
-            .then((res) => {
-                if (method === 'post') {
-                    console.log(res);
-                } else {
-                    applyData(res.data);
-                }
-            })
-            .catch((err) => {
-                setError('Something went wrong. Please try again!');
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+        // try {
+		// 	const response = await fetch(url, {
+		// 		method: method ? method : 'GET',
+		// 		headers: headers ? headers : {},
+		// 		body: body ? JSON.stringify(body) : null,
+		// 	});
+
+		// 	if (!response.ok) {
+		// 		throw new Error('Request failed. Please try again !');
+		// 	}
+
+		// 	const data = await response.json();
+		// 	applyData(data);
+        //     setIsLoading(false);
+		// } catch (err) {
+		// 	setError(err.message || 'Something went wrong. Please try again !');
+        //     setIsLoading(false);
+		// }
+
+        try {
+			const response = await axiosClient({
+				method: method ? method : 'GET',
+                url: url,
+				headers: headers ? headers : {},
+				data: body ? JSON.stringify(body) : null,
+			});
+
+            applyData(response.data);
+            setIsLoading(false);
+
+		} catch (err) {
+			setError(err.message || 'Something went wrong. Please try again !');
+			setIsLoading(false);
+		}
+
     }, []);
 
 	return { error, isLoading, fetchData };

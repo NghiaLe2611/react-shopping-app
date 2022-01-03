@@ -77,8 +77,8 @@ const CategoryPage = () => {
         const query = new URLSearchParams(location.search);
         let url = new URL(filterUrl);
         let params = new URLSearchParams(url.search);
-        console.log(12345);
         setIsSorting(true);
+
         if (isFiltering === 'brand') {
             const brand = query.get('hang-san-xuat');
             if (brand) {
@@ -133,12 +133,23 @@ const CategoryPage = () => {
 
     }, [isFiltering, filter, location.search]);
     
-    const setFilterProducts = (data) => {    
-        setTimeout(() => {
-            setProducts(data);
-            setIsSorting(false);
-        }, 300);
-    };
+    useEffect(() => {
+        if (isShowFilter) {
+            document.querySelector('html').classList.add('modal-open');
+            document.body.classList.add('modal-open');
+        } else {
+            document.querySelector('html').classList.remove('modal-open');
+            document.body.classList.remove('modal-open');
+        }
+    }, [isShowFilter]);
+
+
+    // const setFilterProducts = (data) => {    
+    //     setTimeout(() => {
+    //         setProducts(data);
+    //         setIsSorting(false);
+    //     }, 300);
+    // };
 
     const sortProductsHandler = (val) => {
         setIsSorting(true);
@@ -198,7 +209,7 @@ const CategoryPage = () => {
         if (products && products.length) {
             content = (
                 products.map(item => (
-                    <ProductItem key={item._id} showInfo={true} col={4}
+                    <ProductItem key={item._id} showInfo={true} col={4} display={viewBy}
                         item={item}
                     />
                 ))
@@ -219,9 +230,11 @@ const CategoryPage = () => {
 
     return (
         <Fragment>
+            {isShowFilter && <div className='overlay' onClick={() => setIsShowFilter(false)}></div>}
             {
                 isMobile && (
                     <div className={`${classes['wrap-filter-sidebar']} ${isShowFilter ? classes.active : ''}`}>
+                        { isMobile && <span className={classes.close} onClick={() => setIsShowFilter(false)}>×</span>}
                         <FilterSidebar category={categoryName}
                             filter={filter} setFilter={setFilter} 
                             setIsFiltering={setIsFiltering}

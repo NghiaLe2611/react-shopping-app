@@ -187,7 +187,6 @@ const getProductDetail = async (req, res, next) => {
 
 const compareProduct = async (req, res, next) => {
     const queryListId = req.query.id;
-    console.log(queryListId);
     res.json(queryListId);
 };
 
@@ -197,21 +196,56 @@ const getBrandList = async (req, res, next) => {
     res.json(brand)
 };
 
-// const getReviews = async (req, res, next) => {
-//     const productId = req.params.productId;
-
-//     if (ObjectId.isValid(productId)) {
-//         const review = await Review.find( { productId: productId}).exec();
-//         res.json(review);
-//     } else {
-//         res.json([]);
-//     }
-// };
-
 const getReviews = async (req, res, next) => {
     const productId = req.params.productId;
-    const review = await Review.findOne( { productId: productId }).exec();
-    res.json(review);
+    const listReview = await Review.aggregate([
+        { "$match": { productId: productId } },
+        { 
+            $unwind: "$reviews"
+        }
+    ]).exec();
+    
+    let query = [];
+    query.push(
+        { 
+            $match: { productId: productId } 
+        }, 
+        {
+            $unwind: "$reviews"
+        },
+        {
+            $group: {
+                "_id": "$reviews._id",
+                "customerName": { $first: "$reviews.customerName" },
+                "star": { $first: "$reviews.star" },
+                "comment": { $first: "$reviews.comment" },
+                "images": { $first: "$reviews.images" },
+                "createdAt": { $first: "$reviews.createdAt" },
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        }
+    );
+
+    if (req.query.page) {
+        const limit = 5;
+        const page = parseInt(req.query.page, 10) || 1;
+        const startIndex = (page - 1) * limit;
+        query.push({
+            $skip: startIndex
+        });
+        query.push({
+            $limit: limit
+        });
+    }
+
+    const review = await Review.aggregate(query).exec();
+
+    res.json({
+        count: listReview.length,
+        reviews: review
+    });
 };
 
 const submitReview = async (req, res, next) => {
@@ -220,12 +254,13 @@ const submitReview = async (req, res, next) => {
     const reviewData = {
         customerName: req.body.customerName,
         star: req.body.star,
-        comment: req.body.comment
+        comment: req.body.comment,
+        createdAt: req.body.createdAt ? req.body.createdAt : Date.now()
     };
 
     if (req.body.customerName && req.body.star && req.body.comment) {
         const query = Review.updateOne({ productId: productId }, 
-            { $push: { reviews: reviewData }}
+            { $push: { reviews: reviewData }}, { upsert: true }
         );
         query.then(async function(data) {
             return res.json({

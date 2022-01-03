@@ -5,10 +5,8 @@ import classes from '../../scss/Modal.module.scss';
 const Backdrop = (props) => {
    
     return (
-        props.backdrop === false ? (
-            <div></div>
+        props.backdrop === false ? null : (
             // <div className={classes.overlay} onClick={props.onCloseModal}></div>
-        ) : (
             <Fragment>
                 <div className={classes.backdrop} onClick={props.onCloseModal}></div>
                 {props.close ? props.close : null}

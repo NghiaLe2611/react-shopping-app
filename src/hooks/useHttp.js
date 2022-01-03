@@ -1,19 +1,38 @@
-export const fetchProducts = async (requestConfig, applyData) => {
+import { useState, useCallback } from 'react';
 
-    try {
-        const response = await fetch(requestConfig.url, {
-            method: requestConfig.method ? requestConfig.medthod : 'GET',
-            headers: requestConfig.header ? requestConfig.headers : {},
-            body: requestConfig.body ? JSON.stringify(requestConfig.body) : null
-        });
+const useHttp = () => {
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
 
-        if (!response.ok) {
-            throw new Error('Fetch data failed !');
-        }
+	const sendRequest = useCallback(async (requestConfig, applyData) => {
+		setIsLoading(true);
+		setError(null);
 
-        const data = await response.json();
-        applyData(data); // callback returns data
-    } catch (error) {
-        console.log(error.message);
-    }
-}
+		try {
+			const response = await fetch(requestConfig.url, {
+				method: requestConfig.method ? requestConfig.method : 'GET',
+				headers: requestConfig.headers ? requestConfig.headers : {},
+				body: requestConfig.body ? JSON.stringify(requestConfig.body) : null,
+			});
+
+			if (!response.ok) {
+				throw new Error('Request failed !');
+			}
+
+			const data = await response.json();
+			applyData(data);
+		} catch (err) {
+			setError(err.message || 'Something went wrong. Please try again !');
+		}
+
+		setIsLoading(false);
+	}, []);
+
+	return {
+		isLoading,
+		error,
+		sendRequest,
+	};
+};
+
+export default useHttp;

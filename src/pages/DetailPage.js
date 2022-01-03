@@ -1,19 +1,22 @@
 import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
-import classes from '../scss/ProductDetail.module.scss';
 import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../helpers/helpers';
 import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 import { useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
 import Modal from '../components/UI/Modal';
 import CompareModalWrapper from '../components/UI/CompareModalWrapper';
 import ModalSlides from '../components/slides/ModalSlides';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import classes from '../scss/ProductDetail.module.scss';
+import 'react-loading-skeleton/dist/skeleton.css';
+import { capitalizeFirstLetter, formatCurrency, convertProductLink, timeSince } from '../helpers/helpers';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import Pagination from '../components/UI/Pagination';
 
 function BoxThumbnail({ children }) {
     return (
@@ -29,7 +32,10 @@ function BoxThumbnail({ children }) {
     )
 }
 
+const reviewsLimit = 5;
 const starArr = [1,2,3,4,5];
+const colorCodeList = ['Đen', 'Bạc', 'Xanh dương', 'Vàng đồng', 'Đỏ', 'Trắng', 'Xám đậm'];
+const reviewSwal = withReactContent(Swal);
 
 const DetailPage = () => {
     const { productId } = useParams();
@@ -46,20 +52,25 @@ const DetailPage = () => {
     const [listCompare, setListCompare] = useState([{}, {}, {}]);
     const [showInfoModal, setshowInfoModal] = useState(false);
     const [activeModalTab, setActiveModalTab] = useState('');
+    const [reviewsCount, setReviewsCount] = useState(0);
     const [reviews, setReviews] = useState([]);
+    const [allReviews, setAllReviews] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [isWriteReview, setIsWriteReview] = useState(false);
+    const [isShowAllReviews, setIsShowAllReviews] = useState(false);
     const [ratingPoint, setRatingPoint] = useState(0);
     const [comment, setComment] = useState('');
     const [reviewImgs, setReviewImgs] = useState([]);
     const [submitReviewForm, setSubmitReviewForm] = useState(false);
-    const [formIsValid, setFormIsValid] = useState(false);
 
     const { isLoading, error, fetchData: fetchProducts } = useFetch();
     const { loadingReview, reviewError, fetchData: fetchReviews } = useFetch();
+
     const { fetchData: postReview } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
+    const shouldRenderReviewsModal = useDelayUnmount(isShowAllReviews, 300);
 
     const mountedBtnStyle = { animation: "fadeIn 250ms ease-out forwards" };
     const unmountedBtnStyle = { animation: "fadeOut 250ms ease-out forwards" };
@@ -86,10 +97,11 @@ const DetailPage = () => {
     useEffect(() => {
         if (product) {
             fetchReviews({
-                url: `http://localhost:5000/product/${product._id}/reviews`
+                url: `http://localhost:5000/product/${product._id}/reviews?page=1`
             }, data => {
                 if (data) {
                     setReviews(data.reviews);
+                    setReviewsCount(data.count);
                 }
             });
         }
@@ -118,6 +130,16 @@ const DetailPage = () => {
     }, [isWriteReview]);
 
     useEffect(() => {
+        if (isShowAllReviews) {
+            document.querySelector('html').classList.add('modal-open');
+            document.body.classList.add('modal-open');
+        } else {
+            document.querySelector('html').classList.remove('modal-open');
+            document.body.classList.remove('modal-open');
+        }
+    }, [isShowAllReviews]);
+
+    useEffect(() => {
         if (activeModalTab) {
             setIsComparing(false);
             setshowInfoModal(true);
@@ -125,25 +147,24 @@ const DetailPage = () => {
     }, [activeModalTab]);
 
     useEffect(() => {
-        if (formIsValid) {
-            const reviewData = { 
-                customerName: reviewFormRef.current.name.value,
-                star: ratingPoint,
-                comment: comment
-            };
-            
-            postReview({
-                method: 'post',
-                headers: { 'Content-Type': 'application/json' },
-                url: "http://localhost:5000/submitReview/" + product._id,
-                body: reviewData
-            }, data => {
-                if (data) {
-                    console.log(22222,data);
-                }
-            });
+        if (product) {
+            if (currentPage === 1) {
+                setAllReviews(reviews);
+                return;
+            }
+
+            if (isShowAllReviews) {
+                fetchReviews({
+                    url: `http://localhost:5000/product/${product._id}/reviews?page=${currentPage}`
+                }, data => {
+                    if (data) {
+                        setAllReviews(data.reviews);
+                    }
+                });
+            }
         }
-    }, [formIsValid, postReview]);
+    }, [fetchReviews, reviews, product, currentPage, isShowAllReviews]);
+
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;
@@ -214,7 +235,7 @@ const DetailPage = () => {
         }
    
         dispatch(cartActions.addItemToCart({
-            _id: color ? product._id + '-' + color : product._id,
+            _id: color ? product._id + '-00' + (parseInt(colorCodeList.indexOf(color)) + 1) : product._id,
             category: product.category,
             quantity: 1, 
             img: img, 
@@ -306,8 +327,15 @@ const DetailPage = () => {
 
     const closeWriteReviewModal = () => {
         setIsWriteReview(false);
-        setSubmitReviewForm(false);
-        setComment('');
+        setTimeout(() => {
+            setSubmitReviewForm(false);
+            setComment('');
+        }, 300);
+    };
+
+    const showAllReviews = (e) => {
+        e.preventDefault();
+        setIsShowAllReviews(true);
     };
 
     const chooseImage = (e) => {
@@ -351,9 +379,47 @@ const DetailPage = () => {
         }
 
         if (ratingPoint !== 0 && reviewFormRef.current.name.value.length > 0 && comment.length >= 80) {
-            setFormIsValid(true);
+            const reviewData = { 
+                customerName: reviewFormRef.current.name.value,
+                star: ratingPoint,
+                comment: comment,
+                createdAt: Date.now()
+            };
+            
+            postReview({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                url: "http://localhost:5000/submitReview/" + product._id,
+                body: reviewData
+            }, data => {
+                closeWriteReviewModal();
+                setTimeout(() => {
+                    if (data.message) {
+                        reviewSwal.fire({
+                            html: '<p style="font-size: 14px;">Nhận xét của bạn đã được ghi nhận và đang trong quá trình kiểm duyệt.</p>',
+                            confirmButtonColor: '#2f80ed'
+                        });
+                    } else {
+                        reviewSwal.fire({
+                            icon: 'error',
+                            html: '<p style="font-size: 14px;">Đã có lỗi xảy ra. Vui lòng thử lại.</p>',
+                            confirmButtonColor: '#2f80ed'
+                        })
+                    }
+                }, 1000);
+            });
+        }
+    };
+
+    const paginate = (e, pageNumber) => {
+        e.preventDefault();
+
+        if (pageNumber === 'prev') {
+            setCurrentPage(currentPage - 1);
+        } else if (pageNumber === 'next') {
+            setCurrentPage(currentPage + 1);
         } else {
-            setFormIsValid(false);
+            setCurrentPage(pageNumber);
         }
     };
 
@@ -455,19 +521,27 @@ const DetailPage = () => {
                                         <div className={classes['rating-top']}>
                                             <span className={classes.point}>
                                                 {averagePoint}
-                                                {/* {calculateAveragePoint()} */}
                                             </span>
-                                            <div className={classes['list-star']}>
+                                            <div className={classes['list-star']}>                                                
                                                 {
                                                     Array(5).fill().map((item, index) => (
-                                                        <span key={index} className={`icon-star ${classes.inner} 
-                                                            ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
-                                                            <i className={`icon-star ${classes.border}`}></i>
-                                                        </span>
+                                                        // <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
+                                                        //     <i className={`icon-star ${classes.border}`}></i>
+                                                        // </span>
+                                                        (averagePoint - Math.floor(averagePoint)).toFixed(1) == 0.5 ? (
+                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(averagePoint) ? 'icon-star-half' : index + 1 < Math.round(averagePoint) ? classes.selected : ''}`}>
+                                                                {index + 1 !== Math.round(averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
+                                                            </span>
+                                                        ) : (
+                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
+                                                                <i className={`icon-star ${classes.border}`}></i>
+                                                            </span>
+                                                        )
+                                                        
                                                     ))
                                                 }
                                             </div>
-                                            <span className={classes.txt}>{reviews.length} đánh giá</span>
+                                            <span className={classes.txt}>{reviewsCount} đánh giá</span>
                                         </div>
                                         <ul className={classes['rating-list']}>
                                             {
@@ -489,7 +563,10 @@ const DetailPage = () => {
                                         {
                                             reviews.map(item => (
                                                 <li key={item._id}>
-                                                    <strong>{item.customerName}</strong>
+                                                    <p className={classes['ctm-name']}>
+                                                        <strong>{item.customerName}</strong>
+                                                        <span>{timeSince(item.createdAt)}</span>
+                                                    </p>
                                                     <p className={classes.rating}>
                                                         {
                                                             Array(item.star).fill().map((item, index) => (
@@ -509,7 +586,7 @@ const DetailPage = () => {
                                     </ul>
                                     <div className={classes['wrap-btn']}>
                                         <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
-                                        <a href="/#" className={classes['show-reviews']}>Xem tất cả đánh giả</a>
+                                        <a href="/#" className={classes['show-reviews']} onClick={showAllReviews}>Xem tất cả đánh giá ({reviewsCount})</a>
                                     </div>
                                 </Fragment>
                             ) : (
@@ -517,7 +594,7 @@ const DetailPage = () => {
                                     <p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
                                     <div className={classes['wrap-btn']}>
                                         <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
-                                        <a href="/#" className={classes['show-reviews']}>Xem tất cả đánh giả</a>
+                                        <a href="/#" className={classes['show-reviews']} onClick={showAllReviews}>Xem tất cả đánh giá ({reviewsCount})</a>
                                     </div>
                                 </Fragment>
                             )
@@ -614,6 +691,69 @@ const DetailPage = () => {
                                     </form>                         
                                 </div>
                             </Modal>
+                        )
+                    }
+                    {
+                        shouldRenderReviewsModal && (
+                            <Modal isShowModal={isShowAllReviews} closeModal={() => setIsShowAllReviews(false)} animation='none' contentClass={classes.reviewModal}>
+                            <div className={classes['wrap-review-modal']}>
+                                <h5>{reviewsCount} đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
+                                    product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
+                                </h5>
+                                <div className={classes['wrap-reviews']}>
+                                    {
+                                        allReviews.length ? (
+                                            <Fragment>
+                                                <ul className={classes['list-review']}>
+                                                    {
+                                                        allReviews.map(item => (
+                                                            <li key={item._id}>
+                                                                <p className={classes['ctm-name']}>
+                                                                    <strong>{item.customerName}</strong>
+                                                                    <span>{timeSince(item.createdAt)}</span>
+                                                                </p>
+                                                                <p className={classes.rating}>
+                                                                    {
+                                                                        Array(item.star).fill().map((item, index) => (
+                                                                            <i key={index} className='icon-star'></i>
+                                                                        ))
+                                                                    }
+                                                                    { item.star < 5 && (
+                                                                        Array(5 - item.star).fill().map((item, index) => (
+                                                                            <i key={index} className={`icon-star ${classes.black}`}></i>
+                                                                        ))
+                                                                    ) }
+                                                                </p>
+                                                                <p className={classes.comment}>{item.comment}</p>
+                                                            </li>
+                                                        ))
+                                                    }
+                                                </ul>
+                                                <div className={classes['wrap-btn']}>
+                                                    <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
+                                                </div>
+                                            </Fragment>
+                                        ) : (
+                                            <Fragment>
+                                                <p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
+                                                <div className={classes['wrap-btn']}>
+                                                    <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
+                                                </div>
+                                            </Fragment>
+                                        )
+                                    }
+                                    {
+                                        reviewsCount > reviewsLimit ? (
+                                            <Pagination style={{marginTop: 30}}
+                                                limit={reviewsLimit} currentPage={currentPage}
+                                                total={reviewsCount}
+                                                paginate={paginate}
+                                            />
+                                        ) : null
+                                    }
+                                </div>   
+                            </div>
+                        </Modal>
                         )
                     }
                 </Fragment>

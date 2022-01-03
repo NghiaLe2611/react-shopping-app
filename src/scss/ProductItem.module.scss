@@ -69,6 +69,17 @@
             }
         }
     }
+    &.item-list {
+        .desc .specs {
+            background-color: transparent;
+            li {
+                font-size: 15px;
+                i {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
 }
 
 .banner {
@@ -94,6 +105,11 @@
         }
         &.col-4 {
             width: calc(100% * 1/4 - 20px);
+        }
+        &.item-list {
+            .product-name {
+                font-size: 16px;
+            }
         }
     }
     .banner {

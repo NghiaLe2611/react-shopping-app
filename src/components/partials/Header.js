@@ -1,11 +1,11 @@
 import { useState, useEffect, Fragment } from 'react'
 import classes from '../../scss/Header.module.scss';
 import Modal from '../UI/Modal';
-
 import { useDelayUnmount } from '../../hooks/useDelayUnmount';
 import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../../store/cart';
+import { authActions } from '../../store/auth';
 import useCheckMobile from '../../hooks/useCheckMobile';
 import { Link, useLocation } from 'react-router-dom';
 import iconCheked from '../../assets/images/icon-check.svg';
@@ -25,6 +25,8 @@ const Header = () => {
     const location = useLocation();
     const cart = useSelector((state) => state.cart);
     const showCart = useSelector(state => state.cart.isShowCart);
+    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
+    const userData = useSelector(state => state.auth.userData);
 
     const [hoverMenu, setHoverMenu] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -34,6 +36,18 @@ const Header = () => {
     const shouldRenderModal = useDelayUnmount(showCart, 350);
     const { isLoading, error, fetchData: fetchSuggestProducts } = useFetch();
     const { isMobile } = useCheckMobile();
+
+    useEffect(() => {
+        const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+        const storedUserData = JSON.parse(localStorage.getItem('userData'));
+
+        if (storedIsLoggedIn) {
+            dispatch(authActions.updateState({
+                isLoggedIn: true,
+                userData: storedUserData
+            }));
+        }
+    }, []);
 
     useEffect(() => {
         setHoverMenu(false);
@@ -180,6 +194,32 @@ const Header = () => {
                     }
                 </ul>
             </div>
+            {
+                isLoggedIn ? (
+                    <div className={classes['wrap-user']}>
+                        <Link to='/tai-khoan'>
+                            <span className={classes.avatar}>
+                                {
+                                    userData.photoURL ? (
+                                        <img src={userData.photoURL} alt={userData.displayName} />
+                                    ) : (
+                                        <span className='icon-user'></span>
+                                    )
+                                }
+                            </span>
+                            <p>{userData.displayName ? userData.displayName : userData.email}</p>
+                        </Link>
+                    </div>
+                ) : (
+                    <div className={classes['wrap-user']}>
+                        <Link to='/dang-nhap'>
+                            <span className='icon-user'></span>
+                            <p>Đăng nhập</p>
+                        </Link>
+                    </div>   
+                )
+            }
+            
             <div className={classes['wrap-cart']} onClick={showCartHandler}>
                 <div className={classes.cart}>
                     <span className='icon-cart'></span>
@@ -271,7 +311,7 @@ const Header = () => {
                     { !isMobile && headerPC }
                 </div>
             </div>
-            {showMenu && <div className="overlay"></div>}
+            {showMenu && <div className="overlay" onClick={() => setShowMenu(false)}></div>}
         </Fragment>
     )
 }

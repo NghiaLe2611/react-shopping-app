@@ -4,10 +4,19 @@ const express = require('express');
 const app = express();
 const mongoPractice = require('./mongoose');
 const Product = require('./models/product');
+const Review = require('./models/review');
+
+const bodyParser = require('body-parser');
 
 // const productsRoute = require('./routes/products');
 
-app.use(express.json());
+// app.use(express.json());
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*');
@@ -50,7 +59,6 @@ app.get('/product/:productId/reviews', mongoPractice.getReviews);
 
 // Post review
 app.post('/submitReview/:productId', mongoPractice.submitReview);
-
 
 app.use((req, res, next) => {
 	const error = new Error('Not found');

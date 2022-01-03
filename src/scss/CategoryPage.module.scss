@@ -28,7 +28,7 @@
 
 .wrap-filter-sidebar {
     position: fixed;
-    z-index: 11;
+    z-index: 21;
     right: -100%;
     top: 0;
     width: 70%;
@@ -36,9 +36,15 @@
     background-color: #fff;
     overflow-x: hidden;
     transition: 0.4s;
-    padding: 20px;
+    padding: 30px 20px;
     &.active {
         right: 0;
+    }
+    .close {
+        position: absolute;
+        top: 0px;
+        right: 20px;
+        font-size: 30px;
     }
 }
 

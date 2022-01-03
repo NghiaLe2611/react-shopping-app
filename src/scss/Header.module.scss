@@ -88,7 +88,7 @@
                 .sub-menu {
                     max-height: 500px;
                     transition: max-height .5s ease-in-out;
-                    ul{
+                    ul {
                         margin-bottom: 15px;
                     }
                 }
@@ -141,9 +141,37 @@
     }
 }
 
+.wrap-user {
+    margin-left: auto;
+    a {
+        display: flex;
+        align-items: center;
+        color: #fff;
+    }
+    .avatar {
+        img {
+            border-radius: 50%;
+            max-width: 30px;
+        }
+    }
+    span {
+        font-size: 24px;
+        line-height: 1;
+        margin-right: 5px;
+    }
+    p {
+        font-size: 13px;
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px;
+    }
+}
+
 .wrap-cart {
     cursor: pointer;
-    margin-left: 40px;
+    margin-left: 20px;
     display: flex;
     align-items: flex-end;
     .cart {
@@ -339,7 +367,7 @@
 
 @media (min-width: 1200px) {
     .logo {
-        margin-right: 80px;
+        margin-right: 60px;
         a {
             font-size: 20px;
         }

@@ -12,7 +12,7 @@ const Products = () => {
 
     useEffect(() => {
         fetchProducts({
-            url: "http://localhost:5000/getProducts"
+            url: `${process.env.REACT_APP_API_URL}/getProducts`
         }, data => {
             if (data) {
                 setProducts(data.results);

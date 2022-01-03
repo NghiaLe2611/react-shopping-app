@@ -20,9 +20,10 @@ const reviewSchema = mongoose.Schema({
             customerName: String,
             star: Number,
             comment: String,
-            images: Array
+            images: Array,
+            createdAt: String
         }
     ]
 }, { collection : 'reviews1' });
 
-module.exports = mongoose.model('review', reviewSchema);
+module.exports = mongoose.model('Review', reviewSchema);
