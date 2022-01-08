@@ -3,17 +3,18 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
+import IpfsRouter from 'ipfs-react-router'; // For IPFS Hosting
 import store from './store/store';
 
 ReactDOM.render(
-    <BrowserRouter>
+    <IpfsRouter>
         <Provider store={store}>
             <App />
             {/* <React.StrictMode>
                 <App />
             </React.StrictMode> */}
         </Provider>
-    </BrowserRouter>,
+    </IpfsRouter>,
 	document.getElementById('root')
 );
