@@ -40,7 +40,7 @@ const reviewSwal = withReactContent(Swal);
 const DetailPage = () => {
     const { productId } = useParams();
     const dispatch = useDispatch();
-
+    
     // const cart = useSelector((state) => state.cart);
     // const showCart = useSelector(state => state.cart.isShowCart);
 
@@ -83,9 +83,15 @@ const DetailPage = () => {
         email: ''
     });
 
+    let convertedProductId = productId;
+    const strHasParentheses = productId.match(/\(([^)]+)\)/);
+    if (strHasParentheses) {
+        convertedProductId = productId.replace(/ *\([^)]*\) */g, strHasParentheses[0].replace('-', '%2F'));
+    }
+    
     useEffect(() => {
         fetchProducts({
-            url: `${process.env.REACT_APP_API_URL}/product/${productId}` 
+            url: `${process.env.REACT_APP_API_URL}/product/${convertedProductId}` 
         }, data => {
             // console.log(data);
             if (data) {

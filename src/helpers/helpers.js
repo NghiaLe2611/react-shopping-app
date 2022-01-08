@@ -10,7 +10,7 @@ export const capitalizeFirstLetter = (str) => {
 }
 
 export const convertProductLink = (str) => {
-    return str.toLowerCase().split(" ").join("-");
+    return str.toLowerCase().split(" ").join("-").replace(/\//g, '-');
 }
 
 export const usePrevious = (value) => {

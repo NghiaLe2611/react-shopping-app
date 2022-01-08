@@ -1,4 +1,4 @@
-import React, { Fragment, Suspense, useState, useEffect } from 'react';
+import React, { Fragment, Suspense, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LoadingIndicator from './components/UI/LoadingIndicator';
 import { firebase } from './firebase/config';
@@ -62,14 +62,14 @@ function App() {
         });
 
 		return () => unregisterAuthObserver();
-    }, []);
+    }, [dispatch]);
 
 	return (
 		<Fragment>
             <Suspense fallback={<LoadingIndicator type='fixed'/>}>
                 <Routes>
                     <Route exact path='/' element={<Root><HomePage /></Root>}/>
-                    <Route exact path='dien-thoai/:productId' element={<Root><DetailPage/></Root>} />
+                    <Route exact path='dien-thoai/:productId*' element={<Root><DetailPage/></Root>} />
                     <Route exact path='may-tinh-bang/:productId' element={<Root><DetailPage/></Root>} />
                     <Route path='dien-thoai/hang/:brand' element={<Root><BrandPage/></Root>} />
                     <Route path='may-tinh-bang/hang/:brand' element={<Root><BrandPage/></Root>} />
