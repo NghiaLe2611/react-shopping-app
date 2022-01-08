@@ -404,6 +404,7 @@ body {
 .reviewModal {
     width: 40%;
     left: calc(100% * 1/2 - 20%);
+    max-height: 100vh;
 }
 
 .modal-tab {

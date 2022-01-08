@@ -728,10 +728,7 @@ const DetailPage = () => {
                                                             </li>
                                                         ))
                                                     }
-                                                </ul>
-                                                <div className={classes['wrap-btn']}>
-                                                    <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
-                                                </div>
+                                                </ul>    
                                             </Fragment>
                                         ) : (
                                             <Fragment>
