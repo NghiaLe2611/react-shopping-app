@@ -389,7 +389,7 @@ const DetailPage = () => {
             postReview({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                url: "${process.env.REACT_APP_API_URL}/submitReview/" + product._id,
+                url: `${process.env.REACT_APP_API_URL}/submitReview/${product._id}`,
                 body: reviewData
             }, data => {
                 closeWriteReviewModal();
@@ -594,7 +594,6 @@ const DetailPage = () => {
                                     <p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
                                     <div className={classes['wrap-btn']}>
                                         <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
-                                        <a href="/#" className={classes['show-reviews']} onClick={showAllReviews}>Xem tất cả đánh giá ({reviewsCount})</a>
                                     </div>
                                 </Fragment>
                             )
