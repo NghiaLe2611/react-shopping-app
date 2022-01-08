@@ -41,7 +41,7 @@ const CategoryPage = () => {
     const [products, setProducts] = useState([]);
     const [isSorting, setIsSorting] = useState(false);
     const [viewBy, setViewBy] = useState('GRID');
-    const [filterUrl, setFilterUrl] = useState(`http://localhost:5000/products?category=${categoryName}`);
+    const [filterUrl, setFilterUrl] = useState(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
     const [filter, setFilter] = useState({
         brand: 'all',
         price: 'all',

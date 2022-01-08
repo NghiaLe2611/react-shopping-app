@@ -35,7 +35,7 @@ const ComparePage = () => {
 		if (arrayId.length > 0) {
             for (const val of arrayId) {
                 fetchProducts({ 
-                    url: "http://localhost:5000/product/" + val
+                    url: `${process.env.REACT_APP_API_URL}/product/` + val
                 }, data => {
                         if (data) {
                             const found = list.findIndex(val => val._id === data._id);

@@ -85,7 +85,7 @@ const DetailPage = () => {
 
     useEffect(() => {
         fetchProducts({
-            url: "http://localhost:5000/product/" + productId
+            url: `${process.env.REACT_APP_API_URL}/product/${productId}` 
         }, data => {
             // console.log(data);
             if (data) {
@@ -97,7 +97,7 @@ const DetailPage = () => {
     useEffect(() => {
         if (product) {
             fetchReviews({
-                url: `http://localhost:5000/product/${product._id}/reviews?page=1`
+                url: `${process.env.REACT_APP_API_URL}/product/${product._id}/reviews?page=1`
             }, data => {
                 if (data) {
                     setReviews(data.reviews);
@@ -155,7 +155,7 @@ const DetailPage = () => {
 
             if (isShowAllReviews) {
                 fetchReviews({
-                    url: `http://localhost:5000/product/${product._id}/reviews?page=${currentPage}`
+                    url: `${process.env.REACT_APP_API_URL}/product/${product._id}/reviews?page=${currentPage}`
                 }, data => {
                     if (data) {
                         setAllReviews(data.reviews);
@@ -389,7 +389,7 @@ const DetailPage = () => {
             postReview({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                url: "http://localhost:5000/submitReview/" + product._id,
+                url: "${process.env.REACT_APP_API_URL}/submitReview/" + product._id,
                 body: reviewData
             }, data => {
                 closeWriteReviewModal();

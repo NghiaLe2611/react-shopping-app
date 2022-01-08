@@ -71,7 +71,7 @@ const Header = () => {
         const timer = setTimeout(() => {
             if (searchKey) {
                 fetchSuggestProducts({
-                    url: `http://localhost:5000/productSearch?name=${searchKey.toLowerCase()}`
+                    url: `${process.env.REACT_APP_API_URL}/productSearch?name=${searchKey.toLowerCase()}`
                 }, data => {
                     if (data) {
                         setSuggestions(data.results);
