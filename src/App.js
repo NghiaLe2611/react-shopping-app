@@ -33,7 +33,7 @@ function App() {
     useEffect(() => {
         const unregisterAuthObserver = firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
-                console.log('Not logged in');
+                // console.log('Not logged in');
                 dispatch(authActions.updateState({
                     isLoggedIn: false,
                     userData: null
@@ -44,6 +44,8 @@ function App() {
                 return;
             }
 
+            console.log('Logged in');
+            
             const token = await user.getIdToken();
             const userData = {
                 id: user.uid,
@@ -69,7 +71,7 @@ function App() {
             <Suspense fallback={<LoadingIndicator type='fixed'/>}>
                 <Routes>
                     <Route exact path='/' element={<Root><HomePage /></Root>}/>
-                    <Route exact path='dien-thoai/:productId*' element={<Root><DetailPage/></Root>} />
+                    <Route exact path='dien-thoai/:productId' element={<Root><DetailPage/></Root>} />
                     <Route exact path='may-tinh-bang/:productId' element={<Root><DetailPage/></Root>} />
                     <Route path='dien-thoai/hang/:brand' element={<Root><BrandPage/></Root>} />
                     <Route path='may-tinh-bang/hang/:brand' element={<Root><BrandPage/></Root>} />

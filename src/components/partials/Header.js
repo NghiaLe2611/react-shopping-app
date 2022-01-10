@@ -1,15 +1,17 @@
 import { useState, useEffect, Fragment } from 'react'
-import classes from '../../scss/Header.module.scss';
 import Modal from '../UI/Modal';
 import { useDelayUnmount } from '../../hooks/useDelayUnmount';
-import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../../store/cart';
 import { authActions } from '../../store/auth';
 import useCheckMobile from '../../hooks/useCheckMobile';
-import { Link, useLocation } from 'react-router-dom';
-import iconCheked from '../../assets/images/icon-check.svg';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { firebase } from '../../firebase/config';
+import 'firebase/compat/auth';
 import useFetch from '../../hooks/useFetch';
+import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
+import classes from '../../scss/Header.module.scss';
+import iconCheked from '../../assets/images/icon-check.svg';
 
 const brandList = [
     "apple",
@@ -22,6 +24,7 @@ const brandList = [
 
 const Header = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const location = useLocation();
     const cart = useSelector((state) => state.cart);
     const showCart = useSelector(state => state.cart.isShowCart);
@@ -102,6 +105,23 @@ const Header = () => {
 
     const onSearchProduct = (e) => {
         setSearchKey(e.target.value);
+    };
+
+    const logOutHandler = (e) => {    
+        e.preventDefault() ;
+        firebase.auth().signOut()
+            .then(function () {
+                setTimeout(() => {
+                    dispatch(authActions.updateState({
+                        isLoggedIn: false,
+                        userData: null
+                    }));
+                    navigate('/');
+                }, 1000);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     };
 
     const cartModal = (
@@ -197,7 +217,7 @@ const Header = () => {
             {
                 isLoggedIn ? (
                     <div className={classes['wrap-user']}>
-                        <Link to='/tai-khoan'>
+                        <div className={classes.user}>
                             <span className={classes.avatar}>
                                 {
                                     userData.photoURL ? (
@@ -208,11 +228,16 @@ const Header = () => {
                                 }
                             </span>
                             <p>{userData.displayName ? userData.displayName : userData.email}</p>
-                        </Link>
+                        </div>
+                        <div className={classes['user-dropdown']}>
+                            <Link to='/tai-khoan'>Tài khoản của tôi</Link>
+                            <Link to='/don-hang'>Đơn hàng của tôi</Link>
+                            <Link to='/dang-xuat' onClick={logOutHandler}>Đăng xuất</Link>
+                        </div>
                     </div>
                 ) : (
                     <div className={classes['wrap-user']}>
-                        <Link to='/dang-nhap'>
+                        <Link to='/dang-nhap' className={classes.user}>
                             <span className='icon-user'></span>
                             <p>Đăng nhập</p>
                         </Link>

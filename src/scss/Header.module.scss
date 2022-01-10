@@ -5,11 +5,12 @@
 
 .wrap-header {
     display: flex;
-    align-items: center;
+    // align-items: center;
     position: relative;
 }
 
 .logo {
+    align-self: center;
     margin-right: 20px;
     a {
         display: flex;
@@ -112,6 +113,7 @@
 
 .wrap-search {
     margin-left: auto;
+    align-self: center;
     position: relative;
     &:after {
         // content: "";
@@ -142,11 +144,14 @@
 }
 
 .wrap-user {
+    display: flex;
     margin-left: auto;
-    a {
+    position: relative;
+    .user {
         display: flex;
         align-items: center;
         color: #fff;
+        cursor: pointer;
     }
     .avatar {
         img {
@@ -167,12 +172,57 @@
         text-overflow: ellipsis;
         max-width: 80px;
     }
+    .user-dropdown{
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        z-index: 9;
+        transform: translateX(-50%);
+        min-width: 190px;
+        border-radius: 0px 0px 3px 3px;
+        background-color: #fff;
+        padding: 10px 0;
+        box-shadow: rgba(0,0,0,0.2) 0px 6px 12px 0px;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.3s ease;
+        a{
+            display: block;
+            padding: 5px 20px;
+            color: #333;
+            font-size: 13px;
+            &:hover{
+                background-color: #f5f4f5;
+                color: #000;
+            }
+        }
+        &:before{
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 9px 10px 9px;
+            border-color: transparent transparent #ffffff transparent;
+        }
+    }
+    &:hover{
+        .user-dropdown{
+            opacity: 1;
+            visibility: visible;
+        }
+    }
 }
 
 .wrap-cart {
     cursor: pointer;
     margin-left: 20px;
     display: flex;
+    align-self: center;
     align-items: flex-end;
     .cart {
         position: relative;

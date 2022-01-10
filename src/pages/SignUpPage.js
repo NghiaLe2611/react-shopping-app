@@ -1,12 +1,12 @@
-import { useState, useRef } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useState, useEffect } from 'react';
 import { firebaseAuth } from '../firebase/config';
-import { Link } from 'react-router-dom';
-import classes from '../scss/Login.module.scss';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Link, useNavigate } from 'react-router-dom';
 import { emailIsValid, passwordIsValid } from '../helpers/helpers';
+import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import { useNavigate } from 'react-router';
+import classes from '../scss/Login.module.scss';
 
 const errorMessages = {
     email: 'Email không hợp lệ.',
@@ -19,6 +19,7 @@ const formAlert = withReactContent(Swal);
 
 const SignUpPage = () => {
     const navigate = useNavigate();
+    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
 
     const [userInput, setUserInput] = useState({
         email: null,
@@ -42,10 +43,12 @@ const SignUpPage = () => {
         confirmPassword: false
     });
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [formError, setFormError] = useState({
-        type: null,
-        message: null
-    });
+  
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigate('/tai-khoan');
+        }
+    }, []);
 
     const validateInput = (name, value) => {
         switch (name) {
@@ -188,7 +191,8 @@ const SignUpPage = () => {
 
 	return (
         <div className="container">
-            <div className={classes['wrap-user-form']}>
+            {
+               <div className={classes['wrap-user-form']}>
                 <h3>Đăng ký</h3>
                 <form className={classes['user-form']}>
                     <input type='text' placeholder='Email' name='email' 
@@ -215,6 +219,7 @@ const SignUpPage = () => {
                     </p>
                 </form>
             </div>
+            }     
         </div>
 	);
 };
