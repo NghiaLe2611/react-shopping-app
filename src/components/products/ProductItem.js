@@ -1,10 +1,10 @@
 import { useEffect, useState, Fragment } from 'react';
-import Modal from './UI/Modal';
-import { useDelayUnmount } from '../hooks/useDelayUnmount';
-import { convertProductLink, formatCurrency } from '../helpers/helpers';
-import iconCheked from '../assets/images/icon-check.svg';
+import Modal from '../UI/Modal';
+import { useDelayUnmount } from '../../hooks/useDelayUnmount';
+import { convertProductLink, formatCurrency } from '../../helpers/helpers';
+import iconCheked from '../../assets/images/icon-check.svg';
 import { useNavigate  } from 'react-router-dom';
-import classes from '../scss/ProductItem.module.scss';
+import classes from '../../scss/ProductItem.module.scss';
 
 const ProductItem = (props) => {
     const navigate = useNavigate ();

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { firebaseAuth } from '../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { emailIsValid, passwordIsValid } from '../helpers/helpers';
 import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
@@ -43,12 +43,6 @@ const SignUpPage = () => {
         confirmPassword: false
     });
     const [isSubmitted, setIsSubmitted] = useState(false);
-  
-    useEffect(() => {
-        if (isLoggedIn) {
-            navigate('/tai-khoan');
-        }
-    }, []);
 
     const validateInput = (name, value) => {
         switch (name) {
@@ -152,13 +146,24 @@ const SignUpPage = () => {
                     );
 
                     if (userCredential.user.accessToken) {
+                        let timerInterval;
+
                         const Toast = formAlert.mixin({
-							toast: true,
+                            toast: true,
                             confirmButtonText: 'Chuyển trang ngay',
                             confirmButtonColor: '#2f80ed',
-							timer: 5000						
-						});
-
+                            timer: 5000,
+                            didOpen: () => {
+                                timerInterval = setInterval(() => {
+                                Swal.getHtmlContainer().querySelector('strong')
+                                    .textContent = (Swal.getTimerLeft() / 1000)
+                                    .toFixed(0)
+                                }, 100);
+                            },
+                            willClose: () => {
+                                clearInterval(timerInterval);
+                            }
+                        });       
 						Toast.fire({
 							icon: 'success',
 							html: '<p>Đăng nhập thành công.<br/>Hệ thống đang tự động chuyển trang.</p>'
@@ -190,14 +195,17 @@ const SignUpPage = () => {
     };
 
 	return (
-        <div className="container">
+        isLoggedIn ? (
+            <Navigate to='/tai-khoan' />
+        ) : (
+            <div className="container">
             {
                <div className={classes['wrap-user-form']}>
                 <h3>Đăng ký</h3>
                 <form className={classes['user-form']}>
                     <input type='text' placeholder='Email' name='email' 
                         className={isValid.email.status === false ? classes.invalid : ''}
-                        onChange={onChangeInput}
+                        onChange={onChangeInput}   
                         onBlur={onBlurInput}
                     />
                     {isValid.email.message && <p className={classes.error}>{isValid.email.message}</p>}
@@ -220,7 +228,8 @@ const SignUpPage = () => {
                 </form>
             </div>
             }     
-        </div>
+        </div>  
+        )
 	);
 };
 

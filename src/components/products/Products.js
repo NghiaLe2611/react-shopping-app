@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import ProductItem from './ProductItem';
-import SkeletonElement from './UI/Skeleton';
-import classes from '../scss/Products.module.scss';
-import useFetch from '../hooks/useFetch';
+import SkeletonElement from '../UI/Skeleton';
+import classes from '../../scss/Products.module.scss';
+import useFetch from '../../hooks/useFetch';
 
 const Products = () => {
 

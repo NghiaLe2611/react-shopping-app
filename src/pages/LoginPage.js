@@ -4,13 +4,13 @@ import { firebaseAuth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import 'firebase/compat/auth';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import { useNavigate } from 'react-router';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-// import { authActions } from '../store/auth';
 import classes from '../scss/Login.module.scss';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { authService } from '../api/auth-service';
 
 const formAlert = withReactContent(Swal);
 const errorMessages = {
@@ -45,12 +45,6 @@ const LoginPage = () => {
         password: false
     });
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    useEffect(() => {
-        if (isLoggedIn) {
-            navigate('/tai-khoan');
-        }
-    }, []);
 
     // Configure FirebaseUI.
 	const uiConfig = {
@@ -117,72 +111,83 @@ const LoginPage = () => {
 
         if (isValid.email.status && isValid.password.status) {
             // Login success
+
+
             try {
-                const userCredential = await signInWithEmailAndPassword(
-                    firebaseAuth, 
-                    userInput.email, 
-                    userInput.password
-                );
-
-                if (userCredential.user.accessToken) {
-                    let timerInterval;
-
-                    const Toast = formAlert.mixin({
-                        toast: true,
-                        confirmButtonText: 'Chuyển trang ngay',
-                        confirmButtonColor: '#2f80ed',
-                        timer: 5000,
-                        didOpen: () => {
-                            timerInterval = setInterval(() => {
-                            Swal.getHtmlContainer().querySelector('strong')
-                                .textContent = (Swal.getTimerLeft() / 1000)
-                                .toFixed(0)
-                            }, 100);
-                        },
-                        willClose: () => {
-                            clearInterval(timerInterval);
-                        }
-                    });
-                    Toast.fire({
-                        icon: 'success',
-                        html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
-                    }).then(isConfirm => {
-                        if (isConfirm) {
-                            navigate('/');
-                        }
-                    });
-                }
-            } catch (err) {
-                formAlert.fire({
-                    icon: 'error',
-                    html: `<p style="font-size: 16px;">${formErrors[err.code]}</p>`,
-                    confirmButtonColor: '#2f80ed'
-                });
-                
-                if (err.code === 'auth/user-not-found') {
-                    setIsValid(data => data = {...data, email: {
-                        status: false, message: formErrors[err.code]
-                    }});
-                } 
-
-                if (err.code === 'auth/invalid-email') {
-                    setIsValid(data => data = {...data, email: {
-                        status: false, message: formErrors[err.code]
-                    }});
-                }
-
-                if (err.code === 'auth/wrong-password') {
-                    setIsValid(data => data = {...data, password: {
-                        status: false, message: formErrors[err.code]
-                    }});
-                }
+                const userCredential = await authService.login(userInput.email, userInput.password);
+                console.log(userCredential.user.accessToken);
+            } catch(err) {
+                console.log(err);
             }
+
+            // try {
+            //     const userCredential = await signInWithEmailAndPassword(
+            //         firebaseAuth, 
+            //         userInput.email, 
+            //         userInput.password
+            //     );
+
+            //     if (userCredential.user.accessToken) {
+            //         let timerInterval;
+
+            //         const Toast = formAlert.mixin({
+            //             toast: true,
+            //             confirmButtonText: 'Chuyển trang ngay',
+            //             confirmButtonColor: '#2f80ed',
+            //             timer: 5000,
+            //             didOpen: () => {
+            //                 timerInterval = setInterval(() => {
+            //                 Swal.getHtmlContainer().querySelector('strong')
+            //                     .textContent = (Swal.getTimerLeft() / 1000)
+            //                     .toFixed(0)
+            //                 }, 100);
+            //             },
+            //             willClose: () => {
+            //                 clearInterval(timerInterval);
+            //             }
+            //         });
+            //         Toast.fire({
+            //             icon: 'success',
+            //             html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
+            //         }).then(isConfirm => {
+            //             if (isConfirm) {
+            //                 navigate('/');
+            //             }
+            //         });
+            //     }
+            // } catch (err) {
+            //     formAlert.fire({
+            //         icon: 'error',
+            //         html: `<p style="font-size: 16px;">${formErrors[err.code]}</p>`,
+            //         confirmButtonColor: '#2f80ed'
+            //     });
+                
+            //     if (err.code === 'auth/user-not-found') {
+            //         setIsValid(data => data = {...data, email: {
+            //             status: false, message: formErrors[err.code]
+            //         }});
+            //     } 
+
+            //     if (err.code === 'auth/invalid-email') {
+            //         setIsValid(data => data = {...data, email: {
+            //             status: false, message: formErrors[err.code]
+            //         }});
+            //     }
+
+            //     if (err.code === 'auth/wrong-password') {
+            //         setIsValid(data => data = {...data, password: {
+            //             status: false, message: formErrors[err.code]
+            //         }});
+            //     }
+            // }
         }
     };
 
 	return (
-        <div className="container">
-            {
+        isLoggedIn ? (
+            <Navigate to='/tai-khoan' />
+        ) : (
+            <div className="container">
                 <div className={classes['wrap-user-form']}>
                     <h3>Đăng nhập</h3>
                     <form className={classes['user-form']} onSubmit={loginWithEmail}>
@@ -206,9 +211,9 @@ const LoginPage = () => {
                             Bạn chưa có tài khoản ? <Link to='/dang-ky'>Đăng ký</Link>
                         </p>
                     </form>
-                </div>
-            }      
-        </div>
+                </div>  
+            </div>
+        )
     );
 };
 

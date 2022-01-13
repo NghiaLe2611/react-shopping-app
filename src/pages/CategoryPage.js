@@ -1,13 +1,13 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'; // Redirect -> Navigate in v6
 import useFetch from '../hooks/useFetch';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../components/products/ProductItem';
 import SkeletonElement from '../components/UI/Skeleton';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import Filter from '../components/Filter';
 import FilterSidebar from '../components/FilterSidebar';
-import Slides from '../components/Slides';
+import Slides from '../components/slides/Slides';
 import { removeQueryParam } from '../helpers/helpers';
 import NotiSearch from '../assets/images/noti-search.png';
 import useCheckMobile from '../hooks/useCheckMobile';
@@ -57,6 +57,7 @@ const CategoryPage = () => {
         if (!categoryName) {
            navigate('/not-found');
         }
+        setFilterUrl(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
     }, [categoryName]);
 
     useEffect(() => {
@@ -71,7 +72,7 @@ const CategoryPage = () => {
                 }
             } 
         });
-    }, [fetchProducts, navigate, filterUrl]); 
+    }, [fetchProducts, filterUrl]); 
 
     useEffect(() => {
         const query = new URLSearchParams(location.search);

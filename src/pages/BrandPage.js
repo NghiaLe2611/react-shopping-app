@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../components/products/ProductItem';
 import classes from '../scss/ProductItem.module.scss';
 import { capitalizeFirstLetter } from '../helpers/helpers';
 import SkeletonElement from '../components/UI/Skeleton';

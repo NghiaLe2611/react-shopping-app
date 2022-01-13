@@ -5,6 +5,7 @@ import { firebase } from './firebase/config';
 import 'firebase/compat/auth';
 import { useDispatch } from 'react-redux';
 import { authActions } from './store/auth';
+import PrivateRoute from './components/PrivateRoute';
 
 // import Root from './components/UI/Root';
 // import HomePage from './pages/HomePage';
@@ -38,8 +39,8 @@ function App() {
                     isLoggedIn: false,
                     userData: null
                 }));
-                localStorage.removeItem('isLoggedIn');
-                localStorage.removeItem('userData');
+                localStorage.setItem('isLoggedIn', false);
+                localStorage.setItem('userData', null);
 
                 return;
             }
@@ -77,12 +78,19 @@ function App() {
                     <Route path='may-tinh-bang/hang/:brand' element={<Root><BrandPage/></Root>} />
                     <Route path=':category' element={<Root><CategoryPage/></Root>} />
                     <Route path='so-sanh/:category' element={<Root><ComparePage/></Root>} />
-                    <Route path='/cart' element={<Root><CartPage/></Root>} />
+                    <Route path='cart' element={<Root><CartPage/></Root>} />
                     <Route path='dang-nhap' element={<Root><LoginPage/></Root>} />
                     <Route path='dang-ky' element={<Root><SignUpPage/></Root>} />
-                    <Route path='tai-khoan' element={<Root><ProfilePage/></Root>} />
+                    <Route path='tai-khoan/*'
+                        element={
+                            <PrivateRoute>
+                                <Root><ProfilePage/></Root>
+                            </PrivateRoute>
+                        }
+                    />
+                    {/* <Route path='tai-khoan' element={<Root><ProfilePage/></Root>} /> */}
                     <Route path='*' element={<NotFound />} />
-                    <Route path='/not-found' element={<NotFound />} />
+                    <Route path='not-found' element={<NotFound />} />
                 </Routes>
             </Suspense>
 		</Fragment>

@@ -6,12 +6,11 @@ import { cartActions } from '../../store/cart';
 import { authActions } from '../../store/auth';
 import useCheckMobile from '../../hooks/useCheckMobile';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { firebase } from '../../firebase/config';
-import 'firebase/compat/auth';
 import useFetch from '../../hooks/useFetch';
 import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import classes from '../../scss/Header.module.scss';
 import iconCheked from '../../assets/images/icon-check.svg';
+import { authService } from '../../api/auth-service';
 
 const brandList = [
     "apple",
@@ -39,18 +38,18 @@ const Header = () => {
     const shouldRenderModal = useDelayUnmount(showCart, 350);
     const { isLoading, error, fetchData: fetchSuggestProducts } = useFetch();
     const { isMobile } = useCheckMobile();
+    
+    // useEffect(() => {
+    //     const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+    //     const storedUserData = JSON.parse(localStorage.getItem('userData'));
 
-    useEffect(() => {
-        const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-        const storedUserData = JSON.parse(localStorage.getItem('userData'));
-
-        if (storedIsLoggedIn) {
-            dispatch(authActions.updateState({
-                isLoggedIn: true,
-                userData: storedUserData
-            }));
-        }
-    }, []);
+    //     if (storedIsLoggedIn) {
+    //         dispatch(authActions.updateState({
+    //             isLoggedIn: true,
+    //             userData: storedUserData
+    //         }));
+    //     }
+    // }, [dispatch]);
 
     useEffect(() => {
         setHoverMenu(false);
@@ -107,10 +106,11 @@ const Header = () => {
         setSearchKey(e.target.value);
     };
 
-    const logOutHandler = (e) => {    
+    const logOutHandler = async (e) => {    
         e.preventDefault() ;
-        firebase.auth().signOut()
-            .then(function () {
+
+        try {
+            await authService.logout().then(() => {
                 setTimeout(() => {
                     dispatch(authActions.updateState({
                         isLoggedIn: false,
@@ -118,10 +118,13 @@ const Header = () => {
                     }));
                     navigate('/');
                 }, 1000);
-            })
-            .catch(function (error) {
-                console.log(error);
             });
+        } catch(err) {
+            console.log(err);
+        }
+
+        // authApp.signOut()
+        // firebase.auth().signOut()
     };
 
     const cartModal = (

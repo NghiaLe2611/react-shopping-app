@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import Slider from 'react-slick';
-import classes from '../scss/Slides.module.scss';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import '../scss/SlickSlider.scss';
-import useCheckMobile from '../hooks/useCheckMobile';
+import '../../scss/SlickSlider.scss';
+import classes from '../../scss/Slides.module.scss';
+import useCheckMobile from '../../hooks/useCheckMobile';
 
 const Slides = (props) => {
     const { slides, subSlides, full } = props;

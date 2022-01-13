@@ -1,5 +1,5 @@
-import Products from '../components/Products';
-import Slides from '../components/Slides';
+import Products from '../components/products/Products';
+import Slides from '../components/slides/Slides';
 
 const slides = [
     {
