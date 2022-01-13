@@ -72,7 +72,7 @@ const ProductItem = (props) => {
 				}${convertProductLink(name)}`}
 				onClick={(e) => navigateDetail(e, name)}
 			>
-				<img src={img} alt={name} />
+				<img src={img} alt={name} onError={(e)=>{e.target.onError = null; e.target.src=`https://dummyimage.com/600x600/4a4a4a/ffffff&text=No+Image`}}/>
 				<div className={classes.desc}>
 					<h3 className={classes['product-name']}>{name}</h3>
 					{price &&
