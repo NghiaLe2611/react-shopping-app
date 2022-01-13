@@ -44,9 +44,11 @@ const ProfilePage = () => {
     const [listDay, setListDay] = useState([]);
 
     const slug = location.pathname.split('/').pop();
+    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
     const userData = useSelector(state => state.auth.userData);
-    const { displayName, photoURL, id, email } = userData;
-
+    const { displayName, photoURL, id, email } = userData ? userData : {};
+    console.log(isLoggedIn);
+    
     const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString());
 
     useEffect(() => {
@@ -136,37 +138,39 @@ const ProfilePage = () => {
     };
 
     return (
-		<div className='container'>
-			<div className={classes['wrap-profile']}>
-                <aside>
-                    <div className={classes['wrap-avatar']}>
-                        <div className={classes.avatar}>
-                            {
-                                photoURL ? <img src={photoURL} alt='avatar' /> : <span className='icon-user'></span>
-                            }
+		userData && (
+            <div className='container'>
+                <div className={classes['wrap-profile']}>
+                    <aside>
+                        <div className={classes['wrap-avatar']}>
+                            <div className={classes.avatar}>
+                                {
+                                    photoURL ? <img src={photoURL} alt='avatar' /> : <span className='icon-user'></span>
+                                }
+                            </div>
+                            <span className={classes.username}>
+                                {displayName ? displayName : email}
+                            </span>
                         </div>
-                        <span className={classes.username}>
-                            {displayName ? displayName : email}
-                        </span>
+                        <ul className={classes['account-nav']}>
+                            {
+                                profileNav.map(item => (
+                                    <li key={item.name} 
+                                        className={`${item.slug === slug ? classes.active : ''}`}>
+                                        <Link to={item.link}>
+                                            <i className={item.icon}></i>{item.name}
+                                        </Link>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </aside>
+                    <div className={classes['wrap-profile-content']}>
+                        {profileContent}
                     </div>
-                    <ul className={classes['account-nav']}>
-                        {
-                            profileNav.map(item => (
-                                <li key={item.name} 
-                                    className={`${item.slug === slug ? classes.active : ''}`}>
-                                    <Link to={item.link}>
-                                        <i className={item.icon}></i>{item.name}
-                                    </Link>
-                                </li>
-                            ))
-                        }
-                    </ul>
-                </aside>
-                <div className={classes['wrap-profile-content']}>
-                    {profileContent}
                 </div>
             </div>
-		</div>
+        )
 	);
 };
 

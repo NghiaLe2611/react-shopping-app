@@ -113,73 +113,73 @@ const LoginPage = () => {
             // Login success
 
 
-            try {
-                const userCredential = await authService.login(userInput.email, userInput.password);
-                console.log(userCredential.user.accessToken);
-            } catch(err) {
-                console.log(err);
-            }
-
             // try {
-            //     const userCredential = await signInWithEmailAndPassword(
-            //         firebaseAuth, 
-            //         userInput.email, 
-            //         userInput.password
-            //     );
-
-            //     if (userCredential.user.accessToken) {
-            //         let timerInterval;
-
-            //         const Toast = formAlert.mixin({
-            //             toast: true,
-            //             confirmButtonText: 'Chuyển trang ngay',
-            //             confirmButtonColor: '#2f80ed',
-            //             timer: 5000,
-            //             didOpen: () => {
-            //                 timerInterval = setInterval(() => {
-            //                 Swal.getHtmlContainer().querySelector('strong')
-            //                     .textContent = (Swal.getTimerLeft() / 1000)
-            //                     .toFixed(0)
-            //                 }, 100);
-            //             },
-            //             willClose: () => {
-            //                 clearInterval(timerInterval);
-            //             }
-            //         });
-            //         Toast.fire({
-            //             icon: 'success',
-            //             html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
-            //         }).then(isConfirm => {
-            //             if (isConfirm) {
-            //                 navigate('/');
-            //             }
-            //         });
-            //     }
-            // } catch (err) {
-            //     formAlert.fire({
-            //         icon: 'error',
-            //         html: `<p style="font-size: 16px;">${formErrors[err.code]}</p>`,
-            //         confirmButtonColor: '#2f80ed'
-            //     });
-                
-            //     if (err.code === 'auth/user-not-found') {
-            //         setIsValid(data => data = {...data, email: {
-            //             status: false, message: formErrors[err.code]
-            //         }});
-            //     } 
-
-            //     if (err.code === 'auth/invalid-email') {
-            //         setIsValid(data => data = {...data, email: {
-            //             status: false, message: formErrors[err.code]
-            //         }});
-            //     }
-
-            //     if (err.code === 'auth/wrong-password') {
-            //         setIsValid(data => data = {...data, password: {
-            //             status: false, message: formErrors[err.code]
-            //         }});
-            //     }
+            //     const userCredential = await authService.login(userInput.email, userInput.password);
+            //     console.log(userCredential);
+            // } catch(err) {
+            //     console.log(err);
             // }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(
+                    firebaseAuth, 
+                    userInput.email, 
+                    userInput.password
+                );
+
+                if (userCredential.user.accessToken) {
+                    let timerInterval;
+
+                    const Toast = formAlert.mixin({
+                        toast: true,
+                        confirmButtonText: 'Chuyển trang ngay',
+                        confirmButtonColor: '#2f80ed',
+                        timer: 5000,
+                        didOpen: () => {
+                            timerInterval = setInterval(() => {
+                            Swal.getHtmlContainer().querySelector('strong')
+                                .textContent = (Swal.getTimerLeft() / 1000)
+                                .toFixed(0)
+                            }, 100);
+                        },
+                        willClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    });
+                    Toast.fire({
+                        icon: 'success',
+                        html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
+                    }).then(isConfirm => {
+                        if (isConfirm) {
+                            navigate('/');
+                        }
+                    });
+                }
+            } catch (err) {
+                formAlert.fire({
+                    icon: 'error',
+                    html: `<p style="font-size: 16px;">${formErrors[err.code]}</p>`,
+                    confirmButtonColor: '#2f80ed'
+                });
+                
+                if (err.code === 'auth/user-not-found') {
+                    setIsValid(data => data = {...data, email: {
+                        status: false, message: formErrors[err.code]
+                    }});
+                } 
+
+                if (err.code === 'auth/invalid-email') {
+                    setIsValid(data => data = {...data, email: {
+                        status: false, message: formErrors[err.code]
+                    }});
+                }
+
+                if (err.code === 'auth/wrong-password') {
+                    setIsValid(data => data = {...data, password: {
+                        status: false, message: formErrors[err.code]
+                    }});
+                }
+            }
         }
     };
 

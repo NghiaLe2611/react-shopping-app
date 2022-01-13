@@ -218,7 +218,7 @@ const Header = () => {
                 </ul>
             </div>
             {
-                isLoggedIn ? (
+                isLoggedIn && userData ? (
                     <div className={classes['wrap-user']}>
                         <div className={classes.user}>
                             <span className={classes.avatar}>
