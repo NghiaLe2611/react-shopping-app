@@ -1,8 +1,11 @@
 import { authApp, firebase } from '../firebase/config';
 import 'firebase/compat/auth';
 
-function logout() {
-    return authApp.signOut();
+const logout = (callback) => {
+    // return authApp.signOut();
+    authApp.signOut().then(result => {
+        callback();
+    })
 }
 
 function login(email, password) {

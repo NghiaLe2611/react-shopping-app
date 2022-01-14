@@ -4,6 +4,8 @@ import 'firebase/compat/auth';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import classes from '../scss/Profile.module.scss';
+import iconFacebook from '../assets/images/icon-fb.png';
+import iconGoogle from '../assets/images/icon-google.png';
 
 const profileNav = [
     {
@@ -34,6 +36,9 @@ const profileNav = [
 
 const minYear = 1900;
 const maxYear = new Date().getFullYear();
+function getDaysInMonth (month, year) {
+    return new Date(year, month, 0).getDate();
+}
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -41,19 +46,18 @@ const ProfilePage = () => {
 
     const [selectedMonth, setSelectedMonth] = useState(0);
     const [selectedYear, setSelectedYear] = useState(0);
-    const [listDay, setListDay] = useState([]);
+    const [daysInMonth, setDaysInMonth] = useState('');
 
     const slug = location.pathname.split('/').pop();
     const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
     const userData = useSelector(state => state.auth.userData);
-    const { displayName, photoURL, id, email } = userData ? userData : {};
-    console.log(isLoggedIn);
+    const { displayName, photoURL, id, email, emailVerified } = userData ? userData : {};
     
     const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString());
 
     useEffect(() => {
         if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
-            console.log(1, parseInt(selectedMonth), parseInt(selectedYear));
+            setDaysInMonth(getDaysInMonth(selectedMonth, selectedYear));
         }
     }, [selectedMonth, selectedYear]);
 
@@ -86,51 +90,101 @@ const ProfilePage = () => {
             profileContent = (
                 <Fragment>
                     <h3>Thông tin tài khoản</h3>
-                    <div className={classes.content}>
-                        <form action="">
-                            <div className={classes['input-group']}>
-                                <label>Họ và tên</label>
-                                <div className={classes['wrap-ip']}>
-                                    <input type="text" placeholder='Họ tên'/>
+                    <div className={classes.content}>      
+                        <div className={classes.group}>
+                            <h4>Thông tin cá nhân</h4>
+                            <form action="">
+                                <div className={classes['input-group']}>
+                                    <label>Họ và tên</label>
+                                    <div className={classes['wrap-ip']}>
+                                        <input type="text" name='name' placeholder='Họ tên'/>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className={classes['input-group']}>
-                                <label>Email</label>
-                                <div className={classes['wrap-ip']}>
-                                    <p>{email}</p>
-                                </div>
-                            </div>
-                            <div className={classes['input-group']}>
-                                <label>Số điện thoại</label>
-                                <div className={classes['wrap-ip']}>
-                                    <input type="text" placeholder='Thêm số điện thoại' />
-                                </div>
-                            </div>
-                            <div className={classes['input-group']}>
-                                <label>Ngày sinh</label>
-                                <div className={classes['wrap-ip']}>
-                                    <select name='day' id='select-day'>
-                                        <option value='0'>Ngày</option>
-                                    </select>
-                                    <select name='month' id='select-month' onChange={onChangeMonth}>
-                                        <option value='0'>Tháng</option>
+                                <div className={classes['input-group']}>
+                                    <label>Nickname</label>
+                                    <div className={classes['wrap-ip']}>
                                         {
-                                            Array(12).fill().map((item, index) => (
-                                                <option key={index + 1} value={index + 1}>{index + 1}</option>
-                                            ))
+                                            displayName ? 
+                                                <input type="text" name='nickname' placeholder={displayName} value={displayName} disabled/> : 
+                                                <input type="text" name='nickname' placeholder='Nickname'/>
                                         }
-                                    </select>
-                                    <select name='year' onChange={onChangeYear}>
-                                        <option value='0'>Năm</option>
-                                        {
-                                        yearList.reverse().map(item => (
-                                                <option key={item} value={item}>{item}</option>
-                                        ))
-                                        }
-                                    </select>
+                                    </div>
                                 </div>
+                                <div className={classes['input-group']}>
+                                    <label>Email</label>
+                                    <div className={classes['wrap-ip']}>
+                                        <input type="text" name='email' placeholder={email} value={email} disabled/>
+                                    </div>
+                                </div>
+                                <div className={classes['input-group']}>
+                                    <label>Số điện thoại</label>
+                                    <div className={classes['wrap-ip']}>
+                                        <input type="text" name='phone' placeholder='Thêm số điện thoại' />
+                                    </div>
+                                </div>
+                                <div className={classes['input-group']}>
+                                    <label>Ngày sinh</label>
+                                    <div className={classes['wrap-ip']}>
+                                        <select name='day' id='select-day'>
+                                            <option value='0'>Ngày</option>
+                                            {
+                                                daysInMonth > 0 && Array(daysInMonth).fill().map((item, index) => (
+                                                    <option key={index + 1} value={index + 1}>{index + 1}</option>
+                                                ))
+                                            }
+                                        </select>
+                                        <select name='month' id='select-month' onChange={onChangeMonth}>
+                                            <option value='0'>Tháng</option>
+                                            {
+                                                Array(12).fill().map((item, index) => (
+                                                    <option key={index + 1} value={index + 1}>{index + 1}</option>
+                                                ))
+                                            }
+                                        </select>
+                                        <select name='year' onChange={onChangeYear}>
+                                            <option value='0'>Năm</option>
+                                            {
+                                                yearList.reverse().map(item => (
+                                                        <option key={item} value={item}>{item}</option>
+                                                ))
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type='submit' className={classes.save}>Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        <div className={classes.group}>
+                            <h4>Bảo mật</h4>
+                            <div className={classes.item}>
+                                <div className={classes.left}>
+                                    <i className="icon-lock"></i>
+                                    <span>Đổi mật khẩu</span>
+                                </div>
+                                <button class={classes.update}>Cập nhật</button>
                             </div>
-                        </form>
+                        </div>
+                        <div className={classes.group}>
+                            <h4>Liên kết mạng xã hội</h4>
+                            <div className={classes.item}>
+                                <div className={classes.left}>
+                                    <img src={iconFacebook} alt="icon-facebook" />
+                                    <span>Facebook</span>
+                                </div>
+                                <button class={classes.update}>Liên kết</button>
+                            </div>
+                            <div className={classes.item}>
+                                <div className={classes.left}>
+                                    <img src={iconGoogle} alt="icon-google" />
+                                    <span>Google</span>
+                                </div>
+                                {
+                                    emailVerified ? 
+                                        <button class={`${classes.update} ${classes.active}`}>Đã liên kết</button> :
+                                        <button class={classes.update}>Liên kết</button>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </Fragment>
             )
@@ -145,7 +199,7 @@ const ProfilePage = () => {
                         <div className={classes['wrap-avatar']}>
                             <div className={classes.avatar}>
                                 {
-                                    photoURL ? <img src={photoURL} alt='avatar' /> : <span className='icon-user'></span>
+                                    photoURL ? <img src={photoURL} alt='avatar' /> : <i className='icon-user'></i>
                                 }
                             </div>
                             <span className={classes.username}>

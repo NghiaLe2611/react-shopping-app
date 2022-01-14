@@ -15,7 +15,7 @@
     .content{
         border-radius: 6px;
         background-color: #fff;
-        padding: 20px 30px;
+        padding: 30px;
     }
 }
 .wrap-avatar{
@@ -25,6 +25,16 @@
     padding: 0 15px;
     .avatar{
         margin-right: 10px;
+        img{
+            width: 40px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+        i{            
+            display: flex;
+            font-size: 24px;
+            color: #9b9b9b;
+        }
         span{
             display: flex;
             font-size: 20px;
@@ -65,21 +75,78 @@ aside{
     }
 }
 
+.group{
+    padding-bottom: 30px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    h4{
+        color: #64646d;
+        font-size: 18px;
+        font-weight: 400;
+        margin-bottom: 20px;
+    }
+    .item{
+        display: flex;
+        justify-content: space-between;
+        padding-right: 320px;
+        &:not(:last-child){
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f8f8f8;
+        }
+        .left{
+            display: flex;
+            align-items: center;
+            i{
+                margin-right: 10px;
+                font-size: 18px;
+            }
+            img{
+                margin-right: 10px;
+                max-width: 24px;
+            }
+            span{
+                font-size: 15px;
+            }
+        }
+        .update{
+            appearance: none;
+            align-self: center;
+            font-size: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 5px 12px;
+            color: #182e6e;
+            border: 1px solid #182e6e;
+            background-color: #fff;
+            &.active{
+                background-color: #dbeeff;
+                pointer-events: none;
+            }
+        }
+    }
+}
+
 .input-group{
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 20px;
     label{
-        font-size: 16px;
+        font-size: 15px;
         min-width: 100px;
         margin-right: 20px;
     }
 }
+
 .wrap-ip{
     flex: 1;
     input{
         width: 300px;
+        &:disabled{
+            background-color: #ccc;
+            cursor: no-drop;
+        }
     }
     input, select{
         border: 1px solid #c4c4cf;
@@ -90,4 +157,14 @@ aside{
     select:not(:last-child){
         margin-right: 10px;
     }
+}
+
+.save{
+    font-size: 15px;
+    color: #fff;
+    background-color: #182e6e;
+    padding: 8px 30px;
+    margin-top: 30px;
+    border-radius: 4px;
+    margin-left: 120px;
 }

@@ -113,3 +113,7 @@
 .icon-user:before {
     content: "\74";
 }
+
+.icon-lock:before {
+    content: "\75";
+}

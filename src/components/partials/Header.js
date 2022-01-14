@@ -108,20 +108,27 @@ const Header = () => {
 
     const logOutHandler = async (e) => {    
         e.preventDefault() ;
+        
+        authService.logout(() => {
+            setTimeout(() => {
+                console.log('log out');
+                navigate('/');
+            }, 500);
+        });
 
-        try {
-            await authService.logout().then(() => {
-                setTimeout(() => {
-                    dispatch(authActions.updateState({
-                        isLoggedIn: false,
-                        userData: null
-                    }));
-                    navigate('/');
-                }, 1000);
-            });
-        } catch(err) {
-            console.log(err);
-        }
+        // try {
+        //     await authService.logout().then(() => {
+        //         setTimeout(() => {
+        //             dispatch(authActions.updateState({
+        //                 isLoggedIn: false,
+        //                 userData: null
+        //             }));
+        //             navigate('/');
+        //         }, 1000);
+        //     });
+        // } catch(err) {
+        //     console.log(err);
+        // }
 
         // authApp.signOut()
         // firebase.auth().signOut()

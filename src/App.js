@@ -52,8 +52,11 @@ function App() {
                 id: user.uid,
                 displayName: user.displayName,
                 email: user.email,
-                photoURL: user.photoURL
+                photoURL: user.photoURL,
+                emailVerified: user.emailVerified
             };
+
+            console.log(user);
 
             dispatch(authActions.updateState({
                 isLoggedIn: token ? true : false,
