@@ -30,6 +30,7 @@ const Header = () => {
     const userData = useSelector(state => state.auth.userData);
 
     const [hoverMenu, setHoverMenu] = useState(false);
+    const [hoverProfile, setHoverProfile] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [searchKey, setSearchKey] = useState('');
     const [suggestions, setSuggestions] = useState([]);
@@ -41,6 +42,7 @@ const Header = () => {
     useEffect(() => {
         setHoverMenu(false);
         setShowMenu(false);
+        setHoverProfile(false);
         setSearchKey('');
         setSuggestions([]);
     }, [location]);
@@ -212,7 +214,10 @@ const Header = () => {
             </div>
             {
                 userData ? (
-                    <div className={classes['wrap-user']}>
+                    <div className={`${classes['wrap-user']} ${hoverProfile ? classes.hovered : ''}`}
+                        onMouseEnter={() => setHoverProfile(true)}
+                        onMouseLeave={() => setHoverProfile(false)}
+                    >
                         <div className={classes.user}>
                             <span className={classes.avatar}>
                                 {
@@ -227,7 +232,7 @@ const Header = () => {
                         </div>
                         <div className={classes['user-dropdown']}>
                             <Link to='/tai-khoan'>Tài khoản của tôi</Link>
-                            <Link to='/don-hang'>Đơn hàng của tôi</Link>
+                            <Link to='/tai-khoan/don-hang'>Đơn hàng của tôi</Link>
                             <Link to='/dang-xuat' onClick={logOutHandler}>Đăng xuất</Link>
                         </div>
                     </div>
