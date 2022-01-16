@@ -1,11 +1,10 @@
 import React, { Fragment, Suspense, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import LoadingIndicator from './components/UI/LoadingIndicator';
-import { firebase } from './firebase/config';
-import 'firebase/compat/auth';
-import { useDispatch } from 'react-redux';
-import { authActions } from './store/auth';
 import PrivateRoute from './components/PrivateRoute';
+import { useSelector, useDispatch } from 'react-redux';
+import { authActions } from './store/auth';
+import { authApp } from './firebase/config';
 
 // import Root from './components/UI/Root';
 // import HomePage from './pages/HomePage';
@@ -30,44 +29,45 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 function App() {
     const dispatch = useDispatch();
+    const userData = useSelector(state => state.auth.userData);
 
     useEffect(() => {
-        const unregisterAuthObserver = firebase.auth().onAuthStateChanged(async (user) => {
-            if (!user) {
-                // console.log('Not logged in');
-                dispatch(authActions.updateState({
-                    isLoggedIn: false,
-                    userData: null
-                }));
-                localStorage.setItem('isLoggedIn', false);
-                localStorage.setItem('userData', null);
+        const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log('Logged in');
 
-                return;
-            }
+                const userDataObj = {
+                    id: user.uid,
+                    displayName: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL,
+                    emailVerified: user.emailVerified
+                };
 
-            console.log('Logged in');
+                const userDataStorage = localStorage.getItem('userData');
+                if (!userDataStorage) {
+                    setTimeout(() => {
+                        dispatch(authActions.updateState({
+                            userData: userDataObj
+                        }));
             
-            const token = await user.getIdToken();
-            const userData = {
-                id: user.uid,
-                displayName: user.displayName,
-                email: user.email,
-                photoURL: user.photoURL,
-                emailVerified: user.emailVerified
-            };
-
-            console.log(user);
-
-            dispatch(authActions.updateState({
-                isLoggedIn: token ? true : false,
-                userData: userData
-            }));
-
-            localStorage.setItem('isLoggedIn', true);
-            localStorage.setItem('userData', JSON.stringify(userData));
+                        localStorage.setItem('userData', JSON.stringify(userDataObj));
+                    }, 5200);
+                }
+            } else {
+                console.log('Not logged in');       
+                setTimeout(() => {
+                    dispatch(authActions.updateState({
+                        userData: null
+                    }));
+                    localStorage.removeItem('userData');
+                }, 520);     
+            }
         });
 
-		return () => unregisterAuthObserver();
+        // Cleanup subscription on unmount
+        return () => unregisterAuthObserver();
+
     }, [dispatch]);
 
 	return (
@@ -75,15 +75,15 @@ function App() {
             <Suspense fallback={<LoadingIndicator type='fixed'/>}>
                 <Routes>
                     <Route exact path='/' element={<Root><HomePage /></Root>}/>
-                    <Route exact path='dien-thoai/:productId' element={<Root><DetailPage/></Root>} />
-                    <Route exact path='may-tinh-bang/:productId' element={<Root><DetailPage/></Root>} />
+                    <Route path='dien-thoai/:productId' element={<Root><DetailPage/></Root>} />
+                    <Route path='may-tinh-bang/:productId' element={<Root><DetailPage/></Root>} />
                     <Route path='dien-thoai/hang/:brand' element={<Root><BrandPage/></Root>} />
                     <Route path='may-tinh-bang/hang/:brand' element={<Root><BrandPage/></Root>} />
-                    <Route path=':category' element={<Root><CategoryPage/></Root>} />
+                    <Route exact path=':category' element={<Root><CategoryPage/></Root>} />
                     <Route path='so-sanh/:category' element={<Root><ComparePage/></Root>} />
-                    <Route path='cart' element={<Root><CartPage/></Root>} />
-                    <Route path='dang-nhap' element={<Root><LoginPage/></Root>} />
-                    <Route path='dang-ky' element={<Root><SignUpPage/></Root>} />
+                    <Route exact path='cart' element={<Root><CartPage/></Root>} />
+                    <Route exact path='dang-nhap' element={userData ? <Navigate to='/tai-khoan' /> : <Root><LoginPage/></Root>} />
+                    <Route exact path='dang-ky' element={userData ? <Navigate to='/tai-khoan' /> : <Root><SignUpPage/></Root>} />
                     <Route path='tai-khoan/*'
                         element={
                             <PrivateRoute>

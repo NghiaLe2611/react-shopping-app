@@ -26,7 +26,6 @@ const formErrors = {
 const LoginPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
 
     const [userInput, setUserInput] = useState({
         email: null,
@@ -137,9 +136,7 @@ const LoginPage = () => {
                         timer: 5000,
                         didOpen: () => {
                             timerInterval = setInterval(() => {
-                            Swal.getHtmlContainer().querySelector('strong')
-                                .textContent = (Swal.getTimerLeft() / 1000)
-                                .toFixed(0)
+                                Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0)
                             }, 100);
                         },
                         willClose: () => {
@@ -184,37 +181,6 @@ const LoginPage = () => {
     };
 
 	return (
-        // isLoggedIn ? (
-        //     <Navigate to='/tai-khoan' />
-        // ) : (
-        //     <div className="container">
-        //         <div className={classes['wrap-user-form']}>
-        //             <h3>Đăng nhập</h3>
-        //             <form className={classes['user-form']} onSubmit={loginWithEmail}>
-        //                 <input type='text' placeholder='Email' name='email' 
-        //                     className={isValid.email.status === false ? classes.invalid : ''}
-        //                     onChange={onChangeInput} 
-        //                     onBlur={onBlurInput}
-        //                 />
-        //                 {isValid.email.message && <p className={classes.error}>{isValid.email.message}</p>}
-        //                 <input type='password' placeholder='Mật khẩu' name='password'
-        //                     className={isValid.password.status === false ? classes.invalid : ''}
-        //                     onChange={onChangeInput} 
-        //                     onBlur={onBlurInput}
-        //                 />
-        //                 {isValid.password.message && <p className={classes.error}>{isValid.password.message}</p>}
-        //                 <button type='submit' className={classes.submit}>Đăng nhập</button>
-        //                 <a href="/#" className={classes['forget-password']}>Quên mật khẩu ?</a>
-        //                 <p className={classes.txt}>Hoặc</p>
-        //                 <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
-        //                 <p className={classes['txt-bottom']}>
-        //                     Bạn chưa có tài khoản ? <Link to='/dang-ky'>Đăng ký</Link>
-        //                 </p>
-        //             </form>
-        //         </div>  
-        //     </div>
-        // )
-
         <div className="container">
             <div className={classes['wrap-user-form']}>
                 <h3>Đăng nhập</h3>

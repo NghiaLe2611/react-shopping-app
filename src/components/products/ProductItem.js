@@ -63,12 +63,8 @@ const ProductItem = (props) => {
     return (
 		<div className={`${classes['product-item']} ${props.col ? classes[`col-${props.col}`] : ''} ${props.display === 'LIST' ? classes['item-list'] : ''}`}>
 			<a
-				href={`${
-					category === 'smartphone'
-						? '/dien-thoai/'
-						: category === 'tablet'
-						? '/may-tinh-bang/'
-						: ''
+				href={`${category === 'smartphone' ? '/dien-thoai/' : category === 'tablet'
+						? '/may-tinh-bang/' : ''
 				}${convertProductLink(name)}`}
 				onClick={(e) => navigateDetail(e, name)}
 			>

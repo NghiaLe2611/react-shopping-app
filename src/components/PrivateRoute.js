@@ -3,13 +3,13 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 export default function PrivateRoute({ children }) {
     const location = useLocation();
-    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
+    const userData = useSelector(state => state.auth.userData);
     const slug = location.pathname.split('/').pop();
     console.log(slug);
     
     // return isLoggedIn ? children : <Navigate to='/dang-nhap' state={{ from: location }}/>;
 
-    if (isLoggedIn) {
+    if (userData) {
         return children;
     }
 

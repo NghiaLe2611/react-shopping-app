@@ -1,11 +1,9 @@
 import { Fragment, useState, useEffect } from 'react';
-import { firebase } from '../firebase/config';
-import 'firebase/compat/auth';
-import { useSelector } from 'react-redux';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import classes from '../scss/Profile.module.scss';
 import iconFacebook from '../assets/images/icon-fb.png';
 import iconGoogle from '../assets/images/icon-google.png';
+import { useSelector } from 'react-redux';
 
 const profileNav = [
     {
@@ -33,14 +31,12 @@ const profileNav = [
         name: 'Nhận xét của tôi'
     }
 ];
-
-const minYear = 1900;
-const maxYear = new Date().getFullYear();
+const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString());
 function getDaysInMonth (month, year) {
     return new Date(year, month, 0).getDate();
-}
+};
 
-const ProfilePage = () => {
+const ProfilePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -49,11 +45,8 @@ const ProfilePage = () => {
     const [daysInMonth, setDaysInMonth] = useState('');
 
     const slug = location.pathname.split('/').pop();
-    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
     const userData = useSelector(state => state.auth.userData);
     const { displayName, photoURL, id, email, emailVerified } = userData ? userData : {};
-    
-    const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString());
 
     useEffect(() => {
         if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -161,7 +154,7 @@ const ProfilePage = () => {
                                     <i className="icon-lock"></i>
                                     <span>Đổi mật khẩu</span>
                                 </div>
-                                <button class={classes.update}>Cập nhật</button>
+                                <button className={classes.update}>Cập nhật</button>
                             </div>
                         </div>
                         <div className={classes.group}>
@@ -171,7 +164,7 @@ const ProfilePage = () => {
                                     <img src={iconFacebook} alt="icon-facebook" />
                                     <span>Facebook</span>
                                 </div>
-                                <button class={classes.update}>Liên kết</button>
+                                <button className={classes.update}>Liên kết</button>
                             </div>
                             <div className={classes.item}>
                                 <div className={classes.left}>
@@ -180,8 +173,8 @@ const ProfilePage = () => {
                                 </div>
                                 {
                                     emailVerified ? 
-                                        <button class={`${classes.update} ${classes.active}`}>Đã liên kết</button> :
-                                        <button class={classes.update}>Liên kết</button>
+                                        <button className={`${classes.update} ${classes.active}`}>Đã liên kết</button> :
+                                        <button className={classes.update}>Liên kết</button>
                                 }
                             </div>
                         </div>
