@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'; // Redirect -> Navigate in v6
+import { Link, useParams, useLocation } from 'react-router-dom'; // Redirect -> Navigate in v6
 import useFetch from '../hooks/useFetch';
 import ProductItem from '../components/products/ProductItem';
 import SkeletonElement from '../components/UI/Skeleton';
@@ -12,6 +12,7 @@ import { removeQueryParam } from '../helpers/helpers';
 import NotiSearch from '../assets/images/noti-search.png';
 import useCheckMobile from '../hooks/useCheckMobile';
 import classes from '../scss/CategoryPage.module.scss';
+import NotFound from './NotFound';
 
 const slides = [
     {
@@ -33,7 +34,6 @@ const slides = [
 
 const CategoryPage = () => {
     const { category } = useParams();
-    const navigate = useNavigate();  
     const location = useLocation();
 
     const categoryName = category === 'dien-thoai' ? 'smartphone' : category === 'may-tinh-bang' ? 'tablet' : null;
@@ -54,9 +54,6 @@ const CategoryPage = () => {
     const { isMobile } = useCheckMobile();
 
     useEffect(() => {
-        if (!categoryName) {
-           navigate('/not-found');
-        }
         setFilterUrl(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
     }, [categoryName]);
 
@@ -227,73 +224,76 @@ const CategoryPage = () => {
                     return
             }
         }
-    }
+    };
 
     return (
-        <Fragment>
-            {isShowFilter && <div className='overlay' onClick={() => setIsShowFilter(false)}></div>}
-            {
-                isMobile && (
-                    <div className={`${classes['wrap-filter-sidebar']} ${isShowFilter ? classes.active : ''}`}>
-                        { isMobile && <span className={classes.close} onClick={() => setIsShowFilter(false)}>×</span>}
-                        <FilterSidebar category={categoryName}
-                            filter={filter} setFilter={setFilter} 
-                            setIsFiltering={setIsFiltering}
-                        />
-                    </div>
-                )
-            }
-            <div className='container'>
+        !categoryName ? <NotFound/> :
+        (
+            <Fragment>
+                {isShowFilter && <div className='overlay' onClick={() => setIsShowFilter(false)}></div>}
                 {
-                    products && products.length ? (
-                        <ul className="breadcrumbs">
-                            <li>
-                                <Link to="/">Trang chủ</Link>
-                            </li>
-                            <li>{breadcrumbsCate}</li>
-                        </ul>
-                    ) : ( 
-                        <div style={{padding: '15px 0'}}>
-                            <Skeleton height={20}/>
-                        </div>
-                    )
-                }
-                <div style={{marginTop: '-30px'}}>
-                    <Slides slides={slides} full={true} />
-                </div>
-                
-                <div className={classes['wrap-category']}>
-                    {
-                        !isMobile && (
+                    isMobile && (
+                        <div className={`${classes['wrap-filter-sidebar']} ${isShowFilter ? classes.active : ''}`}>
+                            { isMobile && <span className={classes.close} onClick={() => setIsShowFilter(false)}>×</span>}
                             <FilterSidebar category={categoryName}
                                 filter={filter} setFilter={setFilter} 
                                 setIsFiltering={setIsFiltering}
-                                setIsSorting={setIsSorting} 
                             />
-                        )
-                    }
-                    
-                    <div className={`card ${isSorting ? 'is-sorting' : ''}`}>
-                        {
-                            categoryName && (
-                                <h2 className={classes.title}>{categoryName === 'smartphone' ? 'Điện thoại' : categoryName === 'tablet' ? 'Máy tính bảng' : ''}</h2>
-                            )
-                        }
-                        <Filter viewBy={viewBy} setIsFiltering={setIsFiltering} isMobile={isMobile}
-                            sortProducts={sortProductsHandler} showFilterSidebar={showFilterSidebar}
-                            setViewProducts={setViewProductsHandler}
-                        />
-                        {
-                            categoryName && (
-                                <div className={`${classes['product-list']} ${viewBy === 'LIST' ? classes['list-view'] : ''}`}>
-                                    {content}
+                        </div>
+                    )
+                }
+                <div className='container'>
+                    {
+                        products && products.length ? (  
+                            <ul className="breadcrumbs">
+                                <li>
+                                    <Link to="/">Trang chủ</Link>
+                                </li>
+                                <li>{breadcrumbsCate}</li>
+                            </ul>
+                        ) : ( 
+                            isLoading && (
+                                <div style={{padding: '15px 0'}}>
+                                    <Skeleton height={20}/>
                                 </div>
                             )
+                        )
+                    }   
+                    <div style={{marginTop: '-30px'}}>
+                        <Slides slides={slides} full={true} />
+                    </div>
+                    <div className={classes['wrap-category']}>
+                        {
+                            !isMobile && (
+                                <FilterSidebar category={categoryName}
+                                    filter={filter} setFilter={setFilter} 
+                                    setIsFiltering={setIsFiltering}
+                                    setIsSorting={setIsSorting} 
+                                />
+                            )
                         }
+                        <div className={`card ${isSorting ? 'is-sorting' : ''}`}>
+                            {
+                                categoryName && (
+                                    <h2 className={classes.title}>{categoryName === 'smartphone' ? 'Điện thoại' : categoryName === 'tablet' ? 'Máy tính bảng' : ''}</h2>
+                                )
+                            }
+                            <Filter viewBy={viewBy} setIsFiltering={setIsFiltering} isMobile={isMobile}
+                                sortProducts={sortProductsHandler} showFilterSidebar={showFilterSidebar}
+                                setViewProducts={setViewProductsHandler}
+                            />
+                            {
+                                categoryName && (
+                                    <div className={`${classes['product-list']} ${viewBy === 'LIST' ? classes['list-view'] : ''}`}>
+                                        {content}
+                                    </div>
+                                )
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-        </Fragment>
+            </Fragment>
+        )
     )
 }
 

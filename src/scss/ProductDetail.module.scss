@@ -568,6 +568,7 @@ body {
             }
             .comment {
                 font-size: 14px;
+                word-break: break-word;
             }
         }
     }
@@ -698,6 +699,9 @@ body {
         margin-bottom: 20px;
         .input {
             width: 100%;
+            &:disabled{
+                background-color: #e4e4e4;
+            }
         }
         >div {
             flex: 1;

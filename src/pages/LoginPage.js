@@ -49,16 +49,40 @@ const LoginPage = () => {
 	const uiConfig = {
 		// Popup signin flow rather than redirect flow.
 		signInFlow: 'popup',
-		signInSuccessUrl: '/',
+		// signInSuccessUrl: '/',
 		signInOptions: [
             // firebase.auth.EmailAuthProvider.PROVIDER_ID,
 			firebase.auth.FacebookAuthProvider.PROVIDER_ID,
             firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-		]
-        // callbacks: {
-        //     // Avoid redirects after sign-in.
-        //     signInSuccessWithAuthResult: () => false
-        // }
+		],
+        callbacks: {
+            // Avoid redirects after sign-in.
+            signInSuccessWithAuthResult: () => {
+                let timerInterval;
+                const Toast = formAlert.mixin({
+                    toast: true,
+                    confirmButtonText: 'Chuyển trang ngay',
+                    confirmButtonColor: '#2f80ed',
+                    timer: 5000,
+                    didOpen: () => {
+                        timerInterval = setInterval(() => {
+                            Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0)
+                        }, 100);
+                    },
+                    willClose: () => {
+                        clearInterval(timerInterval);
+                    }
+                });
+                Toast.fire({
+                    icon: 'success',
+                    html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
+                }).then(isConfirm => {
+                    if (isConfirm) {
+                        navigate('/');
+                    }
+                });
+            }
+        }
 	};
 
     const validateInput = (name, value) => {

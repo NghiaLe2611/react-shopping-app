@@ -4,6 +4,7 @@ import classes from '../scss/Profile.module.scss';
 import iconFacebook from '../assets/images/icon-fb.png';
 import iconGoogle from '../assets/images/icon-google.png';
 import { useSelector } from 'react-redux';
+import useFetch from '../hooks/useFetch';
 
 const profileNav = [
     {
@@ -43,16 +44,33 @@ const ProfilePage = (props) => {
     const [selectedMonth, setSelectedMonth] = useState(0);
     const [selectedYear, setSelectedYear] = useState(0);
     const [daysInMonth, setDaysInMonth] = useState('');
+    const [userReviews, setUserReviews] = useState([]);
 
     const slug = location.pathname.split('/').pop();
     const userData = useSelector(state => state.auth.userData);
     const { displayName, photoURL, id, email, emailVerified } = userData ? userData : {};
+
+    const { fetchData: fetchReviews } = useFetch();
+
 
     useEffect(() => {
         if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
             setDaysInMonth(getDaysInMonth(selectedMonth, selectedYear));
         }
     }, [selectedMonth, selectedYear]);
+
+    useEffect(() => {
+        if (id) {
+            fetchReviews({
+                url: `${process.env.REACT_APP_API_URL}/${id}/reviews` 
+            }, data => {
+                // console.log(data);
+                if (data) {
+                    setUserReviews(data);
+                }
+            });
+        }
+    }, [fetchReviews, id]);
 
     const onChangeMonth = (e) => {
         console.log(e.target.value);

@@ -7,6 +7,7 @@ import { capitalizeFirstLetter } from '../helpers/helpers';
 import SkeletonElement from '../components/UI/Skeleton';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import NotFound from './NotFound';
 
 const BrandPage = () => {
     const { brand } = useParams();
@@ -42,7 +43,7 @@ const BrandPage = () => {
                     if (data.results.length) {
                         setProducts(data.results);
                     } else {
-                        navigate('/not-found');
+                        setProducts(null);
                     }
                 }
             }
@@ -65,43 +66,49 @@ const BrandPage = () => {
         content = <p className='error'>{error}</p>;
     }
 
-    if (!isLoading && !error && products.length) {
-        content = (
-            products.map(item => (
-                <ProductItem key={item._id}
-                    item={item}
-                />
-            ))
-        );
+    if (!isLoading && !error) {
+        if (!products) {
+            content = <NotFound/>
+        } 
 
-        if (location.pathname.includes('dien-thoai')) {
-            breadcrumbsCate = <Fragment>
-                <li>
-                    <Link to="/">Trang chủ</Link>
-                </li>
-                <li>
-                    <Link to="/dien-thoai">Điện thoại</Link>
-                </li>
-                <li>
-                    <Link to={`/dien-thoai/hang/${brand}`}>
-                        {capitalizeFirstLetter(brand)}
-                    </Link>
-                </li>
-            </Fragment>;
-        } else if (location.pathname.includes('may-tinh-bang')) {
-            breadcrumbsCate = <Fragment>
-                <li>
-                    <Link to="/">Trang chủ</Link>
-                </li>
-                <li>
-                    <Link to="/may-tinh-bang">Máy tính bảng</Link>
-                </li>
-                <li>
-                    <Link to={`/may-tinh-bang/hang/${brand}`}>
-                        {capitalizeFirstLetter(brand)}
-                    </Link>
-                </li>
-            </Fragment>;
+        if (products && products.length) {
+            content = (
+                products.map(item => (
+                    <ProductItem key={item._id}
+                        item={item}
+                    />
+                ))
+            );
+
+            if (location.pathname.includes('dien-thoai')) {
+                breadcrumbsCate = <Fragment>
+                    <li>
+                        <Link to="/">Trang chủ</Link>
+                    </li>
+                    <li>
+                        <Link to="/dien-thoai">Điện thoại</Link>
+                    </li>
+                    <li>
+                        <Link to={`/dien-thoai/hang/${brand}`}>
+                            {capitalizeFirstLetter(brand)}
+                        </Link>
+                    </li>
+                </Fragment>;
+            } else if (location.pathname.includes('may-tinh-bang')) {
+                breadcrumbsCate = <Fragment>
+                    <li>
+                        <Link to="/">Trang chủ</Link>
+                    </li>
+                    <li>
+                        <Link to="/may-tinh-bang">Máy tính bảng</Link>
+                    </li>
+                    <li>
+                        <Link to={`/may-tinh-bang/hang/${brand}`}>
+                            {capitalizeFirstLetter(brand)}
+                        </Link>
+                    </li>
+                </Fragment>;
+            }
         }
     }
 
@@ -112,20 +119,26 @@ const BrandPage = () => {
                     <ul className="breadcrumbs">
                         {breadcrumbsCate}
                     </ul>
-                ) : <div style={{padding: '15px 0'}}>
-                    <Skeleton height={25}/>
-                </div>
+                ) : (
+                    <div style={{padding: '15px 0'}}>
+                        <Skeleton height={25}/>
+                    </div>
+                )
             }
             
-            <div className={classes.banner}>
-                {
-                    imgLoaded ? (
-                        <img src={`/images/banner-${brand}.jpg`} alt="" 
-                            onError={(e)=>{e.target.onError = null; e.target.src=`https://dummyimage.com/1200x300/000/fff` }}
-                        />
-                    ) :  <Skeleton height={'100%'}/>
-                }
-            </div>
+            {
+                products !== null && (
+                    <div className={classes.banner}>
+                        {
+                            imgLoaded ? (
+                                <img src={`/images/banner-${brand}.jpg`} alt="" 
+                                    onError={(e)=>{e.target.onError = null; e.target.src=`https://dummyimage.com/1200x300/000/fff` }}
+                                />
+                            ) :  <Skeleton height={'100%'}/>
+                        }
+                    </div>
+                )
+            }
             <div className='card'>
                 <div className={classes['product-list']}>
                     {content}
