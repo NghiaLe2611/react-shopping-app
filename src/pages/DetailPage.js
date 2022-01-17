@@ -647,11 +647,20 @@ const DetailPage = () => {
                                         </div>
                                         <div className={classes['wrap-ip']}>
                                             <div className={classes.required}>
-                                                <input className={classes.input} type='text' name='name' placeholder='Họ và tên' spellCheck='false'
-                                                    onChange={handleChangeInput} value={displayName ? displayName : ''} 
-                                                    onBlur={handleChangeInput}
-                                                    disabled={displayName ? true : false}
-                                                    ref={ref => reviewFormRef.current.name = ref}/>
+                                                {
+                                                    displayName ? (
+                                                        <input className={classes.input} type='text' name='name' placeholder='Họ và tên' spellCheck='false'
+                                                            onChange={handleChangeInput} value={displayName} 
+                                                            onBlur={handleChangeInput}
+                                                            disabled='disabled'
+                                                            ref={ref => reviewFormRef.current.name = ref}/>
+                                                    ) : (
+                                                        <input className={classes.input} type='text' name='name' placeholder='Họ và tên' spellCheck='false'
+                                                            onChange={handleChangeInput}
+                                                            onBlur={handleChangeInput}
+                                                            ref={ref => reviewFormRef.current.name = ref}/>
+                                                    )
+                                                }
                                             </div>
                                             <div>
                                                 <input className={classes.input} type='text' name='phone' placeholder='Số điện thoại' spellCheck="false"

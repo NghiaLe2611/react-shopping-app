@@ -5,6 +5,8 @@ import iconFacebook from '../assets/images/icon-fb.png';
 import iconGoogle from '../assets/images/icon-google.png';
 import { useSelector } from 'react-redux';
 import useFetch from '../hooks/useFetch';
+import LoadingIndicator from '../components/UI/LoadingIndicator';
+import { timeSince } from '../helpers/helpers';
 
 const profileNav = [
     {
@@ -50,8 +52,7 @@ const ProfilePage = (props) => {
     const userData = useSelector(state => state.auth.userData);
     const { displayName, photoURL, id, email, emailVerified } = userData ? userData : {};
 
-    const { fetchData: fetchReviews } = useFetch();
-
+    const { isLoading: isLoadingReviews, error: reviewsError, fetchData: fetchReviews } = useFetch();
 
     useEffect(() => {
         if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -61,16 +62,18 @@ const ProfilePage = (props) => {
 
     useEffect(() => {
         if (id) {
-            fetchReviews({
-                url: `${process.env.REACT_APP_API_URL}/${id}/reviews` 
-            }, data => {
-                // console.log(data);
-                if (data) {
-                    setUserReviews(data);
-                }
-            });
+            if (slug === 'nhan-xet') {
+                fetchReviews({
+                    url: `${process.env.REACT_APP_API_URL}/${id}/reviews` 
+                }, data => {
+                    // console.log(data);
+                    if (data) {
+                        setUserReviews(data);
+                    }
+                });
+            }
         }
-    }, [fetchReviews, id]);
+    }, [fetchReviews, id, slug]);
 
     const onChangeMonth = (e) => {
         console.log(e.target.value);
@@ -86,15 +89,61 @@ const ProfilePage = (props) => {
 
     switch (slug) {
         case 'don-hang': {
-            profileContent = <p>Đơn hàng</p>
+            profileContent = (
+                <Fragment>
+                    <h3>Đơn hàng của tôi</h3>
+                </Fragment>
+            )
             break;
         }
         case 'yeu-thich': {
-            profileContent = <p>Yêu thích</p>
+            profileContent = (
+                <Fragment>
+                    <h3>Sản phẩm yêu thích</h3>
+                </Fragment>
+            )
             break;
         }
         case 'nhan-xet': {
-            profileContent = <p>Nhận xét</p>
+            profileContent = (
+                <Fragment>
+                    <h3>Nhận xét của tôi</h3>
+                    <div className={classes.content}>
+                        {
+                            isLoadingReviews && !reviewsError ? <LoadingIndicator/> : (
+                                userReviews.length > 0 ? (
+                                    <ul className={classes['list-reviews']}>
+                                        {
+                                            userReviews.map(item => (
+                                                <li key={item._id}>
+                                                    <div className={classes.overview}>
+                                                        <p className={classes.rating}>
+                                                            {
+                                                                Array(item.star).fill().map((item, index) => (
+                                                                    <i key={index} className='icon-star'></i>
+                                                                ))
+                                                            }
+                                                            { item.star < 5 && (
+                                                                Array(5 - item.star).fill().map((item, index) => (
+                                                                    <i key={index} className={`icon-star ${classes.black}`}></i>
+                                                                ))
+                                                            ) }
+                                                        </p>
+                                                        <span className={classes.time}>{timeSince(item.createdAt)}</span>
+                                                    </div>
+                                                    <p className={classes.comment}>
+                                                        {item.comment}
+                                                    </p>
+                                                </li>
+                                            ))
+                                        }
+                                    </ul>
+                                ) : <p>Bạn chưa có nhận xét nào</p>
+                            )
+                        }
+                    </div>
+                </Fragment>
+            )
             break;
         }
         default: {

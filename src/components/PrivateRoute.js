@@ -4,8 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 export default function PrivateRoute({ children }) {
     const location = useLocation();
     const userData = useSelector(state => state.auth.userData);
-    const slug = location.pathname.split('/').pop();
-    console.log(slug);
+    // const slug = location.pathname.split('/').pop();
     
     // return isLoggedIn ? children : <Navigate to='/dang-nhap' state={{ from: location }}/>;
 
