@@ -19,7 +19,6 @@ const formAlert = withReactContent(Swal);
 
 const SignUpPage = () => {
     const navigate = useNavigate();
-    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
 
     const [userInput, setUserInput] = useState({
         email: null,
@@ -195,12 +194,9 @@ const SignUpPage = () => {
     };
 
 	return (
-        isLoggedIn ? (
-            <Navigate to='/tai-khoan' />
-        ) : (
-            <div className="container">
+        <div className="container">
             {
-               <div className={classes['wrap-user-form']}>
+            <div className={classes['wrap-user-form']}>
                 <h3>Đăng ký</h3>
                 <form className={classes['user-form']}>
                     <input type='text' placeholder='Email' name='email' 
@@ -229,8 +225,7 @@ const SignUpPage = () => {
             </div>
             }     
         </div>  
-        )
-	);
+    )
 };
 
 export default SignUpPage;

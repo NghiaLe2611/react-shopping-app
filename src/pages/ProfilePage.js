@@ -85,7 +85,77 @@ const ProfilePage = (props) => {
         setSelectedYear(e.target.value);
     };
 
-    let profileContent;
+    let profileContent, reviewsContent;
+
+    if (isLoadingReviews) {
+        if (userReviews.length === 0) {
+            reviewsContent = <LoadingIndicator/>;
+        } else {
+            reviewsContent = (
+                <ul className={classes['list-reviews']}>
+                    {
+                        userReviews.map(item => (
+                            <li key={item._id}>
+                                <div className={classes.overview}>
+                                    <p className={classes.rating}>
+                                        {
+                                            Array(item.star).fill().map((item, index) => (
+                                                <i key={index} className='icon-star'></i>
+                                            ))
+                                        }
+                                        { item.star < 5 && (
+                                            Array(5 - item.star).fill().map((item, index) => (
+                                                <i key={index} className={`icon-star ${classes.black}`}></i>
+                                            ))
+                                        ) }
+                                    </p>
+                                    <span className={classes.time}>{timeSince(item.createdAt)}</span>
+                                </div>
+                                <p className={classes.comment}>
+                                    {item.comment}
+                                </p>
+                            </li>
+                        ))
+                    }
+                </ul>
+            )
+        }
+    }
+
+    if (!isLoadingReviews && !reviewsError) {
+        if (userReviews.length > 0) {
+            reviewsContent = (
+                <ul className={classes['list-reviews']}>
+                    {
+                        userReviews.map(item => (
+                            <li key={item._id}>
+                                <div className={classes.overview}>
+                                    <p className={classes.rating}>
+                                        {
+                                            Array(item.star).fill().map((item, index) => (
+                                                <i key={index} className='icon-star'></i>
+                                            ))
+                                        }
+                                        { item.star < 5 && (
+                                            Array(5 - item.star).fill().map((item, index) => (
+                                                <i key={index} className={`icon-star ${classes.black}`}></i>
+                                            ))
+                                        ) }
+                                    </p>
+                                    <span className={classes.time}>{timeSince(item.createdAt)}</span>
+                                </div>
+                                <p className={classes.comment}>
+                                    {item.comment}
+                                </p>
+                            </li>
+                        ))
+                    }
+                </ul>
+            )
+        } else {
+            reviewsContent = <p>Bạn chưa có nhận xét nào</p>;
+        }
+    }
 
     switch (slug) {
         case 'don-hang': {
@@ -99,7 +169,7 @@ const ProfilePage = (props) => {
         case 'yeu-thich': {
             profileContent = (
                 <Fragment>
-                    <h3>Sản phẩm yêu thích</h3>
+                    <h3>Danh sách yêu thích</h3>
                 </Fragment>
             )
             break;
@@ -109,38 +179,7 @@ const ProfilePage = (props) => {
                 <Fragment>
                     <h3>Nhận xét của tôi</h3>
                     <div className={classes.content}>
-                        {
-                            isLoadingReviews && !reviewsError ? <LoadingIndicator/> : (
-                                userReviews.length > 0 ? (
-                                    <ul className={classes['list-reviews']}>
-                                        {
-                                            userReviews.map(item => (
-                                                <li key={item._id}>
-                                                    <div className={classes.overview}>
-                                                        <p className={classes.rating}>
-                                                            {
-                                                                Array(item.star).fill().map((item, index) => (
-                                                                    <i key={index} className='icon-star'></i>
-                                                                ))
-                                                            }
-                                                            { item.star < 5 && (
-                                                                Array(5 - item.star).fill().map((item, index) => (
-                                                                    <i key={index} className={`icon-star ${classes.black}`}></i>
-                                                                ))
-                                                            ) }
-                                                        </p>
-                                                        <span className={classes.time}>{timeSince(item.createdAt)}</span>
-                                                    </div>
-                                                    <p className={classes.comment}>
-                                                        {item.comment}
-                                                    </p>
-                                                </li>
-                                            ))
-                                        }
-                                    </ul>
-                                ) : <p>Bạn chưa có nhận xét nào</p>
-                            )
-                        }
+                        {reviewsContent}
                     </div>
                 </Fragment>
             )

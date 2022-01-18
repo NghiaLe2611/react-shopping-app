@@ -63,8 +63,8 @@ let reviews1 = [
 async function main() {
 	// Use connect method to connect to the server
 	const db = client.db();
-	const myCollection = db.collection('reviews1');
-	const insertResult = await myCollection.insertMany(reviews1);
+	const myCollection = db.collection('reviews');
+	const insertResult = await myCollection.insertMany(reviews);
 
 	console.log('Inserted documents =>', insertResult);
 

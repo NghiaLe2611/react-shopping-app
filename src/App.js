@@ -1,19 +1,11 @@
-import React, { Fragment, Suspense, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Fragment, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoadingIndicator from './components/UI/LoadingIndicator';
 import PrivateRoute from './components/PrivateRoute';
 import { useSelector, useDispatch } from 'react-redux';
 import { authActions } from './store/auth';
 import { authApp } from './firebase/config';
-
-// import Root from './components/UI/Root';
-// import HomePage from './pages/HomePage';
-// import DetailPage from './pages/DetailPage';
-// import CategoryPage from './pages/CategoryPage';
-// import NotFound from './pages/NotFound';
-// import BrandPage from './pages/BrandPage';
-// import CartPage from './pages/CartPage';
-// import ComparePage from './pages/ComparePage';
+import useFetch from './hooks/useFetch';
 
 const Root = React.lazy(() => import('./components/UI/Root'));
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -27,9 +19,39 @@ const SignUpPage = React.lazy(() => import('./pages/SignUpPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
+// import Root from './components/UI/Root';
+// import HomePage from './pages/HomePage';
+// import DetailPage from './pages/DetailPage';
+// import CategoryPage from './pages/CategoryPage';
+// import NotFound from './pages/NotFound';
+// import BrandPage from './pages/BrandPage';
+// import CartPage from './pages/CartPage';
+// import ComparePage from './pages/ComparePage';
+
 function App() {
     const dispatch = useDispatch();
     const userData = useSelector(state => state.auth.userData);
+
+    const { fetchData: fetchUser } = useFetch();
+    const { fetchData: postUserInfo } = useFetch();
+
+    const getUserInfo = useCallback(() => {
+        const data = {
+            uuid: userData.id,
+            displayName: userData.displayName,
+            email: userData.email,
+            photoURL: userData.photoURL,
+            emailVerified: userData.emailVerified,
+        };
+
+        postUserInfo({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            url: `${process.env.REACT_APP_API_URL}/submitUserData`,
+            body: data
+        });
+        
+    }, [postUserInfo, userData]);
 
     useEffect(() => {
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
@@ -69,6 +91,20 @@ function App() {
         return () => unregisterAuthObserver();
 
     }, [dispatch]);
+
+    useEffect(() => {
+        if (userData) {
+            fetchUser({
+                url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.id}` 
+            }, data => {
+                console.log(111, data);
+                if (!data) {
+                    console.log(222, data);
+                    getUserInfo();
+                }
+            });
+        }
+    }, [fetchUser, getUserInfo, userData]);
 
 	return (
 		<Fragment>
