@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import classes from '../scss/Profile.module.scss';
 import iconFacebook from '../assets/images/icon-fb.png';
@@ -7,6 +7,10 @@ import { useSelector } from 'react-redux';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import { timeSince } from '../helpers/helpers';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const swal = withReactContent(Swal);
 
 const profileNav = [
     {
@@ -34,7 +38,7 @@ const profileNav = [
         name: 'Nhận xét của tôi'
     }
 ];
-const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString());
+const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString()).reverse();
 function getDaysInMonth (month, year) {
     return new Date(year, month, 0).getDate();
 };
@@ -42,17 +46,26 @@ function getDaysInMonth (month, year) {
 const ProfilePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const userData = useSelector(state => state.auth.userData);
+    const { displayName, photoURL, uuid, email, emailVerified, 
+        fullName, phone, birthday } = userData ? userData : {};
 
+    const [userInfo, setUserInfo] = useState({
+        fullname: fullName ? fullName : '',
+        nickname: displayName ? displayName : '',
+        phone: phone ? phone : ''
+    });
+    const [selectedDay, setSelectedDay] = useState(0);
     const [selectedMonth, setSelectedMonth] = useState(0);
     const [selectedYear, setSelectedYear] = useState(0);
     const [daysInMonth, setDaysInMonth] = useState('');
     const [userReviews, setUserReviews] = useState([]);
 
     const slug = location.pathname.split('/').pop();
-    const userData = useSelector(state => state.auth.userData);
-    const { displayName, photoURL, id, email, emailVerified } = userData ? userData : {};
+    
 
     const { isLoading: isLoadingReviews, error: reviewsError, fetchData: fetchReviews } = useFetch();
+    const { fetchData: updateUser } = useFetch();
 
     useEffect(() => {
         if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -61,10 +74,19 @@ const ProfilePage = (props) => {
     }, [selectedMonth, selectedYear]);
 
     useEffect(() => {
-        if (id) {
+        if (selectedDay !== 0 && selectedMonth !== 0 && selectedYear !== 0) {
+            const day = parseInt(selectedDay);
+            const month = parseInt(selectedMonth);
+            const year = parseInt(selectedYear);
+            setUserInfo({...userInfo, birthday: new Date(year, month - 1, day)})
+        }
+    }, [selectedDay, selectedMonth, selectedYear]);
+
+    useEffect(() => {
+        if (uuid) {
             if (slug === 'nhan-xet') {
                 fetchReviews({
-                    url: `${process.env.REACT_APP_API_URL}/${id}/reviews` 
+                    url: `${process.env.REACT_APP_API_URL}/${uuid}/reviews` 
                 }, data => {
                     // console.log(data);
                     if (data) {
@@ -73,7 +95,12 @@ const ProfilePage = (props) => {
                 });
             }
         }
-    }, [fetchReviews, id, slug]);
+    }, [fetchReviews, uuid, slug]);
+
+    const onChangeDay = (e) => {
+        console.log(e.target.value);
+        setSelectedDay(e.target.value);
+    };
 
     const onChangeMonth = (e) => {
         console.log(e.target.value);
@@ -83,6 +110,44 @@ const ProfilePage = (props) => {
     const onChangeYear = (e) => {
         console.log(e.target.value);
         setSelectedYear(e.target.value);
+    };
+
+    const onChangeInput = (e) => {
+        const { name } = e.target;
+        const { value } = e.target;
+        setUserInfo({...userInfo, [name]: value });
+    };
+
+    const updateUserData = (e) => {
+        e.preventDefault();
+
+        let updatedData = {};
+
+        if (userInfo.fullname) {
+            updatedData['fullName'] = userInfo.fullname;
+        }
+        if (userInfo.nickname) {
+            updatedData['displayName'] = userInfo.nickname;
+        }
+        if (userInfo.phone) {
+            updatedData['phone'] = userInfo.phone;
+        }
+        if (userInfo.birthday) {
+            updatedData['birthday'] = userInfo.birthday;
+        }
+
+        if (Object.keys(updatedData).length > 0) {
+            updateUser({
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+                body: updatedData
+            }, data => {
+                console.log(12345, data);
+            });
+        } else {
+            alert('Bạn cần nhập thông tin cần cập nhật');
+        }
     };
 
     let profileContent, reviewsContent;
@@ -192,20 +257,20 @@ const ProfilePage = (props) => {
                     <div className={classes.content}>      
                         <div className={classes.group}>
                             <h4>Thông tin cá nhân</h4>
-                            <form action="">
+                            <form onSubmit={updateUserData}>
                                 <div className={classes['input-group']}>
                                     <label>Họ và tên</label>
                                     <div className={classes['wrap-ip']}>
-                                        <input type="text" name='name' placeholder='Họ tên'/>
+                                        <input type="text" name='fullname' placeholder='Họ tên' value={userInfo.fullname} onChange={onChangeInput} />
                                     </div>
                                 </div>
                                 <div className={classes['input-group']}>
                                     <label>Nickname</label>
                                     <div className={classes['wrap-ip']}>
                                         {
-                                            displayName ? 
+                                            emailVerified ? 
                                                 <input type="text" name='nickname' placeholder={displayName} value={displayName} disabled/> : 
-                                                <input type="text" name='nickname' placeholder='Nickname'/>
+                                                <input type="text" name='nickname' onChange={onChangeInput} value={userInfo.nickname} placeholder='Nickname'/>
                                         }
                                     </div>
                                 </div>
@@ -218,13 +283,33 @@ const ProfilePage = (props) => {
                                 <div className={classes['input-group']}>
                                     <label>Số điện thoại</label>
                                     <div className={classes['wrap-ip']}>
-                                        <input type="text" name='phone' placeholder='Thêm số điện thoại' />
+                                        {
+                                            phone ? (
+                                                <input type="text" name='phone' placeholder='Thêm số điện thoại' 
+                                                    onChange={onChangeInput} value={userInfo.phone}
+                                                    onKeyPress={(e) => {
+                                                        if (!/[0-9]/.test(e.key)) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <input type="text" name='phone' placeholder='Thêm số điện thoại' 
+                                                    onChange={onChangeInput}
+                                                    onKeyPress={(e) => {
+                                                        if (!/[0-9]/.test(e.key)) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                            )  
+                                        }
                                     </div>
                                 </div>
                                 <div className={classes['input-group']}>
                                     <label>Ngày sinh</label>
                                     <div className={classes['wrap-ip']}>
-                                        <select name='day' id='select-day'>
+                                        <select name='day' id='select-day' onChange={onChangeDay}>
                                             <option value='0'>Ngày</option>
                                             {
                                                 daysInMonth > 0 && Array(daysInMonth).fill().map((item, index) => (
@@ -243,7 +328,7 @@ const ProfilePage = (props) => {
                                         <select name='year' onChange={onChangeYear}>
                                             <option value='0'>Năm</option>
                                             {
-                                                yearList.reverse().map(item => (
+                                                yearList.map(item => (
                                                         <option key={item} value={item}>{item}</option>
                                                 ))
                                             }

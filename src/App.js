@@ -35,23 +35,23 @@ function App() {
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: postUserInfo } = useFetch();
 
-    const getUserInfo = useCallback(() => {
-        const data = {
-            uuid: userData.id,
-            displayName: userData.displayName,
-            email: userData.email,
-            photoURL: userData.photoURL,
-            emailVerified: userData.emailVerified,
-        };
+    // const getUserInfo = useCallback(() => {
+    //     const data = {
+    //         uuid: userData.id,
+    //         displayName: userData.displayName,
+    //         email: userData.email,
+    //         photoURL: userData.photoURL,
+    //         emailVerified: userData.emailVerified,
+    //     };
 
-        postUserInfo({
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            url: `${process.env.REACT_APP_API_URL}/submitUserData`,
-            body: data
-        });
+    //     postUserInfo({
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         url: `${process.env.REACT_APP_API_URL}/submitUserData`,
+    //         body: data
+    //     });
         
-    }, [postUserInfo, userData]);
+    // }, [postUserInfo, userData]);
 
     useEffect(() => {
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
@@ -59,7 +59,7 @@ function App() {
                 console.log('Logged in');
 
                 const userDataObj = {
-                    id: user.uid,
+                    uuid: user.uid,
                     displayName: user.displayName,
                     email: user.email,
                     photoURL: user.photoURL,
@@ -91,20 +91,42 @@ function App() {
         return () => unregisterAuthObserver();
 
     }, [dispatch]);
-
+    
     useEffect(() => {
+        const getUserInfo = () => {
+            const data = {
+                uuid: userData.id,
+                displayName: userData.displayName,
+                email: userData.email,
+                photoURL: userData.photoURL,
+                emailVerified: userData.emailVerified,
+            };
+    
+            postUserInfo({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/submitUserData`,
+                body: data
+            });
+        }
+        
         if (userData) {
             fetchUser({
-                url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.id}` 
+                url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}` 
             }, data => {
-                console.log(111, data);
                 if (!data) {
-                    console.log(222, data);
+                    console.log(111, data);
                     getUserInfo();
+                } else {
+                    console.log(222, data);
+                    dispatch(authActions.updateState({
+                        userData: data
+                    }));
+                    localStorage.setItem('userData', JSON.stringify(data));    
                 }
             });
         }
-    }, [fetchUser, getUserInfo, userData]);
+    }, [fetchUser, postUserInfo, dispatch]);
 
 	return (
 		<Fragment>

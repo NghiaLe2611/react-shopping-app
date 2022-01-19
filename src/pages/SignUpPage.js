@@ -94,7 +94,7 @@ const SignUpPage = () => {
         const { name } = e.target;
         const { value } = e.target;
 
-        setUserInput(data => data = {...data, [name]: e.target.value});
+        setUserInput(data => data = {...data, [name]: value});
 
         if (isBlur[name] || isSubmitted) {
             validateInput(name, value);
