@@ -25,11 +25,14 @@
     margin-bottom: 20px;
     padding: 0 15px;
     .avatar{
+        width: 40px;
+        height: 40px;
         margin-right: 10px;
         img{
-            width: 40px;
-            object-fit: contain;
+            height: 100%;
+            width: 100%;
             border-radius: 50%;
+            object-fit: cover;
         }
         i{            
             display: flex;
@@ -135,7 +138,7 @@ aside{
     margin-bottom: 20px;
     label{
         font-size: 15px;
-        min-width: 100px;
+        min-width: 110px;
         margin-right: 20px;
     }
 }
@@ -154,6 +157,9 @@ aside{
         border-radius: 4px;
         padding: 8px 12px;
         font-size: 15px;
+        &:focus{
+            box-shadow: 0px 0px 5px 1px rgba(71, 71, 71, 0.2)
+        }
     }
     select:not(:last-child){
         margin-right: 10px;
@@ -167,7 +173,7 @@ aside{
     padding: 8px 30px;
     margin-top: 30px;
     border-radius: 4px;
-    margin-left: 120px;
+    margin-left: 130px;
 }
 
 .list-reviews{

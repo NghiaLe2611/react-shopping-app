@@ -156,8 +156,10 @@
     .avatar {
         margin-right: 4px;
         img {
+            height: 30px;
+            width: 30px;
             border-radius: 50%;
-            max-width: 30px;
+            object-fit: cover;
         }
     }
     i {

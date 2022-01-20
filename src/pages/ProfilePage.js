@@ -3,12 +3,16 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import classes from '../scss/Profile.module.scss';
 import iconFacebook from '../assets/images/icon-fb.png';
 import iconGoogle from '../assets/images/icon-google.png';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import { timeSince } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { authApp, firebaseAuth } from '../firebase/config';
+import { updateProfile } from 'firebase/auth';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { authActions } from '../store/auth';
 
 const swal = withReactContent(Swal);
 
@@ -46,6 +50,7 @@ function getDaysInMonth (month, year) {
 const ProfilePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const dispatch = useDispatch();
     const userData = useSelector(state => state.auth.userData);
     const { displayName, photoURL, uuid, email, emailVerified, 
         fullName, phone, birthday } = userData ? userData : {};
@@ -55,17 +60,33 @@ const ProfilePage = (props) => {
         nickname: displayName ? displayName : '',
         phone: phone ? phone : ''
     });
-    const [selectedDay, setSelectedDay] = useState(0);
-    const [selectedMonth, setSelectedMonth] = useState(0);
-    const [selectedYear, setSelectedYear] = useState(0);
+    const [selectedDay, setSelectedDay] = useState(() => {
+        if (birthday) {
+            return new Date(birthday).getDate();
+        } 
+        return 0;
+    });
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        if (birthday) {
+            return new Date(birthday).getMonth() + 1;
+        } 
+        return 0;
+    });
+    const [selectedYear, setSelectedYear] = useState(() => {
+        if (birthday) {
+            return new Date(birthday).getFullYear();
+        } 
+        return 0;
+    });
     const [daysInMonth, setDaysInMonth] = useState('');
     const [userReviews, setUserReviews] = useState([]);
 
     const slug = location.pathname.split('/').pop();
     
-
     const { isLoading: isLoadingReviews, error: reviewsError, fetchData: fetchReviews } = useFetch();
     const { fetchData: updateUser } = useFetch();
+
+    const imgRef = useRef('');
 
     useEffect(() => {
         if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -126,15 +147,20 @@ const ProfilePage = (props) => {
         if (userInfo.fullname) {
             updatedData['fullName'] = userInfo.fullname;
         }
-        if (userInfo.nickname) {
-            updatedData['displayName'] = userInfo.nickname;
-        }
+
         if (userInfo.phone) {
             updatedData['phone'] = userInfo.phone;
         }
+
         if (userInfo.birthday) {
             updatedData['birthday'] = userInfo.birthday;
         }
+
+        if (!emailVerified && userInfo.nickname) {
+            updatedData['displayName'] = userInfo.nickname;
+        }
+
+        console.log(updatedData);
 
         if (Object.keys(updatedData).length > 0) {
             updateUser({
@@ -144,9 +170,68 @@ const ProfilePage = (props) => {
                 body: updatedData
             }, data => {
                 console.log(12345, data);
+                if (data) {
+                    const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+                    const updatedDataStorage = {
+                        ...userDataStorage, 
+                        fullName: updatedData.fullName,
+                        displayName: updatedData.displayName,
+                        phone: updatedData.phone,
+                        birthday: updatedData.birthday,
+                    }
+                    console.log(updatedDataStorage);
+                }
             });
         } else {
-            alert('Bạn cần nhập thông tin cần cập nhật');
+            alert('Error');
+        }
+    };
+
+    const onChangePhoto = (e) => {
+
+    };
+
+    const uploadPhoto = async (e) => {
+        const file = imgRef.current.files[0];
+
+        const updateProfilePicture = (url) => {
+            updateProfile(firebaseAuth.currentUser, {
+                photoURL: url,
+            }).then((res) => {
+                console.log('photo uploaded! ', res);
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
+
+
+        if (file) {
+            const user = authApp.currentUser;
+            // Create a root reference
+            const storage = getStorage();
+
+            // Create a reference to image's path
+            const storageRef = ref(storage, `${uuid}/profilePicture/${file.name}`);
+
+            // 'file' comes from the Blob or File API
+            uploadBytes(storageRef, file).then((snapshot) => {
+                // console.log(snapshot);
+                
+                getDownloadURL(storageRef).then(function(url) {
+                    // update ...
+                    user.updateProfile({ photoURL: url})
+                        .then(() => {
+                            console.log('photo uploaded! ', url);
+                            dispatch(authActions.updateState({
+                                userData: {...userData, photoURL: url}
+                            }));
+                        }).catch((err) => {
+                            console.log(err);
+                        });
+                }).catch(function(error) { 
+                    console.log(error) 
+                }); 
+            });
         }
     };
 
@@ -265,7 +350,7 @@ const ProfilePage = (props) => {
                                     </div>
                                 </div>
                                 <div className={classes['input-group']}>
-                                    <label>Nickname</label>
+                                    <label>Tên đăng nhập</label>
                                     <div className={classes['wrap-ip']}>
                                         {
                                             emailVerified ? 
@@ -283,33 +368,20 @@ const ProfilePage = (props) => {
                                 <div className={classes['input-group']}>
                                     <label>Số điện thoại</label>
                                     <div className={classes['wrap-ip']}>
-                                        {
-                                            phone ? (
-                                                <input type="text" name='phone' placeholder='Thêm số điện thoại' 
-                                                    onChange={onChangeInput} value={userInfo.phone}
-                                                    onKeyPress={(e) => {
-                                                        if (!/[0-9]/.test(e.key)) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
-                                                />
-                                            ) : (
-                                                <input type="text" name='phone' placeholder='Thêm số điện thoại' 
-                                                    onChange={onChangeInput}
-                                                    onKeyPress={(e) => {
-                                                        if (!/[0-9]/.test(e.key)) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
-                                                />
-                                            )  
-                                        }
+                                        <input type="text" name='phone' placeholder='Thêm số điện thoại' 
+                                            onChange={onChangeInput} value={userInfo.phone}
+                                            onKeyPress={(e) => {
+                                                if (!/[0-9]/.test(e.key)) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                        />
                                     </div>
                                 </div>
                                 <div className={classes['input-group']}>
                                     <label>Ngày sinh</label>
                                     <div className={classes['wrap-ip']}>
-                                        <select name='day' id='select-day' onChange={onChangeDay}>
+                                        <select name='day' id='select-day' aria-labelledby='day' onChange={onChangeDay} value={selectedDay}>
                                             <option value='0'>Ngày</option>
                                             {
                                                 daysInMonth > 0 && Array(daysInMonth).fill().map((item, index) => (
@@ -317,7 +389,7 @@ const ProfilePage = (props) => {
                                                 ))
                                             }
                                         </select>
-                                        <select name='month' id='select-month' onChange={onChangeMonth}>
+                                        <select name='month' id='select-month' aria-labelledby='month' onChange={onChangeMonth} value={selectedMonth}>
                                             <option value='0'>Tháng</option>
                                             {
                                                 Array(12).fill().map((item, index) => (
@@ -325,7 +397,7 @@ const ProfilePage = (props) => {
                                                 ))
                                             }
                                         </select>
-                                        <select name='year' onChange={onChangeYear}>
+                                        <select name='year' aria-labelledby='year' onChange={onChangeYear} value={selectedYear}>
                                             <option value='0'>Năm</option>
                                             {
                                                 yearList.map(item => (
@@ -337,6 +409,10 @@ const ProfilePage = (props) => {
                                 </div>
                                 <button type='submit' className={classes.save}>Lưu thay đổi</button>
                             </form>
+                            <div>
+                                <input type='file' onChange={onChangePhoto} ref={imgRef}/>
+                                <button onClick={uploadPhoto}>Upload profile photo</button>
+                            </div>
                         </div>
                         <div className={classes.group}>
                             <h4>Bảo mật</h4>

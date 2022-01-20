@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Fragment, Suspense } from 'react';
+import React, { useEffect, Fragment, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoadingIndicator from './components/UI/LoadingIndicator';
 import PrivateRoute from './components/PrivateRoute';
@@ -35,28 +35,27 @@ function App() {
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: postUserInfo } = useFetch();
 
-    // const getUserInfo = useCallback(() => {
-    //     const data = {
-    //         uuid: userData.id,
-    //         displayName: userData.displayName,
-    //         email: userData.email,
-    //         photoURL: userData.photoURL,
-    //         emailVerified: userData.emailVerified,
-    //     };
-
-    //     postUserInfo({
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         url: `${process.env.REACT_APP_API_URL}/submitUserData`,
-    //         body: data
-    //     });
-        
-    // }, [postUserInfo, userData]);
-
     useEffect(() => {
+        const updateUserInfo = () => {
+            const data = {
+                uuid: userData.uuid,
+                displayName: userData.displayName,
+                email: userData.email,
+                photoURL: userData.photoURL,
+                emailVerified: userData.emailVerified,
+            };
+    
+            postUserInfo({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/submitUserData`,
+                body: data
+            });
+        }
+
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
-                console.log('Logged in');
+                console.log('Logged in', user);
 
                 const userDataObj = {
                     uuid: user.uid,
@@ -66,16 +65,26 @@ function App() {
                     emailVerified: user.emailVerified
                 };
 
-                const userDataStorage = localStorage.getItem('userData');
-                if (!userDataStorage) {
-                    setTimeout(() => {
-                        dispatch(authActions.updateState({
-                            userData: userDataObj
-                        }));
-            
-                        localStorage.setItem('userData', JSON.stringify(userDataObj));
-                    }, 5200);
-                }
+                setTimeout(() => {
+                    dispatch(authActions.updateState({
+                        userData: userDataObj
+                    }));
+                    
+                    fetchUser({
+                        url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}` 
+                    }, data => {
+                        console.log(111, data);
+                        if (!data) {
+                            updateUserInfo();
+                        }
+                        else {
+                            dispatch(authActions.updateState({
+                                userData: data
+                            }));
+                            localStorage.setItem('userData', JSON.stringify(data));
+                        }
+                    });
+                }, 5200);
             } else {
                 console.log('Not logged in');       
                 setTimeout(() => {
@@ -90,43 +99,11 @@ function App() {
         // Cleanup subscription on unmount
         return () => unregisterAuthObserver();
 
-    }, [dispatch]);
+    }, [dispatch, postUserInfo, fetchUser]);
     
-    useEffect(() => {
-        const getUserInfo = () => {
-            const data = {
-                uuid: userData.id,
-                displayName: userData.displayName,
-                email: userData.email,
-                photoURL: userData.photoURL,
-                emailVerified: userData.emailVerified,
-            };
-    
-            postUserInfo({
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/submitUserData`,
-                body: data
-            });
-        }
+    // useEffect(() => {
         
-        if (userData) {
-            fetchUser({
-                url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}` 
-            }, data => {
-                if (!data) {
-                    console.log(111, data);
-                    getUserInfo();
-                } else {
-                    console.log(222, data);
-                    dispatch(authActions.updateState({
-                        userData: data
-                    }));
-                    localStorage.setItem('userData', JSON.stringify(data));    
-                }
-            });
-        }
-    }, [fetchUser, postUserInfo, dispatch]);
+    // }, [fetchUser, postUserInfo, dispatch]);
 
 	return (
 		<Fragment>
