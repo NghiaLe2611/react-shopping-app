@@ -6,7 +6,6 @@
 
 .wrap-profile-content{
     flex: 1;
-    max-width: 800px;
     h3{
         font-size: 22px;
         font-weight: 400;
@@ -79,6 +78,58 @@ aside{
     }
 }
 
+.content{
+    display: flex;
+    flex-wrap: wrap;
+    > .left{
+        
+    }
+    > .right{
+        flex: 1;
+        margin-left: 40px;
+        padding-left: 40px;
+        padding-top: 30px;
+
+        position: relative;
+        &:before{
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 200px;
+            width: 1px;
+            background-color: #ccc;
+        }
+        .avatar{
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            img{
+                height: 100%;
+                width: 100%;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+        }
+        .choose-avatar{
+            text-align: center;
+            margin-top: 20px;
+            label{
+                font-size: 16px;
+                border: 1px solid #c4c4cf;
+                cursor: pointer;
+                padding: 8px 20px;
+            }
+            input{
+                opacity: 0;
+                position: absolute;
+                z-index: -1;
+            }
+        }
+    }
+}
+
 .group{
     padding-bottom: 30px;
     margin-bottom: 30px;
@@ -92,7 +143,6 @@ aside{
     .item{
         display: flex;
         justify-content: space-between;
-        padding-right: 320px;
         &:not(:last-child){
             padding-bottom: 15px;
             margin-bottom: 15px;
