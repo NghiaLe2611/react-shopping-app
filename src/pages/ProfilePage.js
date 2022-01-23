@@ -14,8 +14,6 @@ import { updateProfile } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { authActions } from '../store/auth';
 
-const swal = withReactContent(Swal);
-
 const profileNav = [
 	{
 		icon: 'icon-user',
@@ -58,7 +56,8 @@ const ProfilePage = (props) => {
 		fullname: fullName ? fullName : '',
 		nickname: displayName ? displayName : '',
 		phone: phone ? phone : '',
-		avatar: photoURL ? photoURL : ''
+		avatar: photoURL ? photoURL : '',
+        birthday: birthday ? birthday : ''
 	});
 	const [selectedDay, setSelectedDay] = useState(() => {
 		if (birthday) {
@@ -80,6 +79,7 @@ const ProfilePage = (props) => {
 	});
 	const [daysInMonth, setDaysInMonth] = useState('');
 	const [userReviews, setUserReviews] = useState([]);
+    const [imgUpload, setImgUpload] = useState(false);
 
 	const slug = location.pathname.split('/').pop();
 
@@ -87,6 +87,15 @@ const ProfilePage = (props) => {
 	const { fetchData: updateUser } = useFetch();
 
 	const imgRef = useRef('');
+
+    let updatedData = {};
+
+    useEffect(() => {
+        console.log('imgUpload', imgUpload);
+        if (imgUpload) {
+            updatedData['photoURL'] = userInfo.avatar;
+        }
+    }, [imgUpload, userInfo.avatar]);
 
 	useEffect(() => {
 		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -146,115 +155,114 @@ const ProfilePage = (props) => {
 
 	const updateUserData = (e) => {
 		e.preventDefault();
+        const file = imgRef.current.files[0];
 
-		let updatedData = {};
-
-		// Check if new info is different than the old, update it, if not do nothing
+        // Check if new info is different than the old, update it, if not do nothing
 
 		if (userInfo.fullname && userInfo.fullname !== fullName) {
 			updatedData['fullName'] = userInfo.fullname;
+		}
+
+        if (!emailVerified && userInfo.nickname && userInfo.nickname !== displayName) {
+			updatedData['displayName'] = userInfo.nickname;
 		}
 
 		if (userInfo.phone && userInfo.phone !== phone) {
 			updatedData['phone'] = userInfo.phone;
 		}
 
-		if (userInfo.birthday && userInfo.birthday !== birthday) {
-			updatedData['birthday'] = userInfo.birthday;
+        const oldBirthday = new Date(birthday);
+        const newBirthday = new Date(userInfo.birthday);
+
+		if (userInfo.birthday && oldBirthday.getTime() !== newBirthday.getTime()) {
+			updatedData['birthday'] = newBirthday;
 		}
 
-		if (!emailVerified && userInfo.nickname && userInfo.nickname !== displayName) {
-			updatedData['displayName'] = userInfo.nickname;
-		}
+        const updateProfile = () => {
+            if (Object.keys(updatedData).length > 0) {
+                // console.log('update user', updatedData);
+                updateUser(
+                    {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+                        body: updatedData,
+                    }, (data) => {
+                        console.log(123, data);
+                        if (data) {
+                            const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+                            let updatedDataStorage = {...userDataStorage};
+    
+                            if (updatedData.fullName) updatedDataStorage = {...updatedDataStorage, fullName: updatedData.fullName}
+                            if (updatedData.displayName) updatedDataStorage = {...updatedDataStorage, displayName: updatedData.displayName}
+                            if (updatedData.phone) updatedDataStorage = {...updatedDataStorage, phone: updatedData.phone}
+                            if (updatedData.birthday) updatedDataStorage = {...updatedDataStorage, birthday: updatedData.birthday}
+                            if (updatedData.photoURL) updatedDataStorage = {...updatedDataStorage, photoURL: updatedData.photoURL}
+    
+                            console.log(updatedDataStorage);
+    
+                            dispatch(authActions.updateState({
+                                userData: updatedDataStorage
+                            }));
+    
+                            Swal.fire({
+                                icon: 'success',
+                                html: `<p>Cập nhật thành công<p>`,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#2f80ed'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                html: `<p>Có lỗi xảy ra. Vui lòng thử lại.</p>`,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#dc3741'
+                            });
+                        }
+                    }
+                );
+            }
+        }
 
-		if (userInfo.avatar && userInfo.avatar !== photoURL) {
-			updatedData['photoURL'] = userInfo.avatar;
-		}
+        if (file) {
+            let updatedUrl = '';
 
-		console.log(updatedData);
+            const user = authApp.currentUser;
+            // Create a root reference
+            const storage = getStorage();
 
-		return;
+            // Create a reference to image's path
+            const storageRef = ref(storage, `${uuid}/profilePicture/${file.name}`);
 
-		if (Object.keys(updatedData).length > 0) {
-			updateUser(
-				{
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
-					body: updatedData,
-				}, (data) => {
-					console.log(12345, data);
-					if (data) {
-						const userDataStorage = JSON.parse(localStorage.getItem('userData'));
-						const updatedDataStorage = {
-							...userDataStorage,
-							fullName: updatedData.fullName,
-							displayName: updatedData.displayName,
-							phone: updatedData.phone,
-							birthday: updatedData.birthday,
-						};
-						console.log(updatedDataStorage);
-					}
-				}
-			);
-		} else {
-			alert('Error');
-		}
+            function uploadFunc(){
+                return new Promise((resolve, reject) => {
+                    resolve(uploadBytes(storageRef, file).then(async () => {
+                        return await getDownloadURL(storageRef);
+                    }));
+                })
+            };
+
+            uploadFunc().then(url => {
+                console.log(url);
+                if (url) {
+                    updatedData['photoURL'] = url;
+                    updateProfile();
+                }
+            }).catch(err => {
+                console.log(err);
+            });
+        } else {
+            updateProfile();
+        }
+
+        // return;
 	};
 
 	const onChangePhoto = (e) => {
 		const file = e.target.files[0];
 		if (file) {
 			const newPhoto = URL.createObjectURL(file);
-			console.log(newPhoto);
 			setUserInfo({...userInfo, avatar: newPhoto});
-		}
-	};
-
-	const uploadPhoto = async (e) => {
-		const file = imgRef.current.files[0];
-
-		const updateProfilePicture = (url) => {
-			updateProfile(firebaseAuth.currentUser, {
-				photoURL: url,
-			}).then((res) => {
-				console.log('photo uploaded! ', res);
-			})
-			.catch((err) => {
-				console.log(err);
-			});
-		};
-
-		if (file) {
-			const user = authApp.currentUser;
-			// Create a root reference
-			const storage = getStorage();
-
-			// Create a reference to image's path
-			const storageRef = ref(storage, `${uuid}/profilePicture/${file.name}`);
-
-			// 'file' comes from the Blob or File API
-			uploadBytes(storageRef, file).then((snapshot) => {
-				// console.log(snapshot);
-
-				getDownloadURL(storageRef)
-					.then(function (url) {
-						// update ...
-						user.updateProfile({ photoURL: url })
-							.then(() => {
-								console.log('photo uploaded! ', url);
-								dispatch(authActions.updateState({
-									userData: {...userData, photoURL: url,}
-								}));
-							})
-							.catch((err) => {
-								console.log(err);
-							});
-					})
-					.catch(function (error) {
-						console.log(error);
-					});
-			});
 		}
 	};
 
@@ -398,7 +406,8 @@ const ProfilePage = (props) => {
 											<select name='day' id='select-day' aria-labelledby='day' onChange={onChangeDay} value={selectedDay}>
 												<option value='0'>Ngày</option>
 												{daysInMonth > 0 &&
-													Array(daysInMonth).fill()
+													Array(daysInMonth)
+														.fill()
 														.map((item, index) => (
 															<option key={index + 1} value={index + 1}>
 																{index + 1}
@@ -407,7 +416,8 @@ const ProfilePage = (props) => {
 											</select>
 											<select name='month' id='select-month' aria-labelledby='month' onChange={onChangeMonth} value={selectedMonth}>
 												<option value='0'>Tháng</option>
-												{Array(12).fill()
+												{Array(12)
+													.fill()
 													.map((item, index) => (
 														<option key={index + 1} value={index + 1}>
 															{index + 1}
@@ -453,12 +463,16 @@ const ProfilePage = (props) => {
 										<img src={iconGoogle} alt='icon-google' />
 										<span>Google</span>
 									</div>
-									{emailVerified ? <button className={`${classes.update} ${classes.active}`}>Đã liên kết</button> : <button className={classes.update}>Liên kết</button>}
+									{emailVerified ? (
+										<button className={`${classes.update} ${classes.active}`}>Đã liên kết</button>
+									) : (
+										<button className={classes.update}>Liên kết</button>
+									)}
 								</div>
 							</div>
 						</div>
 						<div className={classes.right}>
-							<div className={classes.avatar}>{photoURL ? <img src={userInfo.avatar} alt='avatar' /> : <p>No avatar</p>}</div>
+							<div className={classes.avatar}>{photoURL ? <img src={userInfo.avatar} alt='avatar' /> : <i className='icon-user'></i>}</div>
 							<div className={classes['choose-avatar']}>
 								<label htmlFor='upload-avatar'>Chọn ảnh</label>
 								<input type='file' name='avatar' id='upload-avatar' onChange={onChangePhoto} ref={imgRef} />
@@ -498,3 +512,34 @@ const ProfilePage = (props) => {
 };
 
 export default ProfilePage;
+
+
+// uploadBytes(storageRef, file).then(async (snapshot) => {
+//     // console.log(snapshot);
+//     updatedUrl = await getDownloadURL(storageRef);
+
+//     user.updateProfile({ photoURL: updatedUrl }).then(() => {
+//         console.log('photo uploaded! ', updatedUrl);
+//         setUserInfo({...userInfo, avatar: updatedUrl});
+//         setImgUpload(true);
+//     }).catch((err) => {
+//         console.log(err);
+//     });
+
+//     /*
+//     getDownloadURL(storageRef).then(function (url) {
+//         // update ...
+//         user.updateProfile({ photoURL: url })
+//             .then(() => {
+//                 console.log('photo uploaded! ', url);
+//                 setUserInfo({...userInfo, avatar: url});
+//             })
+//             .catch((err) => {
+//                 console.log(err);
+//             });
+//     }).catch(function (err) {
+//         console.log(err);
+//     });
+//     */
+// });
+

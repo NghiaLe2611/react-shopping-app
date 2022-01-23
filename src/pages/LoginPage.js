@@ -58,28 +58,41 @@ const LoginPage = () => {
         callbacks: {
             // Avoid redirects after sign-in.
             signInSuccessWithAuthResult: () => {
-                let timerInterval;
-                const Toast = formAlert.mixin({
-                    toast: true,
-                    confirmButtonText: 'Chuyển trang ngay',
-                    confirmButtonColor: '#2f80ed',
-                    timer: 5000,
-                    didOpen: () => {
-                        timerInterval = setInterval(() => {
-                            Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0)
-                        }, 100);
-                    },
-                    willClose: () => {
-                        clearInterval(timerInterval);
-                    }
-                });
-                Toast.fire({
+                // let timerInterval;
+                // const Toast = formAlert.mixin({
+                //     toast: true,
+                //     confirmButtonText: 'Chuyển trang ngay',
+                //     confirmButtonColor: '#2f80ed',
+                //     timer: 5000,
+                //     didOpen: () => {
+                //         timerInterval = setInterval(() => {
+                //             Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0)
+                //         }, 100);
+                //     },
+                //     willClose: () => {
+                //         clearInterval(timerInterval);
+                //     }
+                // });
+                // Toast.fire({
+                //     icon: 'success',
+                //     html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
+                // }).then(isConfirm => {
+                //     if (isConfirm) {
+                //         navigate('/');
+                //     }
+                // });
+
+                Swal.fire({
                     icon: 'success',
-                    html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
-                }).then(isConfirm => {
-                    if (isConfirm) {
-                        navigate('/');
-                    }
+                    html: `<p>Đăng nhập thành công`,
+                    confirmButtonText: 'Chuyển sang trang chủ',
+                    confirmButtonColor: '#2f80ed',
+                    showCancelButton: true,
+                    cancelButtonText: 'Ở lại trang này',
+                    cancelButtonColor: '#dc3741'
+                }).then(result => {
+                   if (result.isConfirmed) navigate('/');
+                   return;
                 });
             }
         }
@@ -180,7 +193,7 @@ const LoginPage = () => {
                 formAlert.fire({
                     icon: 'error',
                     html: `<p style="font-size: 16px;">${formErrors[err.code]}</p>`,
-                    confirmButtonColor: '#2f80ed'
+                    confirmButtonColor: '#dc3741'
                 });
                 
                 if (err.code === 'auth/user-not-found') {

@@ -65,34 +65,27 @@ function App() {
                     emailVerified: user.emailVerified
                 };
 
-                setTimeout(() => {
-                    dispatch(authActions.updateState({
-                        userData: userDataObj
-                    }));
-                    
-                    fetchUser({
-                        url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}` 
-                    }, data => {
-                        console.log(111, data);
-                        if (!data) {
-                            updateUserInfo();
-                        }
-                        else {
-                            dispatch(authActions.updateState({
-                                userData: data
-                            }));
-                            localStorage.setItem('userData', JSON.stringify(data));
-                        }
-                    });
-                }, 5200);
+                dispatch(authActions.updateState({
+                    userData: userDataObj
+                }));
+                
+                fetchUser({
+                    url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}` 
+                }, data => {
+                    // console.log(111, data);
+                    if (!data) {
+                        updateUserInfo();
+                    } else {
+                        dispatch(authActions.updateState({
+                            userData: data
+                        }));
+                    }
+                });
             } else {
-                console.log('Not logged in');       
-                setTimeout(() => {
-                    dispatch(authActions.updateState({
-                        userData: null
-                    }));
-                    localStorage.removeItem('userData');
-                }, 520);     
+                // console.log('Not logged in');       
+                dispatch(authActions.updateState({
+                    userData: null
+                }));
             }
         });
 
@@ -101,9 +94,14 @@ function App() {
 
     }, [dispatch, postUserInfo, fetchUser]);
     
-    // useEffect(() => {
-        
-    // }, [fetchUser, postUserInfo, dispatch]);
+    useEffect(() => {
+        console.log('userData changed', userData);
+        if (userData) {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        } else {
+            localStorage.removeItem('userData');
+        }
+    }, [userData]);
 
 	return (
 		<Fragment>

@@ -28,6 +28,7 @@ const Header = () => {
     const cart = useSelector((state) => state.cart);
     const showCart = useSelector(state => state.cart.isShowCart);
     const userData = useSelector(state => state.auth.userData);
+    
 
     const [hoverMenu, setHoverMenu] = useState(false);
     const [hoverProfile, setHoverProfile] = useState(false);
@@ -36,7 +37,7 @@ const Header = () => {
     const [suggestions, setSuggestions] = useState([]);
 
     const shouldRenderModal = useDelayUnmount(showCart, 350);
-    const { isLoading, error, fetchData: fetchSuggestProducts } = useFetch();
+    const { fetchData: fetchSuggestProducts } = useFetch();
     const { isMobile } = useCheckMobile();
 
     useEffect(() => {
