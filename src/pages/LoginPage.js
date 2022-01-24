@@ -1,16 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { firebase } from '../firebase/config';
 import { firebaseAuth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import 'firebase/compat/auth';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import { useNavigate, Navigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import classes from '../scss/Login.module.scss';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import { authService } from '../api/auth-service';
 
 const formAlert = withReactContent(Swal);
 const errorMessages = {
@@ -25,7 +23,6 @@ const formErrors = {
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
 
     const [userInput, setUserInput] = useState({
         email: null,

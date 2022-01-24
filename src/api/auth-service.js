@@ -1,4 +1,4 @@
-import { authApp, firebase } from '../firebase/config';
+import { authApp } from '../firebase/config';
 import 'firebase/compat/auth';
 
 const logout = (callback) => {

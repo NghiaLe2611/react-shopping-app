@@ -106,6 +106,7 @@ aside {
             width: 100px;
             height: 100px;
             margin: 0 auto;
+            position: relative;
             img {
                 height: 100%;
                 width: 100%;
@@ -116,6 +117,22 @@ aside {
                 display: flex;
                 color: #9b9b9b;
                 font-size: 70px;
+            }
+            .remove-img{
+                position: absolute;
+                top: 0px;
+                right: -10px;
+                font-size: 18px;
+                color: #64646d;
+                cursor: pointer;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background-color: #fff;
+                border: 1px solid #e4e4e4;
             }
         }
         .choose-avatar {
@@ -132,6 +149,56 @@ aside {
                 position: absolute;
                 z-index: -1;
             }
+        }
+    }
+}
+
+.new-address{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px dashed #d8d8d8;
+    border-radius: 4px;
+    padding: 20px;
+    font-size: 16px;
+    color: #0b74e5;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 15px;
+    span{
+        color: #787878;
+        font-size: 20px;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+}
+
+.list-address{
+    li{
+        background-color: #fff;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+    }
+}
+
+.form-address{
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 20px;
+    .wrap-ip{
+        flex: none;
+        width: 50%;
+        input,select,textarea{
+            width: 100%;
+        }
+        textarea{
+            resize: none;
+            border: 1px solid #c4c4cf;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 15px;
         }
     }
 }

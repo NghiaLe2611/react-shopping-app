@@ -117,3 +117,11 @@
 .icon-lock:before {
     content: "\75";
 }
+
+.icon-card:before {
+    content: "\76";
+}
+
+.icon-map:before {
+    content: "\77";
+}

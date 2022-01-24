@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import classes from '../scss/Profile.module.scss';
 import iconFacebook from '../assets/images/icon-fb.png';
 import iconGoogle from '../assets/images/icon-google.png';
@@ -8,11 +8,11 @@ import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import { timeSince } from '../helpers/helpers';
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
-import { authApp, firebaseAuth } from '../firebase/config';
-import { updateProfile } from 'firebase/auth';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { authApp } from '../firebase/config';
+// import { updateProfile } from 'firebase/auth';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { authActions } from '../store/auth';
+import userAvatar from '../assets/images/avatar.png';
 
 const profileNav = [
 	{
@@ -26,6 +26,18 @@ const profileNav = [
 		link: '/tai-khoan/don-hang',
 		slug: 'don-hang',
 		name: 'Quản lý đơn hàng',
+	},
+	{
+		icon: 'icon-map',
+		link: '/tai-khoan/dia-chi',
+		slug: 'dia-chi',
+		name: 'Sổ địa chỉ',
+	},
+	{
+		icon: 'icon-card',
+		link: '/tai-khoan/thanh-toan',
+		slug: 'thanh-toan',
+		name: 'Thông tin thanh toán',
 	},
 	{
 		icon: 'icon-heart',
@@ -46,17 +58,17 @@ function getDaysInMonth(month, year) {
 }
 
 const ProfilePage = (props) => {
-	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch = useDispatch();
 	const userData = useSelector((state) => state.auth.userData);
-	const { displayName, photoURL, uuid, email, emailVerified, fullName, phone, birthday } = userData ? userData : {};
+	const { displayName, photoURL, uuid, email, emailVerified, 
+		fullName, phone, birthday, listAddress } = userData ? userData : {};
 
 	const [userInfo, setUserInfo] = useState({
 		fullname: fullName ? fullName : '',
 		nickname: displayName ? displayName : '',
 		phone: phone ? phone : '',
-		avatar: photoURL ? photoURL : '',
+		avatar: photoURL ? photoURL : userAvatar,
         birthday: birthday ? birthday : ''
 	});
 	const [selectedDay, setSelectedDay] = useState(() => {
@@ -79,7 +91,7 @@ const ProfilePage = (props) => {
 	});
 	const [daysInMonth, setDaysInMonth] = useState('');
 	const [userReviews, setUserReviews] = useState([]);
-    const [imgUpload, setImgUpload] = useState(false);
+	const [isAddAddress, setIsAddAddress] = useState(false);
 
 	const slug = location.pathname.split('/').pop();
 
@@ -87,15 +99,6 @@ const ProfilePage = (props) => {
 	const { fetchData: updateUser } = useFetch();
 
 	const imgRef = useRef('');
-
-    let updatedData = {};
-
-    useEffect(() => {
-        console.log('imgUpload', imgUpload);
-        if (imgUpload) {
-            updatedData['photoURL'] = userInfo.avatar;
-        }
-    }, [imgUpload, userInfo.avatar]);
 
 	useEffect(() => {
 		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -158,7 +161,7 @@ const ProfilePage = (props) => {
         const file = imgRef.current.files[0];
 
         // Check if new info is different than the old, update it, if not do nothing
-
+		let updatedData = {};
 		if (userInfo.fullname && userInfo.fullname !== fullName) {
 			updatedData['fullName'] = userInfo.fullname;
 		}
@@ -178,7 +181,7 @@ const ProfilePage = (props) => {
 			updatedData['birthday'] = newBirthday;
 		}
 
-        const updateProfile = () => {
+        const updateProfileData = () => {
             if (Object.keys(updatedData).length > 0) {
                 // console.log('update user', updatedData);
                 updateUser(
@@ -225,8 +228,6 @@ const ProfilePage = (props) => {
         }
 
         if (file) {
-            let updatedUrl = '';
-
             const user = authApp.currentUser;
             // Create a root reference
             const storage = getStorage();
@@ -243,16 +244,20 @@ const ProfilePage = (props) => {
             };
 
             uploadFunc().then(url => {
-                console.log(url);
                 if (url) {
                     updatedData['photoURL'] = url;
-                    updateProfile();
+					user.updateProfile({ photoURL: url }).then(() => {
+						console.log('photo uploaded! ', url);
+						updateProfileData();
+					}).catch((err) => {
+						console.log(err);
+					});
                 }
             }).catch(err => {
                 console.log(err);
             });
         } else {
-            updateProfile();
+            updateProfileData();
         }
 
         // return;
@@ -264,6 +269,68 @@ const ProfilePage = (props) => {
 			const newPhoto = URL.createObjectURL(file);
 			setUserInfo({...userInfo, avatar: newPhoto});
 		}
+	};
+
+	const clearPhoto = () => {
+		const user = authApp.currentUser;
+
+		const clearPhotoHandler = () => {
+			user.updateProfile({ photoURL: '' }).then(() => {
+				console.log('clear profile photo', user);
+				updateUser(
+					{
+						method: 'PUT',
+						headers: { 'Content-Type': 'application/json' },
+						url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+						body: { photoURL: null},
+					}, (data) => {
+						if (data) {
+							console.log(111, data);
+							const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+							setUserInfo({...userInfo, avatar: ''});
+							dispatch(authActions.updateState({
+								userData: {...userDataStorage, photoURL: null}
+							}));
+							Swal.fire({
+								icon: 'success',
+								html: `<p>Xóa ảnh đại diện thành công<p>`,
+								confirmButtonText: 'OK',
+								confirmButtonColor: '#2f80ed'
+							});
+						} else {
+							Swal.fire({
+								icon: 'error',
+								html: `<p>Có lỗi xảy ra. Vui lòng thử lại.</p>`,
+								confirmButtonText: 'OK',
+								confirmButtonColor: '#dc3741'
+							});
+						}
+					}
+				);
+			}).catch((err) => {
+				console.log(err);
+			});
+		};
+
+		Swal.fire({
+			html: '<h5 style="font-size: 16px;">Bạn có chắc muốn xóa ảnh đại diện này ?</h5>',
+			showCancelButton: true,
+			confirmButtonText: 'Xóa',
+			confirmButtonColor: '#2f80ed',
+			cancelButtonText: 'Không'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				const storage = getStorage();
+				const photoRef = ref(storage, photoURL);
+				console.log(photoRef);
+				deleteObject(photoRef).then(() => {
+					// File deleted successfully
+					clearPhotoHandler();
+				}).catch(err => {
+					console.log(err);
+				})
+			}
+		});
 	};
 
 	let profileContent, reviewsContent;
@@ -331,6 +398,77 @@ const ProfilePage = (props) => {
 			profileContent = (
 				<Fragment>
 					<h3>Đơn hàng của tôi</h3>
+				</Fragment>
+			);
+			break;
+		}
+		case 'dia-chi': {
+			profileContent = (
+				<Fragment>
+					<h3>Danh sách địa chỉ</h3>
+					<div className={classes['new-address']} onClick={() => setIsAddAddress(true)}>
+						<span>+</span>Thêm địa chỉ mới
+					</div>
+					<form className={classes['form-address']} style={{ display: isAddAddress ? 'block' : 'none' }}>
+						<div className={classes['input-group']}>
+							<label>Họ và tên</label>
+							<div className={classes['wrap-ip']}>
+								<input type='text' name='add_name' placeholder='Nhập họ tên' />
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label>Số điện thoại</label>
+							<div className={classes['wrap-ip']}>
+								<input type='text' name='add_phone' placeholder='Nhập số điện thoại' />
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label>Tỉnh/Thành phố</label>
+							<div className={classes['wrap-ip']}>
+								<select name='add_city' id='city'>
+									<option value="0">Chọn Tỉnh/Thành phố</option>
+								</select>
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label>Quận huyện</label>
+							<div className={classes['wrap-ip']}>
+								<select name='add_district' id='district'>
+									<option value="0">Chọn Quận/Huyện</option>
+								</select>
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label>Phường xã</label>
+							<div className={classes['wrap-ip']}>
+								<select name='add_ward' id='ward'>
+									<option value="0">Chọn Phường/Xã</option>
+								</select>
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label>Địa chỉ</label>
+							<div className={classes['wrap-ip']}>
+								<textarea name='add_address' rows='5' placeholder='Nhập địa chỉ'></textarea>
+							</div>
+						</div>
+					</form>
+					{listAddress && listAddress.length > 0 ? (
+						<ul className={classes['list-address']}>
+							{listAddress.map((item, index) => (
+								<li key={index}></li>
+							))}
+						</ul>
+					) : null}
+				</Fragment>
+			);
+			break;
+		}
+		case 'thanh-toan': {
+			profileContent = (
+				<Fragment>
+					<h3>Thông tin thanh toán</h3>
+					
 				</Fragment>
 			);
 			break;
@@ -406,8 +544,7 @@ const ProfilePage = (props) => {
 											<select name='day' id='select-day' aria-labelledby='day' onChange={onChangeDay} value={selectedDay}>
 												<option value='0'>Ngày</option>
 												{daysInMonth > 0 &&
-													Array(daysInMonth)
-														.fill()
+													Array(daysInMonth).fill()
 														.map((item, index) => (
 															<option key={index + 1} value={index + 1}>
 																{index + 1}
@@ -416,8 +553,7 @@ const ProfilePage = (props) => {
 											</select>
 											<select name='month' id='select-month' aria-labelledby='month' onChange={onChangeMonth} value={selectedMonth}>
 												<option value='0'>Tháng</option>
-												{Array(12)
-													.fill()
+												{Array(12).fill()
 													.map((item, index) => (
 														<option key={index + 1} value={index + 1}>
 															{index + 1}
@@ -472,7 +608,11 @@ const ProfilePage = (props) => {
 							</div>
 						</div>
 						<div className={classes.right}>
-							<div className={classes.avatar}>{photoURL ? <img src={userInfo.avatar} alt='avatar' /> : <i className='icon-user'></i>}</div>
+							<div className={classes.avatar}>
+								{photoURL && <span className={classes['remove-img']} onClick={clearPhoto}>&times;</span>}
+								<img src={userInfo.avatar} alt='avatar' />
+								{/* {photoURL || userInfo.avatar ? <img src={userInfo.avatar} alt='avatar' /> : <i className='icon-user'></i>} */}
+							</div>
 							<div className={classes['choose-avatar']}>
 								<label htmlFor='upload-avatar'>Chọn ảnh</label>
 								<input type='file' name='avatar' id='upload-avatar' onChange={onChangePhoto} ref={imgRef} />
@@ -490,7 +630,9 @@ const ProfilePage = (props) => {
 				<div className={classes['wrap-profile']}>
 					<aside>
 						<div className={classes['wrap-avatar']}>
-							<div className={classes.avatar}>{photoURL ? <img src={photoURL} alt='avatar' /> : <i className='icon-user'></i>}</div>
+							<div className={classes.avatar}>
+								{photoURL ? <img src={photoURL} alt='avatar' /> : <i className='icon-user'></i>}
+							</div>
 							<span className={classes.username}>{displayName ? displayName : email}</span>
 						</div>
 						<ul className={classes['account-nav']}>
@@ -520,8 +662,6 @@ export default ProfilePage;
 
 //     user.updateProfile({ photoURL: updatedUrl }).then(() => {
 //         console.log('photo uploaded! ', updatedUrl);
-//         setUserInfo({...userInfo, avatar: updatedUrl});
-//         setImgUpload(true);
 //     }).catch((err) => {
 //         console.log(err);
 //     });

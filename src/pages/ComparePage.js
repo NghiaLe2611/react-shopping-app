@@ -14,7 +14,6 @@ const ComparePage = () => {
     const [arrayId, setArrayId] = useState([]);
     const [listCompare, setListCompare] = useState([]);
     const [isComparing, setIsComparing] = useState(false);
-    const [showCompareModal, setshowCompareModal] = useState(false);
     const compareModalRef = useRef();
 
 	useEffect(() => {
@@ -553,7 +552,6 @@ const ComparePage = () => {
                 addItemToCompare={addItemToCompare} 
                 isComparing={isComparing} 
                 setIsComparing={setIsComparing}
-                showCompareModal={showCompareModal}
             />
         </Fragment>
     );

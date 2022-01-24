@@ -45,7 +45,7 @@ const DetailPage = () => {
     // const cart = useSelector((state) => state.cart);
     // const showCart = useSelector(state => state.cart.isShowCart);
     const userData = useSelector(state => state.auth.userData);
-    const { displayName, photoURL, id, email, emailVerified } = userData ? userData : {};
+    const { displayName, id, email } = userData ? userData : {};
 
     const [product, setProduct] = useState(null);
     const [selectedColor, setSelectedColor] = useState(0);
@@ -540,7 +540,7 @@ const DetailPage = () => {
                                                         // <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
                                                         //     <i className={`icon-star ${classes.border}`}></i>
                                                         // </span>
-                                                        (averagePoint - Math.floor(averagePoint)).toFixed(1) == 0.5 ? (
+                                                        (averagePoint - Math.floor(averagePoint)).toFixed(1) === 0.5 ? (
                                                             <span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(averagePoint) ? 'icon-star-half' : index + 1 < Math.round(averagePoint) ? classes.selected : ''}`}>
                                                                 {index + 1 !== Math.round(averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
                                                             </span>
@@ -647,7 +647,7 @@ const DetailPage = () => {
                                         </div>
                                         <div className={classes['wrap-ip']}>
                                             <div className={classes.required}>
-                                                {
+                                                {/* {
                                                     displayName ? (
                                                         <input className={classes.input} type='text' name='name' placeholder='Họ và tên' spellCheck='false'
                                                             onChange={handleChangeInput} value={displayName} 
@@ -660,14 +660,21 @@ const DetailPage = () => {
                                                             onBlur={handleChangeInput}
                                                             ref={ref => reviewFormRef.current.name = ref}/>
                                                     )
-                                                }
+                                                } */}
+                                                <input className={classes.input} type='text' name='name' placeholder='Họ và tên' spellCheck='false'
+                                                            onChange={handleChangeInput} defaultValue={displayName || ''} 
+                                                            onBlur={handleChangeInput} disabled={displayName ? 'disabled' : ''}
+                                                            ref={ref => reviewFormRef.current.name = ref}/>
                                             </div>
                                             <div>
-                                                <input className={classes.input} type='text' name='phone' placeholder='Số điện thoại' spellCheck="false"
+                                                <input className={classes.input} type='text' name='phone' 
+                                                    placeholder='Số điện thoại' spellCheck="false"
                                                     ref={ref => reviewFormRef.current.phone = ref}/>
                                             </div>
                                             <div>
-                                                <input className={classes.input} type='text' name='email' placeholder='Email' spellCheck="false"
+                                                <input className={classes.input} type='text' name='email' 
+                                                    placeholder='Email' spellCheck="false" defaultValue={email || ''}
+                                                    disabled={email ? 'disabled' : ''}
                                                     ref={ref => reviewFormRef.current.email = ref}/>
                                             </div>
                                         </div>

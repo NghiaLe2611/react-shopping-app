@@ -1,6 +1,6 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { capitalizeFirstLetter, convertProductLink, removeAccents } from '../helpers/helpers';
 import useFetch from '../hooks/useFetch';
 import classes from '../scss/FilterSidebar.module.scss';
@@ -19,7 +19,7 @@ const FilterSidebar = (props) => {
     const { filter, setFilter, category } = props;
     const [brandList, setBrandList] = useState([]);
     const [queryUrl, setQueryUrl] = useState('');
-    const { isLoading, fetchData: fetchBrandList } = useFetch();
+    const { fetchData: fetchBrandList } = useFetch();
       
     useEffect(() => {
         if (category) {

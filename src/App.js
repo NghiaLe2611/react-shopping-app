@@ -95,7 +95,7 @@ function App() {
     }, [dispatch, postUserInfo, fetchUser]);
     
     useEffect(() => {
-        console.log('userData changed', userData);
+        // console.log('userData changed', userData);
         if (userData) {
             localStorage.setItem('userData', JSON.stringify(userData));
         } else {

@@ -122,7 +122,6 @@ const CompareModalWrapper = forwardRef((props, ref) => {
                 }
                 // alert('Sản phẩm đã đc được so sánh. Vui lòng chọn lại.');
             } else {
-             
                 if (getListCompare) {
                     list.some((item, index) => {
                         if (!item._id) {
@@ -130,10 +129,9 @@ const CompareModalWrapper = forwardRef((props, ref) => {
                             setListCompare(list);
                             return true;
                         }
+                        return false;
                     });
-                } 
-                
-                else {
+                } else {
                     if (listCompare.length < 3) {
                         list.push(product);
                         setListCompare(list);

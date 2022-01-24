@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { firebaseAuth } from '../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { emailIsValid, passwordIsValid } from '../helpers/helpers';
-import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import classes from '../scss/Login.module.scss';
