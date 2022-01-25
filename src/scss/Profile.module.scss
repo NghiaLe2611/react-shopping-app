@@ -203,6 +203,12 @@ aside {
             font-size: 15px;
         }
     }
+    .update {
+        border-radius: 4px;
+        font-size: 15px;
+        background-color: #fdd835;
+        padding: 8px 30px;
+    }
 }
 
 .group {
@@ -287,6 +293,9 @@ aside {
         &:focus {
             box-shadow: 0px 0px 5px 1px rgba(71, 71, 71, 0.2)
         }
+        &.invalid {
+            border-color: red;
+        }
     }
     select:not(:last-child) {
         margin-right: 10px;
@@ -339,4 +348,57 @@ aside {
             word-break: break-word;
         }
     }
+}
+
+// Custom checkbox
+.checkbox {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+}
+
+.checkmark {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    height: 20px;
+    width: 20px;
+    border-radius: 2px;
+    border: 1px solid #c4c4cf;
+    &:after {
+        content: '';
+        position: absolute;
+        display: none;
+    }
+}
+
+.checkbox .checkmark:after {
+    left: 6px;
+    top: 3px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox input:checked~.checkmark {
+    background-color: #182e6e;
+}
+
+.checkbox input:checked~.checkmark:after {
+    display: block;
 }

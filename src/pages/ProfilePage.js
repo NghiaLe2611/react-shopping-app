@@ -92,13 +92,31 @@ const ProfilePage = (props) => {
 	const [daysInMonth, setDaysInMonth] = useState('');
 	const [userReviews, setUserReviews] = useState([]);
 	const [isAddAddress, setIsAddAddress] = useState(false);
+	const [cities, setCities] = useState([]);
+	const [districts, setDistricts] = useState([]);
+	const [wards, setWards] = useState([]);
+	const [addressInfo, setAddressInfo] = useState({
+		name: null,
+		phone: null,
+		city: 0,
+		district: 0,
+		ward: 0,
+		address: null,
+		default: false
+	});
 
 	const slug = location.pathname.split('/').pop();
-
+	
 	const { isLoading: isLoadingReviews, error: reviewsError, fetchData: fetchReviews } = useFetch();
 	const { fetchData: updateUser } = useFetch();
+	const { fetchData: fetchCities } = useFetch();
+	const { fetchData: fetchDistricts } = useFetch();
+	const { fetchData: fetchWards } = useFetch();
 
 	const imgRef = useRef('');
+	const cityRef = useRef('');
+	const districtRef = useRef('');
+	const wardRef = useRef('');
 
 	useEffect(() => {
 		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -131,9 +149,24 @@ const ProfilePage = (props) => {
 						}
 					}
 				);
-			}
+			}	
 		}
 	}, [fetchReviews, uuid, slug]);
+
+	useEffect(() => {
+		if (slug === 'dia-chi' && cities.length === 0) {
+			fetchCities(
+				{
+					url: `${process.env.REACT_APP_API_URL}/cities`,
+				}, (data) => {
+					console.log(data);
+					if (data) {
+						setCities(data);
+					}
+				}
+			);
+		}
+	}, [slug, fetchCities, cities])
 
 	const onChangeDay = (e) => {
 		console.log(e.target.value);
@@ -333,6 +366,54 @@ const ProfilePage = (props) => {
 		});
 	};
 
+	const onChangeCity = (e) => {
+		const id = parseInt(e.target.value);
+		setAddressInfo({...addressInfo, city: id});
+		if (id !== 0) {
+			fetchDistricts(
+				{
+					url: `${process.env.REACT_APP_API_URL}/districts/${id}`,
+				}, (data) => {
+					if (data) {
+						setDistricts(data);
+						setWards([]);
+					}
+				}
+			);
+		} else {
+			setDistricts([]);
+			setWards([]);
+		}
+	};
+
+	const onChangeDistrict = (e) => {
+		const cityId = parseInt(cityRef.current.value);
+		const districtId = parseInt(e.target.value);
+		setAddressInfo({...addressInfo, district: districtId});
+
+		if (cityId && districtId) {
+			fetchWards(
+				{
+					url: `${process.env.REACT_APP_API_URL}/wards?city=${cityId}&district=${districtId}`,
+				}, (data) => {
+					if (data) {
+						setWards(data);
+					}
+				}
+			);
+		}
+	};
+
+	const onChangeWard = (e) => {
+		setAddressInfo({...addressInfo, ward: parseInt(e.target.value)});
+	};
+
+	const addNewAddress = (e) => {
+		e.preventDefault();
+		
+		// var containsAll = arr1.every(i => arr2.includes(i));
+	};	
+
 	let profileContent, reviewsContent;
 
 	if (isLoadingReviews) {
@@ -409,7 +490,9 @@ const ProfilePage = (props) => {
 					<div className={classes['new-address']} onClick={() => setIsAddAddress(true)}>
 						<span>+</span>Thêm địa chỉ mới
 					</div>
-					<form className={classes['form-address']} style={{ display: isAddAddress ? 'block' : 'none' }}>
+					<form className={classes['form-address']} style={{ display: isAddAddress ? 'block' : 'none' }}
+						onSubmit={addNewAddress}
+					>
 						<div className={classes['input-group']}>
 							<label>Họ và tên</label>
 							<div className={classes['wrap-ip']}>
@@ -425,24 +508,45 @@ const ProfilePage = (props) => {
 						<div className={classes['input-group']}>
 							<label>Tỉnh/Thành phố</label>
 							<div className={classes['wrap-ip']}>
-								<select name='add_city' id='city'>
+								<select name='add_city' id='city' onChange={onChangeCity} ref={cityRef}>
 									<option value="0">Chọn Tỉnh/Thành phố</option>
+									{
+										cities.length > 0 && (
+											cities.map(item => (
+												<option key={item.id} value={item.id}>{item.name}</option>
+											))
+										)
+									}
 								</select>
 							</div>
 						</div>
 						<div className={classes['input-group']}>
 							<label>Quận huyện</label>
 							<div className={classes['wrap-ip']}>
-								<select name='add_district' id='district'>
+								<select name='add_district' id='district' onChange={onChangeDistrict} ref={districtRef}>
 									<option value="0">Chọn Quận/Huyện</option>
+									{
+										districts.length > 0 && (
+											districts.map(item => (
+												<option key={item.id} value={item.id}>{item.name}</option>
+											))
+										)
+									}
 								</select>
 							</div>
 						</div>
-						<div className={classes['input-group']}>
+						<div className={classes['input-group']} ref={wardRef}>
 							<label>Phường xã</label>
 							<div className={classes['wrap-ip']}>
-								<select name='add_ward' id='ward'>
+								<select name='add_ward' id='ward' onChange={onChangeWard}>
 									<option value="0">Chọn Phường/Xã</option>
+									{
+										wards.length > 0 && (
+											wards.map(item => (
+												<option key={item.id} value={item.id}>{item.name}</option>
+											))
+										)
+									}
 								</select>
 							</div>
 						</div>
@@ -450,6 +554,21 @@ const ProfilePage = (props) => {
 							<label>Địa chỉ</label>
 							<div className={classes['wrap-ip']}>
 								<textarea name='add_address' rows='5' placeholder='Nhập địa chỉ'></textarea>
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label></label>
+							<div className={classes['wrap-ip']}>
+								<label className={classes.checkbox}>
+									<input type='checkbox' name='check-default'/>
+									<span className={classes.checkmark}></span>Đặt làm địa chỉ mặc định
+								</label>
+							</div>
+						</div>
+						<div className={classes['input-group']}>
+							<label></label>
+							<div className={classes['wrap-ip']}>
+								<button type='submit' className={classes.update}>Cập nhật</button>
 							</div>
 						</div>
 					</form>
