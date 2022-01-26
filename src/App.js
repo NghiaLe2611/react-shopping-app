@@ -34,9 +34,12 @@ function App() {
 
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: postUserInfo } = useFetch();
+    const { fetchData: updateUserInfo } = useFetch();
 
     useEffect(() => {
-        const updateUserInfo = () => {
+        const postUser = () => {
+            console.log('updateUserInfo');
+
             const data = {
                 uuid: userData.uuid,
                 displayName: userData.displayName,
@@ -44,7 +47,7 @@ function App() {
                 photoURL: userData.photoURL,
                 emailVerified: userData.emailVerified,
             };
-    
+
             postUserInfo({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -53,10 +56,28 @@ function App() {
             });
         }
 
+        // Update user
+        // const updateUser = () => {
+        //     const data = {
+        //         uuid: userData.uuid,
+        //         displayName: userData.displayName,
+        //         email: userData.email,
+        //         photoURL: userData.photoURL,
+        //         emailVerified: userData.emailVerified,
+        //     };
+
+        //     updateUserInfo({
+        //         method: 'PUT',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         url: `${process.env.REACT_APP_API_URL}/updateUserData/${userData.uuid}`,
+        //         body: data
+        //     });
+        // };
+
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
                 console.log('Logged in', user);
-
+    
                 const userDataObj = {
                     uuid: user.uid,
                     displayName: user.displayName,
@@ -73,11 +94,14 @@ function App() {
                     url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}` 
                 }, data => {
                     // console.log(111, data);
+                    console.log(data);
                     if (!data) {
-                        updateUserInfo();
+                        postUser();
                     } else {
+                        const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+                        console.log(userDataObj, cloneData);
                         dispatch(authActions.updateState({
-                            userData: data
+                            userData: {...userDataObj, ...cloneData}
                         }));
                     }
                 });
@@ -97,9 +121,11 @@ function App() {
     useEffect(() => {
         // console.log('userData changed', userData);
         if (userData) {
+            console.log('set storage');
             localStorage.setItem('userData', JSON.stringify(userData));
         } else {
             localStorage.removeItem('userData');
+            console.log('remove storage');
         }
     }, [userData]);
 

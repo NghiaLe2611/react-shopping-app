@@ -96,14 +96,15 @@ const ProfilePage = (props) => {
 	const [districts, setDistricts] = useState([]);
 	const [wards, setWards] = useState([]);
 	const [addressInfo, setAddressInfo] = useState({
-		name: null,
-		phone: null,
-		city: 0,
-		district: 0,
-		ward: 0,
-		address: null,
-		default: false
+		add_name: null,
+		add_phone: null,
+		add_city: { id: 0 },
+		add_district: { id: 0 },
+		add_ward: { id: 0 },
+		add_address: null,
+		isDefault: false
 	});
+	const [formIsValid, setFormIsValid] = useState({});
 
 	const slug = location.pathname.split('/').pop();
 	
@@ -159,7 +160,7 @@ const ProfilePage = (props) => {
 				{
 					url: `${process.env.REACT_APP_API_URL}/cities`,
 				}, (data) => {
-					console.log(data);
+					// console.log(data);
 					if (data) {
 						setCities(data);
 					}
@@ -169,17 +170,17 @@ const ProfilePage = (props) => {
 	}, [slug, fetchCities, cities])
 
 	const onChangeDay = (e) => {
-		console.log(e.target.value);
+		// console.log(e.target.value);
 		setSelectedDay(e.target.value);
 	};
 
 	const onChangeMonth = (e) => {
-		console.log(e.target.value);
+		// console.log(e.target.value);
 		setSelectedMonth(e.target.value);
 	};
 
 	const onChangeYear = (e) => {
-		console.log(e.target.value);
+		// console.log(e.target.value);
 		setSelectedYear(e.target.value);
 	};
 
@@ -224,8 +225,8 @@ const ProfilePage = (props) => {
                         url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
                         body: updatedData,
                     }, (data) => {
-                        console.log(123, data);
-                        if (data) {
+                        console.log('update successfull', data);
+                        if (data && data.message) {
                             const userDataStorage = JSON.parse(localStorage.getItem('userData'));
                             let updatedDataStorage = {...userDataStorage};
     
@@ -234,9 +235,7 @@ const ProfilePage = (props) => {
                             if (updatedData.phone) updatedDataStorage = {...updatedDataStorage, phone: updatedData.phone}
                             if (updatedData.birthday) updatedDataStorage = {...updatedDataStorage, birthday: updatedData.birthday}
                             if (updatedData.photoURL) updatedDataStorage = {...updatedDataStorage, photoURL: updatedData.photoURL}
-    
-                            console.log(updatedDataStorage);
-    
+        
                             dispatch(authActions.updateState({
                                 userData: updatedDataStorage
                             }));
@@ -367,8 +366,11 @@ const ProfilePage = (props) => {
 	};
 
 	const onChangeCity = (e) => {
+		const { options, value, name } = e.target; // value is index
 		const id = parseInt(e.target.value);
-		setAddressInfo({...addressInfo, city: id});
+		setAddressInfo({...addressInfo, [name]: {
+			id: id, name: options[value].innerHTML
+		}});
 		if (id !== 0) {
 			fetchDistricts(
 				{
@@ -387,9 +389,13 @@ const ProfilePage = (props) => {
 	};
 
 	const onChangeDistrict = (e) => {
+		const { options, value, name, selectedIndex } = e.target;
 		const cityId = parseInt(cityRef.current.value);
-		const districtId = parseInt(e.target.value);
-		setAddressInfo({...addressInfo, district: districtId});
+		const districtId = parseInt(value);
+
+		setAddressInfo({...addressInfo, [name]: {
+			id: districtId, name: options[selectedIndex].innerHTML
+		}});
 
 		if (cityId && districtId) {
 			fetchWards(
@@ -405,13 +411,79 @@ const ProfilePage = (props) => {
 	};
 
 	const onChangeWard = (e) => {
-		setAddressInfo({...addressInfo, ward: parseInt(e.target.value)});
+		const { options, name, selectedIndex } = e.target;
+		setAddressInfo({...addressInfo, [name]: {
+			id: parseInt(e.target.value), name: options[selectedIndex].innerHTML
+		}});
+	};
+
+	const onChangeAddressInput = (e) => {
+		const { name, value } = e.target;
+		setAddressInfo({...addressInfo, [name]: value})
 	};
 
 	const addNewAddress = (e) => {
 		e.preventDefault();
 		
-		// var containsAll = arr1.every(i => arr2.includes(i));
+		if (!addressInfo.add_name) {
+			setFormIsValid(data => data = {...data, add_name: false});
+		}
+		if (!addressInfo.add_phone) {
+			setFormIsValid(data => data = {...data, add_phone: false});
+		}
+		if (!addressInfo.add_address) {
+			setFormIsValid(data => data = {...data, add_address: false});
+		}
+		if (!addressInfo.add_city.id) {
+			setFormIsValid(data => data = {...data, add_city: false});
+		}
+		
+		if (addressInfo.add_name && addressInfo.add_phone && addressInfo.add_address && addressInfo.add_city.id) {
+			const newAddress = {
+				name: addressInfo.add_name,
+				phone: addressInfo.add_phone,
+				city: addressInfo.add_city.name,
+				district: addressInfo.add_district.name ? addressInfo.add_district.name : '',
+				ward: addressInfo.add_ward.name ? addressInfo.add_ward.name : '',
+				address: addressInfo.add_address,
+				default: addressInfo.isDefault
+			};
+
+			updateUser(
+				{
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+					body: {newAddress},
+				}, (data) => {
+					console.log('add address', data);
+					if (data && data.message) {
+						const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+						let updatedDataStorage = {...userDataStorage};
+
+						updatedDataStorage = {...updatedDataStorage, listAddress: [...updatedDataStorage.listAddress, newAddress]};
+	
+						dispatch(authActions.updateState({
+							userData: updatedDataStorage
+						}));
+
+						Swal.fire({
+							icon: 'success',
+							html: `<p>Thêm địa chỉ thành công<p>`,
+							confirmButtonText: 'OK',
+							confirmButtonColor: '#2f80ed'
+						});
+					} else {
+						Swal.fire({
+							icon: 'error',
+							html: `<p>Có lỗi xảy ra. Vui lòng thử lại.</p>`,
+							confirmButtonText: 'OK',
+							confirmButtonColor: '#dc3741'
+						});
+					}
+				}
+			);
+		}
 	};	
 
 	let profileContent, reviewsContent;
@@ -496,19 +568,27 @@ const ProfilePage = (props) => {
 						<div className={classes['input-group']}>
 							<label>Họ và tên</label>
 							<div className={classes['wrap-ip']}>
-								<input type='text' name='add_name' placeholder='Nhập họ tên' />
+								<input type='text' name='add_name' placeholder='Nhập họ tên' defaultValue={addressInfo.add_name || ''}
+									className={formIsValid.add_name === false ? classes.invalid : ''}
+									onChange={onChangeAddressInput}
+								/>
 							</div>
 						</div>
 						<div className={classes['input-group']}>
 							<label>Số điện thoại</label>
 							<div className={classes['wrap-ip']}>
-								<input type='text' name='add_phone' placeholder='Nhập số điện thoại' />
+								<input type='text' name='add_phone' placeholder='Nhập số điện thoại' defaultValue={addressInfo.add_phone || ''}
+									className={formIsValid.add_phone === false  ? classes.invalid : ''} 
+									onChange={onChangeAddressInput}
+								/>
 							</div>
 						</div>
 						<div className={classes['input-group']}>
 							<label>Tỉnh/Thành phố</label>
 							<div className={classes['wrap-ip']}>
-								<select name='add_city' id='city' onChange={onChangeCity} ref={cityRef}>
+								<select name='add_city' id='city' onChange={onChangeCity} ref={cityRef} 
+									value={addressInfo['add_city'].id} className={formIsValid.add_city === false  ? classes.invalid : ''}
+								>
 									<option value="0">Chọn Tỉnh/Thành phố</option>
 									{
 										cities.length > 0 && (
@@ -523,7 +603,9 @@ const ProfilePage = (props) => {
 						<div className={classes['input-group']}>
 							<label>Quận huyện</label>
 							<div className={classes['wrap-ip']}>
-								<select name='add_district' id='district' onChange={onChangeDistrict} ref={districtRef}>
+								<select name='add_district' id='district' onChange={onChangeDistrict} ref={districtRef}
+									value={addressInfo['add_district'].id}
+								>
 									<option value="0">Chọn Quận/Huyện</option>
 									{
 										districts.length > 0 && (
@@ -538,7 +620,9 @@ const ProfilePage = (props) => {
 						<div className={classes['input-group']} ref={wardRef}>
 							<label>Phường xã</label>
 							<div className={classes['wrap-ip']}>
-								<select name='add_ward' id='ward' onChange={onChangeWard}>
+								<select name='add_ward' id='ward' onChange={onChangeWard}
+									value={addressInfo['add_ward'].id}
+								>
 									<option value="0">Chọn Phường/Xã</option>
 									{
 										wards.length > 0 && (
@@ -553,14 +637,19 @@ const ProfilePage = (props) => {
 						<div className={classes['input-group']}>
 							<label>Địa chỉ</label>
 							<div className={classes['wrap-ip']}>
-								<textarea name='add_address' rows='5' placeholder='Nhập địa chỉ'></textarea>
+								<textarea name='add_address' rows='5' placeholder='Nhập địa chỉ' defaultValue={addressInfo.add_address || ''}
+									onChange={onChangeAddressInput} className={formIsValid.add_address === false ? classes.invalid : ''}>
+								</textarea>
 							</div>
 						</div>
 						<div className={classes['input-group']}>
 							<label></label>
 							<div className={classes['wrap-ip']}>
 								<label className={classes.checkbox}>
-									<input type='checkbox' name='check-default'/>
+									<input type='checkbox' name='isDefault'
+										value={addressInfo.isDefault}
+										onChange={() => setAddressInfo({...addressInfo, isDefault: !addressInfo.isDefault})}
+									/>
 									<span className={classes.checkmark}></span>Đặt làm địa chỉ mặc định
 								</label>
 							</div>
