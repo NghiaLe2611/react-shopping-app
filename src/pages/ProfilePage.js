@@ -105,6 +105,7 @@ const ProfilePage = (props) => {
 		isDefault: false
 	});
 	const [formIsValid, setFormIsValid] = useState({});
+	const [onEditAddress, setOnEditAddress] = useState(null);
 
 	const slug = location.pathname.split('/').pop();
 	
@@ -211,7 +212,7 @@ const ProfilePage = (props) => {
         const oldBirthday = new Date(birthday);
         const newBirthday = new Date(userInfo.birthday);
 
-		if (userInfo.birthday && oldBirthday.getTime() !== newBirthday.getTime()) {
+		if (selectedDay && selectedMonth && selectedYear && oldBirthday.getTime() !== newBirthday.getTime()) {
 			updatedData['birthday'] = newBirthday;
 		}
 
@@ -225,7 +226,7 @@ const ProfilePage = (props) => {
                         url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
                         body: updatedData,
                     }, (data) => {
-                        console.log('update successfull', data);
+                        // console.log('update successfull', data);
                         if (data && data.message) {
                             const userDataStorage = JSON.parse(localStorage.getItem('userData'));
                             let updatedDataStorage = {...userDataStorage};
@@ -236,6 +237,8 @@ const ProfilePage = (props) => {
                             if (updatedData.birthday) updatedDataStorage = {...updatedDataStorage, birthday: updatedData.birthday}
                             if (updatedData.photoURL) updatedDataStorage = {...updatedDataStorage, photoURL: updatedData.photoURL}
         
+							console.log(123123, updatedDataStorage);
+
                             dispatch(authActions.updateState({
                                 userData: updatedDataStorage
                             }));
@@ -442,9 +445,18 @@ const ProfilePage = (props) => {
 			const newAddress = {
 				name: addressInfo.add_name,
 				phone: addressInfo.add_phone,
-				city: addressInfo.add_city.name,
-				district: addressInfo.add_district.name ? addressInfo.add_district.name : '',
-				ward: addressInfo.add_ward.name ? addressInfo.add_ward.name : '',
+				city: {
+					id: addressInfo.add_city.id,
+					name: addressInfo.add_city.name
+				},
+				district: {
+					id: addressInfo.add_district.id ? addressInfo.add_district.id : 0,
+					name: addressInfo.add_district.name ? addressInfo.add_district.name : ''
+				},
+				ward: {
+					id: addressInfo.add_ward.id ? addressInfo.add_ward.id : 0,
+					name: addressInfo.add_ward.name ? addressInfo.add_ward.name : ''
+				},
 				address: addressInfo.add_address,
 				default: addressInfo.isDefault
 			};
@@ -473,6 +485,8 @@ const ProfilePage = (props) => {
 							confirmButtonText: 'OK',
 							confirmButtonColor: '#2f80ed'
 						});
+
+						setIsAddAddress(false);
 					} else {
 						Swal.fire({
 							icon: 'error',
@@ -484,7 +498,15 @@ const ProfilePage = (props) => {
 				}
 			);
 		}
-	};	
+	};
+
+	const editAddress = (id) => {
+		setOnEditAddress(id);
+	};
+
+	const removeAddress = (id) => {
+		console.log(id);
+	};
 
 	let profileContent, reviewsContent;
 
@@ -663,8 +685,111 @@ const ProfilePage = (props) => {
 					</form>
 					{listAddress && listAddress.length > 0 ? (
 						<ul className={classes['list-address']}>
-							{listAddress.map((item, index) => (
-								<li key={index}></li>
+							{listAddress.map((item) => (
+								<li key={item._id}>
+									<div className={classes['wrap-address']} style={{display: onEditAddress === item._id ? 'none' : 'flex'}}>
+										<div className={classes.info}>
+											<p className={classes.name}>
+												{item.name}
+												{item.default && <span><i className='icon-check-circle'></i>Địa chỉ mặc định</span>}
+											</p>
+											<p className={classes.address}>
+												<span>Địa chỉ: </span>
+												{`${item.address}${item.ward && `, ${item.ward.name}`}${item.district && `, ${item.district.name}`}${item.city && `, ${item.city.name}`}`}
+											</p>
+											<p className={classes.phone}><span>Điện thoại: </span>{item.phone}</p>
+										</div>
+										<div className={classes.action}>
+											<button className={classes.edit} onClick={() => editAddress(item._id)}>Chỉnh sửa</button>
+											{!item.default && <button className={classes.remove} onClick={() => removeAddress(item._id)}>Xóa</button>}
+										</div>
+									</div>
+									<div className={classes['form-edit']} style={{display: onEditAddress === item._id ? 'block' : 'none'}}>
+										<form className={classes['form-address']} onSubmit
+										>
+											<div className={classes['input-group']}>
+												<label>Họ và tên</label>
+												<div className={classes['wrap-ip']}>
+													<input type='text' name='add_name' placeholder='Nhập họ tên' defaultValue={item.name}/>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label>Số điện thoại</label>
+												<div className={classes['wrap-ip']}>
+													<input type='text' name='add_phone' placeholder='Nhập số điện thoại' defaultValue={item.phone}/>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label>Tỉnh/Thành phố</label>
+												<div className={classes['wrap-ip']}>
+													<select name='add_city' id='city' defaultValue={item.city.id}>
+														<option value="0">Chọn Tỉnh/Thành phố</option>
+														{
+															cities.length > 0 && (
+																cities.map(item => (
+																	<option key={item.id} value={item.id}>{item.name}</option>
+																))
+															)
+														}
+													</select>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label>Quận huyện</label>
+												<div className={classes['wrap-ip']}>
+													<select name='add_district' id='district' defaultValue={item.district.id}>
+														<option value="0">Chọn Quận/Huyện</option>
+														{
+															districts.length > 0 && (
+																districts.map(item => (
+																	<option key={item.id} value={item.id}>{item.name}</option>
+																))
+															)
+														}
+													</select>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label>Phường xã</label>
+												<div className={classes['wrap-ip']}>
+													<select name='add_ward' id='ward' defaultValue={item.ward.id}>
+														<option value="0">Chọn Phường/Xã</option>
+														{
+															wards.length > 0 && (
+																wards.map(item => (
+																	<option key={item.id} value={item.id}>{item.name}</option>
+																))
+															)
+														}
+													</select>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label>Địa chỉ</label>
+												<div className={classes['wrap-ip']}>
+													<textarea name='add_address' rows='5' placeholder='Nhập địa chỉ' defaultValue={item.address}>
+													</textarea>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label></label>
+												<div className={classes['wrap-ip']}>
+													<label className={classes.checkbox}>
+														<input type='checkbox' name='isDefault' checked={item.default}/>
+														<span className={classes.checkmark}></span>Đặt làm địa chỉ mặc định
+													</label>
+												</div>
+											</div>
+											<div className={classes['input-group']}>
+												<label></label>
+												<div className={classes['wrap-ip']}>
+													<button type='submit' className={classes.back}>Quay lại</button>
+													<button type='submit' className={classes.update}>Cập nhật</button>
+												</div>
+											</div>
+										</form>
+									</div>
+								</li>
 							))}
 						</ul>
 					) : null}

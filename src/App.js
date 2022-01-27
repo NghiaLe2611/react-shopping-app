@@ -38,7 +38,7 @@ function App() {
 
     useEffect(() => {
         const postUser = () => {
-            console.log('updateUserInfo');
+            console.log('postUserInfo');
 
             const data = {
                 uuid: userData.uuid,
@@ -57,22 +57,22 @@ function App() {
         }
 
         // Update user
-        // const updateUser = () => {
-        //     const data = {
-        //         uuid: userData.uuid,
-        //         displayName: userData.displayName,
-        //         email: userData.email,
-        //         photoURL: userData.photoURL,
-        //         emailVerified: userData.emailVerified,
-        //     };
+        const updateUser = () => {
+            const data = {
+                uuid: userData.uuid,
+                displayName: userData.displayName,
+                email: userData.email,
+                photoURL: userData.photoURL,
+                emailVerified: userData.emailVerified,
+            };
 
-        //     updateUserInfo({
-        //         method: 'PUT',
-        //         headers: { 'Content-Type': 'application/json' },
-        //         url: `${process.env.REACT_APP_API_URL}/updateUserData/${userData.uuid}`,
-        //         body: data
-        //     });
-        // };
+            updateUserInfo({
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/updateUserData/${userData.uuid}`,
+                body: data
+            });
+        };
 
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
@@ -98,8 +98,9 @@ function App() {
                     if (!data) {
                         postUser();
                     } else {
+                        // updateUser();
                         const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-                        console.log(userDataObj, cloneData);
+                        
                         dispatch(authActions.updateState({
                             userData: {...userDataObj, ...cloneData}
                         }));
