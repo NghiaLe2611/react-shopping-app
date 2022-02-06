@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import classes from '../scss/Profile.module.scss';
 import iconFacebook from '../assets/images/icon-fb.png';
 import iconGoogle from '../assets/images/icon-google.png';
@@ -13,36 +13,33 @@ import { authApp } from '../firebase/config';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { authActions } from '../store/auth';
 import userAvatar from '../assets/images/avatar.png';
+import EditAddress from '../components/profile/EditAddress';
 
 const profileNav = [
 	{
 		icon: 'icon-user',
-		link: '/tai-khoan',
-		slug: 'tai-khoan',
+		slug: '/tai-khoan',
 		name: 'Thông tin tài khoản',
 	},
 	{
 		icon: 'icon-cart',
-		link: '/tai-khoan/don-hang',
-		slug: 'don-hang',
+		slug: '/tai-khoan/don-hang',
 		name: 'Quản lý đơn hàng',
 	},
 	{
 		icon: 'icon-map',
-		link: '/tai-khoan/dia-chi',
-		slug: 'dia-chi',
+		slug: '/tai-khoan/dia-chi',
 		name: 'Sổ địa chỉ',
 	},
 	{
 		icon: 'icon-card',
-		link: '/tai-khoan/thanh-toan',
-		slug: 'thanh-toan',
+		slug: '/tai-khoan/thanh-toan',
 		name: 'Thông tin thanh toán',
 	},
 	{
 		icon: 'icon-heart',
 		link: '/tai-khoan/yeu-thich',
-		slug: 'yeu-thich',
+		slug: '/tai-khoan/yeu-thich',
 		name: 'Sản phẩm yêu thích',
 	},
 	{
@@ -59,6 +56,7 @@ function getDaysInMonth(month, year) {
 
 const ProfilePage = (props) => {
 	const location = useLocation();
+    const navigate = useNavigate();
 	const dispatch = useDispatch();
 	const userData = useSelector((state) => state.auth.userData);
 	const { displayName, photoURL, uuid, email, emailVerified, 
@@ -92,7 +90,14 @@ const ProfilePage = (props) => {
 	const [daysInMonth, setDaysInMonth] = useState('');
 	const [userReviews, setUserReviews] = useState([]);
 	const [isAddAddress, setIsAddAddress] = useState(false);
-	const [cities, setCities] = useState([]);
+	const [cities, setCities] = useState(() => {
+        const storage = localStorage.getItem('storage_citi');
+        if (storage) {
+            return JSON.parse(storage);
+        }
+
+        return [];
+    });
 	const [districts, setDistricts] = useState([]);
 	const [wards, setWards] = useState([]);
 	const [addressInfo, setAddressInfo] = useState({
@@ -105,9 +110,9 @@ const ProfilePage = (props) => {
 		isDefault: false
 	});
 	const [formIsValid, setFormIsValid] = useState({});
-	const [onEditAddress, setOnEditAddress] = useState(null);
+	const [itemOnEdit, setItemOnEdit] = useState(null);
 
-	const slug = location.pathname.split('/').pop();
+	const slug = location.pathname;
 	
 	const { isLoading: isLoadingReviews, error: reviewsError, fetchData: fetchReviews } = useFetch();
 	const { fetchData: updateUser } = useFetch();
@@ -119,6 +124,8 @@ const ProfilePage = (props) => {
 	const cityRef = useRef('');
 	const districtRef = useRef('');
 	const wardRef = useRef('');
+    const addCityRef = useRef('');
+    const addDistrictRef = useRef('');
 
 	useEffect(() => {
 		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -140,7 +147,7 @@ const ProfilePage = (props) => {
 
 	useEffect(() => {
 		if (uuid) {
-			if (slug === 'nhan-xet') {
+			if (slug === '/tai-khoan/nhan-xet') {
 				fetchReviews(
 					{
 						url: `${process.env.REACT_APP_API_URL}/${uuid}/reviews`,
@@ -156,7 +163,7 @@ const ProfilePage = (props) => {
 	}, [fetchReviews, uuid, slug]);
 
 	useEffect(() => {
-		if (slug === 'dia-chi' && cities.length === 0) {
+		if (slug === '/tai-khoan/dia-chi' && cities.length === 0) {
 			fetchCities(
 				{
 					url: `${process.env.REACT_APP_API_URL}/cities`,
@@ -164,11 +171,12 @@ const ProfilePage = (props) => {
 					// console.log(data);
 					if (data) {
 						setCities(data);
+                        localStorage.setItem('storage_citi', JSON.stringify(data));
 					}
 				}
 			);
 		}
-	}, [slug, fetchCities, cities])
+	}, [slug, fetchCities, cities]);
 
 	const onChangeDay = (e) => {
 		// console.log(e.target.value);
@@ -237,8 +245,6 @@ const ProfilePage = (props) => {
                             if (updatedData.birthday) updatedDataStorage = {...updatedDataStorage, birthday: updatedData.birthday}
                             if (updatedData.photoURL) updatedDataStorage = {...updatedDataStorage, photoURL: updatedData.photoURL}
         
-							console.log(123123, updatedDataStorage);
-
                             dispatch(authActions.updateState({
                                 userData: updatedDataStorage
                             }));
@@ -425,7 +431,20 @@ const ProfilePage = (props) => {
 		setAddressInfo({...addressInfo, [name]: value})
 	};
 
-	const addNewAddress = (e) => {
+    const onAddNewAddress = () => {
+        if (listAddress && listAddress.length < 5) {
+            setIsAddAddress(true);
+        } else {
+            Swal.fire({
+                icon: 'error',
+                html: `<p>Bạn chỉ có thể có tối đa 5 địa chỉ !</p>`,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3741'
+            });
+        }
+    };
+
+	const submitAddNewAddress = (e) => {
 		e.preventDefault();
 		
 		if (!addressInfo.add_name) {
@@ -466,7 +485,7 @@ const ProfilePage = (props) => {
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
 					url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
-					body: {newAddress},
+					body: { newAddress },
 				}, (data) => {
 					console.log('add address', data);
 					if (data && data.message) {
@@ -478,6 +497,7 @@ const ProfilePage = (props) => {
 						dispatch(authActions.updateState({
 							userData: updatedDataStorage
 						}));
+
 
 						Swal.fire({
 							icon: 'success',
@@ -500,13 +520,21 @@ const ProfilePage = (props) => {
 		}
 	};
 
-	const editAddress = (id) => {
-		setOnEditAddress(id);
+	const editAddress = (item) => {
+        navigate(`dia-chi/cap-nhat/${item._id}`);
+        setItemOnEdit(item);
 	};
 
 	const removeAddress = (id) => {
 		console.log(id);
 	};
+
+    const exitEdit = (e) => {
+        e.preventDefault();
+        setItemOnEdit(null);
+        setDistricts([]);
+        setWards([]);
+    }
 
 	let profileContent, reviewsContent;
 
@@ -569,7 +597,7 @@ const ProfilePage = (props) => {
 	}
     
 	switch (slug) {
-		case 'don-hang': {
+		case '/tai-khoan/don-hang': {
 			profileContent = (
 				<Fragment>
 					<h3>Đơn hàng của tôi</h3>
@@ -577,15 +605,15 @@ const ProfilePage = (props) => {
 			);
 			break;
 		}
-		case 'dia-chi': {
+		case '/tai-khoan/dia-chi': {
 			profileContent = (
 				<Fragment>
 					<h3>Danh sách địa chỉ</h3>
-					<div className={classes['new-address']} onClick={() => setIsAddAddress(true)}>
+					<div className={classes['new-address']} onClick={onAddNewAddress}>
 						<span>+</span>Thêm địa chỉ mới
 					</div>
 					<form className={classes['form-address']} style={{ display: isAddAddress ? 'block' : 'none' }}
-						onSubmit={addNewAddress}
+						onSubmit={submitAddNewAddress}
 					>
 						<div className={classes['input-group']}>
 							<label>Họ và tên</label>
@@ -687,7 +715,7 @@ const ProfilePage = (props) => {
 						<ul className={classes['list-address']}>
 							{listAddress.map((item) => (
 								<li key={item._id}>
-									<div className={classes['wrap-address']} style={{display: onEditAddress === item._id ? 'none' : 'flex'}}>
+									<div className={classes['wrap-address']}>
 										<div className={classes.info}>
 											<p className={classes.name}>
 												{item.name}
@@ -700,94 +728,9 @@ const ProfilePage = (props) => {
 											<p className={classes.phone}><span>Điện thoại: </span>{item.phone}</p>
 										</div>
 										<div className={classes.action}>
-											<button className={classes.edit} onClick={() => editAddress(item._id)}>Chỉnh sửa</button>
+											<button className={classes.edit} onClick={() => editAddress(item)}>Chỉnh sửa</button>
 											{!item.default && <button className={classes.remove} onClick={() => removeAddress(item._id)}>Xóa</button>}
 										</div>
-									</div>
-									<div className={classes['form-edit']} style={{display: onEditAddress === item._id ? 'block' : 'none'}}>
-										<form className={classes['form-address']} onSubmit
-										>
-											<div className={classes['input-group']}>
-												<label>Họ và tên</label>
-												<div className={classes['wrap-ip']}>
-													<input type='text' name='add_name' placeholder='Nhập họ tên' defaultValue={item.name}/>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label>Số điện thoại</label>
-												<div className={classes['wrap-ip']}>
-													<input type='text' name='add_phone' placeholder='Nhập số điện thoại' defaultValue={item.phone}/>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label>Tỉnh/Thành phố</label>
-												<div className={classes['wrap-ip']}>
-													<select name='add_city' id='city' defaultValue={item.city.id}>
-														<option value="0">Chọn Tỉnh/Thành phố</option>
-														{
-															cities.length > 0 && (
-																cities.map(item => (
-																	<option key={item.id} value={item.id}>{item.name}</option>
-																))
-															)
-														}
-													</select>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label>Quận huyện</label>
-												<div className={classes['wrap-ip']}>
-													<select name='add_district' id='district' defaultValue={item.district.id}>
-														<option value="0">Chọn Quận/Huyện</option>
-														{
-															districts.length > 0 && (
-																districts.map(item => (
-																	<option key={item.id} value={item.id}>{item.name}</option>
-																))
-															)
-														}
-													</select>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label>Phường xã</label>
-												<div className={classes['wrap-ip']}>
-													<select name='add_ward' id='ward' defaultValue={item.ward.id}>
-														<option value="0">Chọn Phường/Xã</option>
-														{
-															wards.length > 0 && (
-																wards.map(item => (
-																	<option key={item.id} value={item.id}>{item.name}</option>
-																))
-															)
-														}
-													</select>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label>Địa chỉ</label>
-												<div className={classes['wrap-ip']}>
-													<textarea name='add_address' rows='5' placeholder='Nhập địa chỉ' defaultValue={item.address}>
-													</textarea>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label></label>
-												<div className={classes['wrap-ip']}>
-													<label className={classes.checkbox}>
-														<input type='checkbox' name='isDefault' checked={item.default}/>
-														<span className={classes.checkmark}></span>Đặt làm địa chỉ mặc định
-													</label>
-												</div>
-											</div>
-											<div className={classes['input-group']}>
-												<label></label>
-												<div className={classes['wrap-ip']}>
-													<button type='submit' className={classes.back}>Quay lại</button>
-													<button type='submit' className={classes.update}>Cập nhật</button>
-												</div>
-											</div>
-										</form>
 									</div>
 								</li>
 							))}
@@ -797,7 +740,15 @@ const ProfilePage = (props) => {
 			);
 			break;
 		}
-		case 'thanh-toan': {
+        case (slug.match(/tai-khoan\/dia-chi\/cap-nhat\/*/)?.input) : {
+			profileContent = (
+				<Fragment>
+                    <EditAddress classes={classes} cities={cities} listAddress={listAddress}/>
+                </Fragment>
+			);
+			break;
+		}
+		case '/tai-khoan/thanh-toan': {
 			profileContent = (
 				<Fragment>
 					<h3>Thông tin thanh toán</h3>
@@ -806,7 +757,7 @@ const ProfilePage = (props) => {
 			);
 			break;
 		}
-		case 'yeu-thich': {
+		case '/tai-khoan/yeu-thich': {
 			profileContent = (
 				<Fragment>
 					<h3>Danh sách yêu thích</h3>
@@ -814,7 +765,7 @@ const ProfilePage = (props) => {
 			);
 			break;
 		}
-		case 'nhan-xet': {
+		case '/tai-khoan/nhan-xet': {
 			profileContent = (
 				<Fragment>
 					<h3>Nhận xét của tôi</h3>
@@ -971,7 +922,7 @@ const ProfilePage = (props) => {
 						<ul className={classes['account-nav']}>
 							{profileNav.map((item) => (
 								<li key={item.name} className={`${item.slug === slug ? classes.active : ''}`}>
-									<Link to={item.link}>
+									<Link to={item.slug}>
 										<i className={item.icon}></i>
 										{item.name}
 									</Link>
