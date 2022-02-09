@@ -125,3 +125,7 @@
 .icon-map:before {
     content: "\77";
 }
+
+.icon-heart-o:before {
+    content: "\78";
+}

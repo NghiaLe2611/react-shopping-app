@@ -189,6 +189,42 @@ body {
     }
 }
 
+.wrap-action{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    .sharing{
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        ul{
+            display: flex;
+            margin-left: 10px;
+            li{
+                &:not(:last-child){
+                    margin-right: 5px;
+                }
+            }
+        }
+    }
+    .fav-btn{
+        display: flex;
+        align-items: center;
+        margin-left: 50px;
+        background-color: transparent;
+        font-size: 14px;
+        &.liked i{
+            color: #ff424e;
+        }
+        i{
+            margin-right: 10px;
+            display: flex;
+            font-size: 28px;
+            color: #767676;
+        }
+    }
+}
+
 .product-specs {
     width: 100%;
     margin-top: 30px;

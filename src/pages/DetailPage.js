@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react'
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import Slider from 'react-slick';
 import Skeleton from 'react-loading-skeleton';
@@ -18,6 +18,8 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import Pagination from '../components/UI/Pagination';
 import NotFound from './NotFound';
+import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
+import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
 
 function BoxThumbnail({ children }) {
     return (
@@ -40,12 +42,13 @@ const reviewSwal = withReactContent(Swal);
 
 const DetailPage = () => {
     const { productId } = useParams();
+    const location = useLocation();
     const dispatch = useDispatch();
     
     // const cart = useSelector((state) => state.cart);
     // const showCart = useSelector(state => state.cart.isShowCart);
     const userData = useSelector(state => state.auth.userData);
-    const { displayName, id, email } = userData ? userData : {};
+    const { displayName, uuid, email, favorite } = userData ? userData : {};
 
     const [product, setProduct] = useState(null);
     const [selectedColor, setSelectedColor] = useState(0);
@@ -70,6 +73,7 @@ const DetailPage = () => {
     const { loadingReview, reviewError, fetchData: fetchReviews } = useFetch();
 
     const { fetchData: postReview } = useFetch();
+    const { fetchData: addToFav } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
@@ -389,7 +393,7 @@ const DetailPage = () => {
 
         if (ratingPoint !== 0 && reviewFormRef.current.name.value.length > 0 && comment.length >= 80) {
             const reviewData = {
-                userId: id ? id : null, 
+                userId: uuid ? uuid : null, 
                 customerName: reviewFormRef.current.name.value,
                 star: ratingPoint,
                 comment: comment,
@@ -431,6 +435,32 @@ const DetailPage = () => {
         } else {
             setCurrentPage(pageNumber);
         }
+    };
+
+    const addToWishlist = (type, id) => {
+        addToFav({
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
+            body: type === 1 ? { type: 1 } : { type: 0 } // 1 like, 0 unlike
+        }, data => {
+            setTimeout(() => {
+                if (data.message) {
+                    reviewSwal.fire({
+                        icon: 'success',
+                        html: type === 1 ? '<p>Đã thích<p>' : '<p>Đã bỏ thích<p>',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#2f80ed'
+                    });
+                } else {
+                    reviewSwal.fire({
+                        icon: 'error',
+                        html: '<p style="font-size: 14px;">Đã có lỗi xảy ra. Vui lòng thử lại.</p>',
+                        confirmButtonColor: '#2f80ed'
+                    })
+                }
+            }, 500);
+        });
     };
 
     let reviewsContent = (
@@ -821,6 +851,48 @@ const DetailPage = () => {
                     }
                     {productTab}
                 </div>
+                <div className={classes['wrap-action']}>
+                    <div className={classes.sharing}>
+                        <span>Chia sẻ: </span>
+                        <ul>
+                            <li>
+                                <FacebookShareButton
+                                    url={window.location.href}
+                                    className={classes['share-btn']}
+                                >
+                                    <FacebookIcon size={30} round />
+                                </FacebookShareButton>
+                            </li>
+                            <li>
+                                <FacebookMessengerShareButton
+                                    url={window.location.href}
+                                    className={classes['share-btn']}
+                                >
+                                    <FacebookMessengerIcon size={30} round />
+                                </FacebookMessengerShareButton>
+                            </li>
+                            <li>
+                                <TwitterShareButton
+                                    url={window.location.href}
+                                    className={classes['share-btn']}
+                                >
+                                    <TwitterIcon size={30} round />
+                                </TwitterShareButton>
+                            </li>
+                        </ul>
+                    </div>
+                    {
+                        favorite && favorite.some(item => item._id === product._id) ? (
+                            <button className={`${classes['fav-btn']} ${classes.liked}`} onClick={() => addToWishlist(0, product._id)}>
+                                <i className='icon-heart'></i>Đã thích
+                            </button>
+                        ) : (
+                            <button className={classes['fav-btn']} onClick={() => addToWishlist(1, product._id)}>
+                                <i className='icon-heart-o'></i>Thích
+                            </button>
+                        )
+                    }
+                </div>
                 {reviewsContent}
             </div>
         );
@@ -1210,9 +1282,7 @@ const DetailPage = () => {
                 }
 				<div className='card'>
                     <div className={classes['wrap-product-detail']}>
-					    {
-                            productContent
-                        }
+					    {productContent}
                     </div>
 				</div>
 			</div>
