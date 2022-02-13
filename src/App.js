@@ -39,7 +39,7 @@ function App() {
     useEffect(() => {
         // Create user data
         const postUserData = () => {
-            console.log('postUserData');
+            // console.log('postUserData');
     
             const data = {
                 uuid: userData.uuid,
@@ -62,7 +62,7 @@ function App() {
             fetchUser({
                 url: `${process.env.REACT_APP_API_URL}/getUserData/${dataObj.uuid}` 
             }, data => {
-                console.log('fetchUser', data);
+                // console.log('fetchUser', data);
                 if (!data) {
                     postUserData();
                 } else {
@@ -149,7 +149,7 @@ function App() {
             console.log('set storage');
             localStorage.setItem('userData', JSON.stringify(userData));
         } else {
-            console.log('remove storage');
+            // console.log('remove storage');
             localStorage.removeItem('userData');
         }
     }, [userData]);

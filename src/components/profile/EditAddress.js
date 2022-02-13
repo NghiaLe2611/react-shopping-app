@@ -165,7 +165,7 @@ const EditAddress = (props) => {
                         const userDataStorage = JSON.parse(localStorage.getItem('userData'));
 
                         const userDataObj = {
-                            uuid: userDataStorage.uid,
+                            uuid: userDataStorage.uuid,
                             displayName: userDataStorage.displayName,
                             email: userDataStorage.email,
                             photoURL: userDataStorage.photoURL,
@@ -337,9 +337,7 @@ const EditAddress = (props) => {
                     <div className={classes['input-group']}>
                         <label></label>
                         <div className={classes['wrap-ip']}>
-                            <button className={classes.back} onClick={exitEdit}>
-                                Quay lại
-                            </button>
+                            <button className={classes.back} onClick={exitEdit}>Quay lại</button>
                             <button type='submit' className={classes.update}>Cập nhật</button>
                         </div>
                     </div>

@@ -6,7 +6,7 @@ import iconGoogle from '../assets/images/icon-google.png';
 import { useSelector, useDispatch } from 'react-redux';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
-import { timeSince } from '../helpers/helpers';
+import { formatCurrency, timeSince } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import { authApp } from '../firebase/config';
 // import { updateProfile } from 'firebase/auth';
@@ -60,7 +60,7 @@ const ProfilePage = (props) => {
 	const dispatch = useDispatch();
 	const userData = useSelector((state) => state.auth.userData);
 	const { displayName, photoURL, uuid, email, emailVerified, 
-		fullName, phone, birthday, listAddress } = userData ? userData : {};
+		fullName, phone, birthday, listAddress, favorite } = userData ? userData : {};
 
 	const [userInfo, setUserInfo] = useState({
 		fullname: fullName ? fullName : '',
@@ -761,6 +761,25 @@ const ProfilePage = (props) => {
 			profileContent = (
 				<Fragment>
 					<h3>Danh sách yêu thích</h3>
+                    <ul className={classes['list-fav']}>
+                        {
+                            (favorite && favorite.length > 0) && (
+                                favorite.map(item => (
+                                    <li key={item._id}>
+                                        <a href="/#" className={classes.img}>
+                                            <img src={item.img} alt={item.name} />
+                                        </a>
+                                        <div className={classes.info}>
+                                            <a className={classes.name} href="/#">{item.name}</a>
+                                            <p>0 nhận xét</p>
+                                        </div>
+                                        <div className={classes.price}>{formatCurrency(item.price)}đ</div>
+                                        <span className={classes['remove-fav']}>×</span>
+                                    </li>
+                                ))
+                            )
+                        }
+                    </ul>
 				</Fragment>
 			);
 			break;

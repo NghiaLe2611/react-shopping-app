@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react'
-import { Link, useParams, useLocation } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import Slider from 'react-slick';
 import Skeleton from 'react-loading-skeleton';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
+import { authActions } from '../store/auth';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
 import Modal from '../components/UI/Modal';
 import CompareModalWrapper from '../components/UI/CompareModalWrapper';
@@ -42,7 +43,7 @@ const reviewSwal = withReactContent(Swal);
 
 const DetailPage = () => {
     const { productId } = useParams();
-    const location = useLocation();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     
     // const cart = useSelector((state) => state.cart);
@@ -74,6 +75,7 @@ const DetailPage = () => {
 
     const { fetchData: postReview } = useFetch();
     const { fetchData: addToFav } = useFetch();
+    const { fetchData: fetchUser } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
@@ -438,29 +440,64 @@ const DetailPage = () => {
     };
 
     const addToWishlist = (type, id) => {
-        addToFav({
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
-            body: type === 1 ? { type: 1 } : { type: 0 } // 1 like, 0 unlike
-        }, data => {
-            setTimeout(() => {
-                if (data.message) {
-                    reviewSwal.fire({
-                        icon: 'success',
-                        html: type === 1 ? '<p>Đã thích<p>' : '<p>Đã bỏ thích<p>',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#2f80ed'
-                    });
-                } else {
-                    reviewSwal.fire({
-                        icon: 'error',
-                        html: '<p style="font-size: 14px;">Đã có lỗi xảy ra. Vui lòng thử lại.</p>',
-                        confirmButtonColor: '#2f80ed'
-                    })
-                }
-            }, 500);
-        });
+        console.log(type);
+        if (userData) {
+            addToFav({
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
+                body: type === 1 ? { type: 1 } : { type: 0 } // 1 like, 0 unlike
+            }, data => {
+                setTimeout(() => {
+                    if (data.message) {
+                        reviewSwal.fire({
+                            icon: 'success',
+                            html: type === 1 ? '<p>Đã thích<p>' : '<p>Đã bỏ thích<p>',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#2f80ed'
+                        });
+
+                        const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+                        
+                        const userDataObj = {
+                            uuid: userDataStorage.uuid,
+                            displayName: userDataStorage.displayName,
+                            email: userDataStorage.email,
+                            photoURL: userDataStorage.photoURL,
+                            emailVerified: userDataStorage.emailVerified
+                        };
+            
+                        fetchUser({
+                            url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}` 
+                        }, data => {
+                            if (data) {
+                                console.log(111, data);
+                                const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+                                dispatch(authActions.updateState({
+                                    userData: {...userDataObj, ...cloneData}
+                                }));
+                            }
+                        });
+                    } else {
+                        reviewSwal.fire({
+                            icon: 'error',
+                            html: '<p style="font-size: 14px;">Đã có lỗi xảy ra. Vui lòng thử lại.</p>',
+                            confirmButtonColor: '#2f80ed'
+                        })
+                    }
+                }, 500);
+            });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                html: `<p>Bạn phải đăng nhập để thực hiện tính năng này!</p>`,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#f49f54'
+            }).then(() => {
+                navigate('/dang-nhap');
+            });
+            
+        }
     };
 
     let reviewsContent = (
