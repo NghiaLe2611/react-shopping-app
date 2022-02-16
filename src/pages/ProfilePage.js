@@ -6,7 +6,7 @@ import iconGoogle from '../assets/images/icon-google.png';
 import { useSelector, useDispatch } from 'react-redux';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
-import { formatCurrency, timeSince } from '../helpers/helpers';
+import { formatCurrency, convertProductLink, timeSince } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import { authApp } from '../firebase/config';
 // import { updateProfile } from 'firebase/auth';
@@ -54,7 +54,7 @@ function getDaysInMonth(month, year) {
 	return new Date(year, month, 0).getDate();
 }
 
-const ProfilePage = (props) => {
+const ProfilePage = () => {
 	const location = useLocation();
     const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -119,6 +119,9 @@ const ProfilePage = (props) => {
 	const { fetchData: fetchCities } = useFetch();
 	const { fetchData: fetchDistricts } = useFetch();
 	const { fetchData: fetchWards } = useFetch();
+    const { fetchData: removeFav } = useFetch();
+    const { fetchData: fetchUser } = useFetch();
+    const { fetchData: removeAddress } = useFetch();
 
 	const imgRef = useRef('');
 	const cityRef = useRef('');
@@ -525,8 +528,87 @@ const ProfilePage = (props) => {
         setItemOnEdit(item);
 	};
 
-	const removeAddress = (id) => {
-		console.log(id);
+	const onRemoveAddress = (id) => {
+		Swal.fire({
+			icon: 'warning',
+			html: `<p>Bạn có chắc muốn xoá địa chỉ này ?</p>`,
+			confirmButtonText: 'Xoá',
+			confirmButtonColor: '#2f80ed',
+			showCancelButton: true,
+			cancelButtonText: 'Không',
+			cancelButtonColor: '#dc3741'
+		}).then(result => {
+		   	if (result.isConfirmed) {
+				removeAddress(
+					{
+						method: 'PUT',
+						headers: { 'Content-Type': 'application/json' },
+						url: `${process.env.REACT_APP_API_URL}/updateUserAddress/${userData.uuid}/${id}`,
+						body: { removeAddressId: id },
+					},
+					(data) => {
+						if (data && data.message) {
+							const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+
+							const userDataObj = {
+								uuid: userDataStorage.uuid,
+								displayName: userDataStorage.displayName,
+								email: userDataStorage.email,
+								photoURL: userDataStorage.photoURL,
+								emailVerified: userDataStorage.emailVerified,
+							};
+
+							fetchUser(
+								{
+									url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}`,
+								},
+								(data) => {
+									if (data) {
+										const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+										dispatch(
+											authActions.updateState({
+												userData: { ...userDataObj, ...cloneData },
+											})
+										);
+									}
+								}
+							);
+						}
+					}
+				);
+			}
+		});
+	};
+
+	const removeFromWishlist = (id) => {
+		removeFav({
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
+			body: { type: 0 }
+		}, data => {
+			if(data.message) {
+				const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+				const userDataObj = {
+					uuid: userDataStorage.uuid,
+					displayName: userDataStorage.displayName,
+					email: userDataStorage.email,
+					photoURL: userDataStorage.photoURL,
+					emailVerified: userDataStorage.emailVerified
+				};
+	
+				fetchUser({
+					url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}` 
+				}, data => {
+					if (data) {
+						const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+						dispatch(authActions.updateState({
+							userData: {...userDataObj, ...cloneData}
+						}));
+					}
+				});
+			}
+		});
 	};
 
     const exitEdit = (e) => {
@@ -729,7 +811,7 @@ const ProfilePage = (props) => {
 										</div>
 										<div className={classes.action}>
 											<button className={classes.edit} onClick={() => editAddress(item)}>Chỉnh sửa</button>
-											{!item.default && <button className={classes.remove} onClick={() => removeAddress(item._id)}>Xóa</button>}
+											{!item.default && <button className={classes.remove} onClick={() => onRemoveAddress(item._id)}>Xóa</button>}
 										</div>
 									</div>
 								</li>
@@ -766,15 +848,47 @@ const ProfilePage = (props) => {
                             (favorite && favorite.length > 0) && (
                                 favorite.map(item => (
                                     <li key={item._id}>
-                                        <a href="/#" className={classes.img}>
-                                            <img src={item.img} alt={item.name} />
-                                        </a>
+										<Link className={classes.img} to={`${item.category === 'smartphone' ? '/dien-thoai/' : 
+												item.category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.name)}`}>
+												<img src={item.img} alt={item.name} />
+										</Link>
                                         <div className={classes.info}>
-                                            <a className={classes.name} href="/#">{item.name}</a>
-                                            <p>0 nhận xét</p>
+											<Link className={classes.name} to={`${item.category === 'smartphone' ? '/dien-thoai/' : 
+												item.category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.name)}`}>{item.name}
+											</Link>
+											<div className={classes['wrap-review']}>
+												<p className={classes.rating}>
+													{
+														Array(5).fill().map((val, index) => (	
+															(item.averagePoint - Math.floor(item.averagePoint)).toFixed(1) === 0.5 ? (
+																<span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(item.averagePoint) ? 'icon-star-half' : index + 1 < Math.round(item.averagePoint) ? classes.selected : ''}`}>
+																	{index + 1 !== Math.round(item.averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
+																</span>
+															) : (
+																<span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(item.averagePoint) ? classes.selected : ''}`}>
+																	<i className={`icon-star ${classes.border}`}></i>
+																</span>
+															)
+														))
+													}
+												</p>
+												<p className={classes.txt}>({item.totalReviews} nhận xét)</p>
+											</div>
                                         </div>
-                                        <div className={classes.price}>{formatCurrency(item.price)}đ</div>
-                                        <span className={classes['remove-fav']}>×</span>
+                                        {
+											item.sale ? (
+												<div className={classes['wrap-price']}>
+													<div className={classes.price}>{formatCurrency(item.price - item.sale)}đ</div>
+													<div className={classes['wrap-sub-price']}>
+														<span className={classes['sub-price']}>{formatCurrency(item.price)}đ</span>
+														<span className={classes.discount}>{Math.round((item.sale * 100)/item.price)}%</span>
+													</div>
+												</div>
+											) : (
+												<div className={classes.price}>{formatCurrency(item.price)}đ</div>
+											)
+										}
+                                        <span className={classes['remove-fav']} onClick={() => removeFromWishlist(item._id)}>×</span>
                                     </li>
                                 ))
                             )
@@ -873,9 +987,7 @@ const ProfilePage = (props) => {
 											</select>
 										</div>
 									</div>
-									<button type='submit' className={classes.save}>
-										Lưu thay đổi
-									</button>
+									<button type='submit' className={classes.save}>Lưu thay đổi</button>
 								</form>
 							</div>
 							<div className={classes.group}>

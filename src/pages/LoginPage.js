@@ -81,7 +81,7 @@ const LoginPage = () => {
 
                 Swal.fire({
                     icon: 'success',
-                    html: `<p>Đăng nhập thành công`,
+                    html: `<p>Đăng nhập thành công</p>`,
                     confirmButtonText: 'Chuyển sang trang chủ',
                     confirmButtonColor: '#2f80ed',
                     showCancelButton: true,

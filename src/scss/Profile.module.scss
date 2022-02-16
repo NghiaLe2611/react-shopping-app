@@ -424,8 +424,13 @@ aside {
                 text-decoration: underline;
             }
         }
-        p {
-            font-size: 15px;
+        .wrap-review{
+            display: flex;
+            align-items: center;
+        }
+        .txt {
+            font-size: 13px;
+            color: #808089;
         }
         .info {
             flex: 1 1 0%;
@@ -433,6 +438,42 @@ aside {
         .price {
             font-weight: bold;
             font-size: 17px;
+        }
+        .wrap-price{
+            color: #ff424e;
+            text-align: right;
+            .wrap-sub-price{         
+                display: flex;
+                align-items: center;
+                margin-top: 10px;      
+                .sub-price{
+                    display: flex;
+                    align-items: center;
+                    font-size: 13px;
+                    color: #808089;
+                    text-decoration: line-through;
+                    &:after{
+                        content: '';
+                        display: inline-block;
+                        margin-right: 15px;
+                        padding-right: 15px;
+                        border-right: 1px solid #808089;
+                        width: 0;
+                        height: 14px;
+                        margin-right: 10px;
+                        padding-right: 10px;
+                    }
+                }
+                .discount{
+                    font-size: 11px;
+                    line-height: 1;
+                    padding: 0 2px;
+                    border: 1px solid #ff424e;
+                    border-radius: 2px;
+                    background-color: #fff0f1;
+                    color: #ff424e;
+                }
+            }
         }
         .remove-fav {
             cursor: pointer;

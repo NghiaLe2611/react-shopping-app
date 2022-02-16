@@ -62,6 +62,7 @@ const DetailPage = () => {
     const [reviewsCount, setReviewsCount] = useState(0);
     const [reviews, setReviews] = useState([]);
     const [allReviews, setAllReviews] = useState([]);
+    const [averagePoint, setAveragePoint] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [isWriteReview, setIsWriteReview] = useState(false);
     const [isShowAllReviews, setIsShowAllReviews] = useState(false);
@@ -116,6 +117,7 @@ const DetailPage = () => {
             }, data => {
                 if (data) {
                     setReviews(data.reviews);
+                    setAveragePoint(data.averagePoint);
                     setReviewsCount(data.count);
                 }
             });
@@ -294,11 +296,11 @@ const DetailPage = () => {
     };
     
     // Get review's average point
-    const calculateAveragePoint = useCallback(() => {
-        const sum = reviews.reduce((n, {star}) => n + star, 0);
-        return parseFloat(sum/reviews.length).toFixed(1); 
-    }, [reviews]);
-    const averagePoint = useMemo(() => calculateAveragePoint(), [calculateAveragePoint]);
+    // const calculateAveragePoint = useCallback(() => {
+    //     const sum = reviews.reduce((n, {star}) => n + star, 0);
+    //     return parseFloat(sum/reviews.length).toFixed(1); 
+    // }, [reviews]);
+    // const averagePoint = useMemo(() => calculateAveragePoint(), [calculateAveragePoint]);
 
     const hoverOnStarHandler = (rating) => {
         for (let val of starArr) {
@@ -599,7 +601,7 @@ const DetailPage = () => {
                                     <div className={classes['rating-overview']}>
                                         <div className={classes['rating-top']}>
                                             <span className={classes.point}>
-                                                {averagePoint}
+                                                {Number(averagePoint)}
                                             </span>
                                             <div className={classes['list-star']}>                                                
                                                 {
