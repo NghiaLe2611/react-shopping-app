@@ -328,6 +328,9 @@
             flex-wrap: wrap;
             padding: 6px 10px;
             color: #333;
+            &:hover{
+                opacity: 0.8;
+            }
         }
         &:not(:last-child) {
             border-bottom: 1px solid #d0d0d0;

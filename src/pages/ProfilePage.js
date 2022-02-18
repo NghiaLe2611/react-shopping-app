@@ -857,21 +857,23 @@ const ProfilePage = () => {
 												item.category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.name)}`}>{item.name}
 											</Link>
 											<div className={classes['wrap-review']}>
-												<p className={classes.rating}>
+												<div className={classes['list-star']}> 
 													{
-														Array(5).fill().map((val, index) => (	
-															(item.averagePoint - Math.floor(item.averagePoint)).toFixed(1) === 0.5 ? (
-																<span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(item.averagePoint) ? 'icon-star-half' : index + 1 < Math.round(item.averagePoint) ? classes.selected : ''}`}>
-																	{index + 1 !== Math.round(item.averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
-																</span>
-															) : (
-																<span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(item.averagePoint) ? classes.selected : ''}`}>
-																	<i className={`icon-star ${classes.border}`}></i>
-																</span>
-															)
+														Array(5).fill().map((val, index) => (
+															item.averagePoint ? (
+																(item.averagePoint - Math.floor(item.averagePoint)).toFixed(1) === 0.5 ? (
+																	<span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(item.averagePoint) ? 'icon-star-half' : index + 1 < Math.round(item.averagePoint) ? classes.selected : ''}`}>
+																		{index + 1 !== Math.round(item.averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
+																	</span>
+																) : (
+																	<span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(item.averagePoint) ? classes.selected : ''}`}>
+																		<i className={`icon-star ${classes.border}`}></i>
+																	</span>
+																)
+															) : <span key={index} className={`icon-star ${classes.inner} ${classes.none}`}></span>
 														))
 													}
-												</p>
+												</div>
 												<p className={classes.txt}>({item.totalReviews} nhận xét)</p>
 											</div>
                                         </div>

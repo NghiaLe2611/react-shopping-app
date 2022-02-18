@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, Fragment, useRef } from 'react'
 import Modal from '../UI/Modal';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -40,6 +40,9 @@ const Header = () => {
     const { fetchData: fetchSuggestProducts } = useFetch();
     const { isMobile } = useCheckMobile();
 
+    const componentRef = useRef();
+    const inputRef = useRef();
+
     useEffect(() => {
         setHoverMenu(false);
         setShowMenu(false);
@@ -47,6 +50,21 @@ const Header = () => {
         setSearchKey('');
         setSuggestions([]);
     }, [location]);
+
+    useEffect(() => {
+        document.addEventListener('click', handleClick);
+        return () => document.removeEventListener('click', handleClick);
+
+        function handleClick(e) {
+            if(componentRef && componentRef.current){
+                const ref = componentRef.current;
+                
+                if(!ref.contains(e.target) && inputRef.current !== document.activeElement){
+                    componentRef.current.style.display = 'none';
+                }
+            }
+        }
+    }, [searchKey, suggestions]);
 
     useEffect(() => {
         if (showMenu) {
@@ -59,7 +77,6 @@ const Header = () => {
     }, [showMenu]);
 
     useEffect(() => {
-        
         const timer = setTimeout(() => {
             if (searchKey) {
                 fetchSuggestProducts({
@@ -90,6 +107,12 @@ const Header = () => {
         dispatch(cartActions.confirmChooseCart({
             type: 'CLEAR'
         }));
+    };
+
+    const onFocusInput = () => {
+        if (suggestions.length) {
+            componentRef.current.style.display = 'block';
+        }
     };
 
     const onSearchProduct = (e) => {
@@ -185,8 +208,10 @@ const Header = () => {
                 <li><Link to="/tin-tuc">Tin tức</Link></li>
             </ul>
             <div className={classes['wrap-search']}>
-                <input type="text" placeholder="Nhập tên sản phẩm cần tìm" onChange={onSearchProduct} value={searchKey} spellCheck="false"/>
-                <ul className={classes['suggestion-list']} style={{display: suggestions.length > 0 ? 'block' : 'none'}}>
+                <input type='text' placeholder='Nhập tên sản phẩm cần tìm' onChange={onSearchProduct} 
+                    value={searchKey} spellCheck='false' ref={inputRef} onFocus={onFocusInput}
+                />
+                <ul className={classes['suggestion-list']} style={{display: suggestions.length > 0 ? 'block' : 'none'}} ref={componentRef}>
                     {
                         suggestions.length > 0 && suggestions.map(item => (
                             <li key={item._id}>

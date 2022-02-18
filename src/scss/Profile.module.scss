@@ -430,7 +430,9 @@ aside {
         }
         .txt {
             font-size: 13px;
+            line-height: 1;
             color: #808089;
+            margin-left: 10px;
         }
         .info {
             flex: 1 1 0%;
@@ -486,6 +488,39 @@ aside {
             color: #999;
             font-size: 30px;
         }
+    }
+}
+
+.list-star {
+    display: flex;
+    align-items: center;
+    .inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #fe8c23;
+        position: relative;
+        z-index: 2;
+        &.selected {
+            .border {
+                color: #fe8c23;
+            }
+        }
+        &.none{
+            color: #DEDDDC;
+        }
+    }
+    .border {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 6px;
+        color: #fff;
     }
 }
 
