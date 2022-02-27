@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import Slider from 'react-slick';
@@ -46,9 +46,10 @@ const DetailPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     
-    // const cart = useSelector((state) => state.cart);
+    const cart = useSelector((state) => state.cart);
     // const showCart = useSelector(state => state.cart.isShowCart);
     const userData = useSelector(state => state.auth.userData);
+
     const { displayName, uuid, email, favorite } = userData ? userData : {};
 
     const [product, setProduct] = useState(null);
@@ -98,7 +99,7 @@ const DetailPage = () => {
     if (strHasParentheses) {
         convertedProductId = productId.replace(/ *\([^)]*\) */g, strHasParentheses[0].replace('-', '%2F'));
     }
-    
+
     useEffect(() => {
         fetchProducts({
             url: `${process.env.REACT_APP_API_URL}/product/${convertedProductId}` 
@@ -182,6 +183,11 @@ const DetailPage = () => {
         }
     }, [fetchReviews, reviews, product, currentPage, isShowAllReviews]);
 
+    useEffect(() => {
+        if (cart.items.length) {
+            localStorage.setItem('cartItems', JSON.stringify(cart.items));
+        }
+    }, [cart.items]);
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;

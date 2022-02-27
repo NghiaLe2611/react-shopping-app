@@ -57,25 +57,6 @@ function App() {
             });
         };
 
-        // Fetch user data
-        const fetchUserData = (dataObj) => {
-            fetchUser({
-                url: `${process.env.REACT_APP_API_URL}/getUserData/${dataObj.uuid}` 
-            }, data => {
-                // console.log('fetchUser', data);
-                if (!data) {
-                    postUserData();
-                } else {
-                    // updateUser();
-                    const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-                    
-                    dispatch(authActions.updateState({
-                        userData: {...dataObj, ...cloneData}
-                    }));
-                }
-            });
-        }
-
         // Update user data
         // const updateUser = () => {
         //     const data = {
@@ -96,7 +77,7 @@ function App() {
 
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
-                console.log('Logged in', user);
+                // console.log('Logged in', user);
     
                 const userDataObj = {
                     uuid: user.uid,
@@ -109,25 +90,22 @@ function App() {
                 dispatch(authActions.updateState({
                     userData: userDataObj
                 }));
-
-                fetchUserData(userDataObj);
                 
-                // fetchUser({
-                //     url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}` 
-                // }, data => {
-                //     // console.log(111, data);
-                //     console.log(data);
-                //     if (!data) {
-                //         postUser();
-                //     } else {
-                //         // updateUser();
-                //         const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-                        
-                //         dispatch(authActions.updateState({
-                //             userData: {...userDataObj, ...cloneData}
-                //         }));
-                //     }
-                // });
+                fetchUser({
+                    url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}` 
+                }, data => {
+                    // console.log(data);
+                    if (!data) {
+                        postUserData();
+                    } else {
+                        // updateUser();
+                        const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+
+                        dispatch(authActions.updateState({
+                            userData: {...userDataObj, ...cloneData}
+                        }));
+                    }
+                });
             } else {
                 // console.log('Not logged in');       
                 dispatch(authActions.updateState({
@@ -144,9 +122,8 @@ function App() {
     // userData.displayName, userData.uuid, userData.email, userData.photoURL, userData.emailVerified
     
     useEffect(() => {
-        // console.log('userData changed', userData);
         if (userData) {
-            console.log('set storage');
+            // console.log('set storage');
             localStorage.setItem('userData', JSON.stringify(userData));
         } else {
             // console.log('remove storage');

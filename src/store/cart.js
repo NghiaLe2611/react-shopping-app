@@ -1,11 +1,23 @@
 import { createSlice, current } from "@reduxjs/toolkit";
 
+let initialItems = [], initialTotalQuantity = 0;
+
+try {
+    const itemsStorage = localStorage.getItem('cartItems');
+    if (itemsStorage) {
+        initialItems = JSON.parse(itemsStorage);
+        initialTotalQuantity = initialItems.length;
+    }
+} catch (err) {
+    console.log(err);
+}
+
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
-        items: [],
+        items: initialItems,
         finalItems: [],
-        totalQuantity: 0,
+        totalQuantity: initialTotalQuantity,
         totalPrice: 0,
         isShowCart: false
     },
@@ -119,7 +131,6 @@ const cartSlice = createSlice({
         },
         removeCartItem(state, action) {
             const _id = action.payload;
-            console.log(action.payload, current(state));
             const existingItem = state.items.find(item => item._id === _id);
             state.totalQuantity -= existingItem.quantity;
             state.items = state.items.filter(item => item._id !==_id);

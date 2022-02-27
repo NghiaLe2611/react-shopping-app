@@ -61,7 +61,6 @@ const ProfilePage = () => {
 	const userData = useSelector((state) => state.auth.userData);
 	const { displayName, photoURL, uuid, email, emailVerified, 
 		fullName, phone, birthday, listAddress, favorite } = userData ? userData : {};
-
 	const [userInfo, setUserInfo] = useState({
 		fullname: fullName ? fullName : '',
 		nickname: displayName ? displayName : '',
@@ -69,6 +68,7 @@ const ProfilePage = () => {
 		avatar: photoURL ? photoURL : userAvatar,
         birthday: birthday ? birthday : ''
 	});
+
 	const [selectedDay, setSelectedDay] = useState(() => {
 		if (birthday) {
 			return new Date(birthday).getDate();
@@ -127,8 +127,15 @@ const ProfilePage = () => {
 	const cityRef = useRef('');
 	const districtRef = useRef('');
 	const wardRef = useRef('');
-    const addCityRef = useRef('');
-    const addDistrictRef = useRef('');
+
+    useEffect(() => {
+        setUserInfo({
+            ...userInfo,
+            fullname: fullName ? fullName : '',
+            phone: phone ? phone : '',
+            birthday: birthday ? birthday : ''
+        });
+    }, [userData]);
 
 	useEffect(() => {
 		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
@@ -628,21 +635,33 @@ const ProfilePage = () => {
 				<ul className={classes['list-reviews']}>
 					{userReviews.map((item) => (
 						<li key={item._id}>
-							<div className={classes.overview}>
-								<p className={classes.rating}>
-									{Array(item.star).fill()
-										.map((item, index) => (
-											<i key={index} className='icon-star'></i>
-										))}
-									{
-										item.star < 5 && Array(5 - item.star).fill().map((item, index) => 
-											<i key={index} className={`icon-star ${classes.black}`}></i>
-										)
-									}
-								</p>
-								<span className={classes.time}>{timeSince(item.createdAt)}</span>
-							</div>
-							<p className={classes.comment}>{item.comment}</p>
+                            <div className={classes.img}>
+                                <Link className={classes.img} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
+                                    item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
+                                    <img src={item.thumbnail_url} alt={item.product_name} />
+                                </Link>
+                            </div>
+							<div className={classes.info}>  
+                                <div className={classes.overview}>
+                                    <Link className={classes.name} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
+                                        item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
+                                        {item.product_name}
+                                    </Link>
+                                    <p className={classes.rating}>
+                                        ({Array(item.star).fill()
+                                            .map((item, index) => (
+                                                <i key={index} className='icon-star'></i>
+                                            ))}
+                                        {
+                                            item.star < 5 && Array(5 - item.star).fill().map((item, index) => 
+                                                <i key={index} className={`icon-star ${classes.black}`}></i>
+                                            )
+                                        })
+                                    </p>
+                                    {/* <span className={classes.time}>{timeSince(item.createdAt)}</span> */}
+                                </div>
+                                <p className={classes.comment}>{item.comment}</p>
+                            </div>
 						</li>
 					))}
 				</ul>
@@ -656,19 +675,33 @@ const ProfilePage = () => {
 				<ul className={classes['list-reviews']}>
 					{userReviews.map((item) => (
 						<li key={item._id}>
-							<div className={classes.overview}>
-								<p className={classes.rating}>
-									{Array(item.star).fill()
-										.map((item, index) => (
-											<i key={index} className='icon-star'></i>
-										))}
-									{item.star < 5 &&
-										Array(5 - item.star).fill()
-											.map((item, index) => <i key={index} className={`icon-star ${classes.black}`}></i>)}
-								</p>
-								<span className={classes.time}>{timeSince(item.createdAt)}</span>
-							</div>
-							<p className={classes.comment}>{item.comment}</p>
+							<div className={classes.img}>
+                                <Link className={classes.img} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
+                                    item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
+                                    <img src={item.thumbnail_url} alt={item.product_name} />
+                                </Link>
+                            </div>
+							<div className={classes.info}>
+                                <div className={classes.overview}>
+                                    <Link className={classes.name} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
+                                        item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
+                                        {item.product_name}
+                                    </Link>
+                                    <p className={classes.rating}>
+                                        ({Array(item.star).fill()
+                                            .map((item, index) => (
+                                                <i key={index} className='icon-star'></i>
+                                            ))}
+                                        {
+                                            item.star < 5 && Array(5 - item.star).fill().map((item, index) => 
+                                                <i key={index} className={`icon-star ${classes.black}`}></i>
+                                            )
+                                        })
+                                    </p>
+                                    {/* <span className={classes.time}>{timeSince(item.createdAt)}</span> */}
+                                </div>
+                                <p className={classes.comment}>{item.comment}</p>
+                            </div>
 						</li>
 					))}
 				</ul>
