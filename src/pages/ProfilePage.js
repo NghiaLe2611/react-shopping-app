@@ -138,6 +138,10 @@ const ProfilePage = () => {
     }, [userData]);
 
 	useEffect(() => {
+		setIsAddAddress(false);
+	}, [slug]);
+
+	useEffect(() => {
 		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
 			setDaysInMonth(getDaysInMonth(selectedMonth, selectedYear));
 		}

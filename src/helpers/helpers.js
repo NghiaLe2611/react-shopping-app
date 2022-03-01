@@ -5,6 +5,21 @@ export const formatCurrency = (x) => {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+export const readPrice = (price) => {
+    const zeroCount = price.toString().split('0').length - 1;
+    const firstCharCount = price.toString().length - zeroCount;
+    const firstChar = price.toString().substring(0, firstCharCount);
+    
+    switch(zeroCount) {
+        case 5:
+            return price.toString().substring(0, 3) + 'K';
+        case 6:
+            return firstChar + ' triệu';
+        default:
+            return;
+    }
+};
+
 export const capitalizeFirstLetter = (str) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }

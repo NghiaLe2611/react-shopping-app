@@ -118,9 +118,6 @@ const CartItem = (props) => {
                 type: 'REMOVE', item
             }));
         }
-
-        console.log(inputRef.current.checked);
-
     };
 
     const checkItemIsChecked = useCallback(() => {

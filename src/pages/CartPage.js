@@ -4,17 +4,68 @@ import { cartActions } from '../store/cart';
 import CartItem from '../components/cart/CartItem';
 import classes from '../scss/Cart.module.scss';
 import { Link } from 'react-router-dom';
-import { formatCurrency } from '../helpers/helpers';
+import { formatCurrency, readPrice } from '../helpers/helpers';
 import Modal from '../components/UI/Modal';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
-import couponImg from '../assets/images/coupon.svg';
-import freeshipImg from '../assets/images/freeship.png';
+import couponImg1 from '../assets/images/coupon1.svg';
+import couponImg2 from '../assets/images/coupon2.svg';
+import couponIcon from '../assets/images/coupon-icon.svg';
+import couponBg from '../assets/images/coupon-bg.svg';
+import couponCondition from '../assets/images/coupon-condition.svg';
+import couponActive from '../assets/images/coupon-active.svg';
+import freeshipCoupon from '../assets/images/freeship.png';
+import Swal from 'sweetalert2';
+
+const couponList = [
+    {
+        id: 1,
+        type: 'discount',
+        discount: 500,
+        condition: 16000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 2,
+        type: 'discount',
+        discount: 300,
+        condition: 9000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 3,
+        type: 'discount',
+        discount: 200,
+        condition: 5000000,
+        date: '10/03/2022'
+    },
+    {
+        type: 'discount',
+        discount: 100,
+        condition: 2000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 4,
+        discount: 20,
+        condition: 500000,
+        date: '10/03/2022'
+    },
+    {
+        id: 5,
+        type: 'shipping',
+        discount: 30,
+        condition: 5000000,
+        date: '20/03/2022'
+    }
+];
 
 const CartPage = () => {
     const dispatch = useDispatch();
     const [customerInfo, setCustomerInfo] = useState(null);
     const [isSelectAll, setIsSelectAll] = useState(false);
     const [showCouponModal, setShowCouponModal] = useState(false);
+    const [selectedCoupons, setSelectedCoupons] = useState([]);
+
     const showCart = useSelector(state => state.cart.isShowCart);
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
@@ -102,17 +153,37 @@ const CartPage = () => {
     const removeCartHandler = () => {
         if (cart.finalItems.length > 0) {
             let r = window.confirm("Bạn có chắc muốn xóa sản phẩm này ?");
-        
-            if (r) {
-                cart.finalItems.forEach(item => {
-                    // dispatch(cartActions.removeCartItem({
-                    //     type: 'REMOVE', item
-                    // }));
-                    dispatch(cartActions.removeCartItem(item._id));
-                });
-            }
+            
+            Swal.fire({
+                icon: 'warning',
+                html: `<p>Bạn có chắc muốn xoá những sản phẩm này ?</p>`,
+                confirmButtonText: 'Xoá',
+                confirmButtonColor: '#2f80ed',
+                showCancelButton: true,
+                cancelButtonText: 'Huỷ',
+                cancelButtonColor: '#dc3741'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    cart.finalItems.forEach(item => {
+                        // dispatch(cartActions.removeCartItem({
+                        //     type: 'REMOVE', item
+                        // }));
+                        dispatch(cartActions.removeCartItem(item._id));
+                    });
+                }
+                return;
+            });
         } else {
-            alert('Vui lòng chọn sản phẩm để xoá');
+            const Toast = Swal.mixin({
+				toast: true,
+				showConfirmButton: false,
+				timer: 2000,
+                background: 'rgba(0,0,0,0.8)'
+			});
+
+			Toast.fire({
+				html: `<p style="color: #fff">Vui lòng chọn sản phẩm để xoá !</p>`
+			});
         }
     };
 
@@ -122,6 +193,19 @@ const CartPage = () => {
 
     const closeCouponModalHandler = () => {
         setShowCouponModal(false);
+    };
+
+    const addCoupon = (item) => {
+        const index = selectedCoupons.findIndex(val => val === item.id);
+
+        if (index < 0) {
+            const coupons = [...selectedCoupons, item.id];
+            setSelectedCoupons(coupons);
+        } else {
+            let coupons = [...selectedCoupons]
+            coupons.splice(index, 1);
+            setSelectedCoupons(coupons);
+        }
     };
     
     return (
@@ -161,7 +245,7 @@ const CartPage = () => {
                                 </div>
                                 <div className={classes.right}>
                                     <div className={classes.block}>
-                                        <div class={`${classes['wrap-ctm-info']} ${classes['block-inner']}`}>
+                                        <div className={`${classes['wrap-ctm-info']} ${classes['block-inner']}`}>
                                             <div className={classes.head}>
                                                 <span>Giao tới</span>
                                                 <a href="/#">Thay đổi</a>
@@ -183,7 +267,7 @@ const CartPage = () => {
                                     <div className={classes.block}>
                                         <div className={classes['block-inner']}>
                                             <p className={classes['coupon-txt']} onClick={showCouponModalHandler}>
-                                                <img src={couponImg} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác
+                                                <img src={couponImg2} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác
                                             </p>
                                         </div>
                                     </div>
@@ -227,16 +311,50 @@ const CartPage = () => {
                             <div className={classes.header}>Khuyến mãi</div>
                             <div className={classes['wrap-coupon']}>
                                 <div className={classes['wrap-ip']}>
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.2803 14.7803L14.7803 10.2803C15.0732 9.98744 15.0732 9.51256 14.7803 9.21967C14.4874 8.92678 14.0126 8.92678 13.7197 9.21967L9.21967 13.7197C8.92678 14.0126 8.92678 14.4874 9.21967 14.7803C9.51256 15.0732 9.98744 15.0732 10.2803 14.7803Z" fill="#808089"></path><path d="M10.125 10.5C10.7463 10.5 11.25 9.99632 11.25 9.375C11.25 8.75368 10.7463 8.25 10.125 8.25C9.50368 8.25 9 8.75368 9 9.375C9 9.99632 9.50368 10.5 10.125 10.5Z" fill="#808089"></path><path d="M15 14.625C15 15.2463 14.4963 15.75 13.875 15.75C13.2537 15.75 12.75 15.2463 12.75 14.625C12.75 14.0037 13.2537 13.5 13.875 13.5C14.4963 13.5 15 14.0037 15 14.625Z" fill="#808089"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M3.75 5.25C3.33579 5.25 3 5.58579 3 6V9.75C3 10.1642 3.33579 10.5 3.75 10.5C4.61079 10.5 5.25 11.1392 5.25 12C5.25 12.8608 4.61079 13.5 3.75 13.5C3.33579 13.5 3 13.8358 3 14.25V18C3 18.4142 3.33579 18.75 3.75 18.75H20.25C20.6642 18.75 21 18.4142 21 18V14.25C21 13.8358 20.6642 13.5 20.25 13.5C19.3892 13.5 18.75 12.8608 18.75 12C18.75 11.1392 19.3892 10.5 20.25 10.5C20.6642 10.5 21 10.1642 21 9.75V6C21 5.58579 20.6642 5.25 20.25 5.25H3.75ZM4.5 9.08983V6.75H19.5V9.08983C18.1882 9.41265 17.25 10.5709 17.25 12C17.25 13.4291 18.1882 14.5874 19.5 14.9102V17.25H4.5V14.9102C5.81181 14.5874 6.75 13.4291 6.75 12C6.75 10.5709 5.81181 9.41265 4.5 9.08983Z" fill="#808089"></path></svg>
+                                <img src={couponImg1} alt="coupon" />
                                     <input type='text' placeholder='Nhập mã giảm giá'/>
                                 </div>
-                                <button>Áp dụng</button>
+                                <button disabled={selectedCoupons.length > 0 ? false : true}>Áp dụng</button>
                             </div>
+                            <div className={classes['body-scroll']}>
                             <div className={classes['coupon-list-wrapper']}>
                                 <div className={classes['group-header']}>Mã giảm giá</div>
-                                <div className={classes['coupon-list']}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 431 132" className={classes['coupon-bg']}><g fill="none" fill-rule="evenodd"><g><g><g><g><g><g transform="translate(-3160 -2828) translate(3118 80) translate(42 2487) translate(0 140) translate(0 85) translate(0 36)"><path fill="#FFF" d="M423 0c4.418 0 8 3.582 8 8v116c0 4.418-3.582 8-8 8H140.5c0-4.419-3.582-8-8-8s-8 3.581-8 8H8c-4.418 0-8-3.582-8-8V8c0-4.418 3.582-8 8-8h116.5c0 4.418 3.582 8 8 8s8-3.582 8-8H392z"></path><g stroke="#EEE" stroke-dasharray="2 4" stroke-linecap="square" mask="url(#14s2l20tnb)"><path d="M0.5 0L0.5 114" transform="translate(132 11)"></path></g></g></g></g></g></g></g></g></svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 431 132" class={classes['coupon-bg']}><g fill="none" fill-rule="evenodd"><g><g><g><g><g><g transform="translate(-3160 -3100) translate(3118 80) translate(42 2487) translate(0 449) translate(0 48) translate(0 36)"><path stroke="#017FFF" fill="#E5F2FF" d="M 423 0.5 c 2.071 0 3.946 0.84 5.303 2.197 c 1.358 1.357 2.197 3.232 2.197 5.303 h 0 v 116 c 0 2.071 -0.84 3.946 -2.197 5.303 c -1.357 1.358 -3.232 2.197 -5.303 2.197 h 0 H 140.986 c -0.125 -2.148 -1.047 -4.082 -2.475 -5.51 c -1.539 -1.54 -3.664 -2.49 -6.011 -2.49 s -4.472 0.95 -6.01 2.489 c -1.429 1.428 -2.35 3.362 -2.476 5.51 h 0 l -116.014 0.001 c -2.071 0 -3.946 -0.84 -5.303 -2.197 c -1.358 -1.357 -2.197 -3.232 -2.197 -5.303 h 0 V 8 c 0 -2.071 0.84 -3.946 2.197 -5.303 c 1.357 -1.358 3.232 -2.197 5.303 -2.197 h 116.014 c 0.125 2.148 1.047 4.082 2.476 5.51 c 1.538 1.539 3.663 2.49 6.01 2.49 s 4.472 -0.951 6.01 -2.49 c 1.429 -1.428 2.35 -3.362 2.476 -5.51 H 140.986 z"></path><g stroke="#017FFF" stroke-dasharray="2 4" stroke-linecap="square" mask="url(#2nm5hm2qlb)"><path d="M0.5 0L0.5 114" transform="translate(132 11)"></path></g></g></g></g></g></g></g></g></svg>
+                                    <div className={classes['coupon-list']}>
+                                        {
+                                            [...couponList].sort(val => val.condition <= cart.totalPrice ? -1 : 1).map((item, index) => (
+                                                <div key={index} className={`${classes['coupon-bg']} ${cart.totalPrice < item.condition ? classes.disabled : ''}`}>
+                                                    {
+                                                        selectedCoupons.includes(item.id) ? <img src={couponActive} alt='coupon-active' /> : <img src={couponBg} alt="coupon-bg" />
+                                                    }
+                                                    <div className={classes['coupon-content']}>
+                                                        <div className={classes.left}>
+                                                            {
+                                                                item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship'/> :
+                                                                <img src={couponIcon} alt='coupon-icon'/>
+                                                            }
+                                                        </div>
+                                                        <div className={classes.right}>
+                                                            <div className={classes['coupon-info']}>
+                                                                <h5 className={classes.sale}>
+                                                                    {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`}
+                                                                </h5>
+                                                                <p>Cho đơn hàng từ {readPrice(item.condition)}</p>
+                                                            </div>
+                                                            <div className={classes['coupon-action']}>
+                                                                <p className={classes.expire}>HSD: {item.date}</p>
+                                                                {
+                                                                    cart.totalPrice >= item.condition ? (
+                                                                        selectedCoupons.includes(item.id) ? <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button> : 
+                                                                            <button className={classes.apply} onClick={() => addCoupon(item)}>Áp Dụng</button>
+                                                                    ) : <img src={couponCondition} alt='condition' />
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
