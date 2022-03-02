@@ -28,7 +28,6 @@ const Header = () => {
     const cart = useSelector((state) => state.cart);
     const showCart = useSelector(state => state.cart.isShowCart);
     const userData = useSelector(state => state.auth.userData);
-    
 
     const [hoverMenu, setHoverMenu] = useState(false);
     const [hoverProfile, setHoverProfile] = useState(false);
@@ -98,7 +97,8 @@ const Header = () => {
 
     const showCartHandler = () => {
         if (cart.items.length > 0) {
-            dispatch(cartActions.showCartPopup(true));
+            // dispatch(cartActions.showCartPopup(true));
+            navigate('/cart');
         }
     };
 

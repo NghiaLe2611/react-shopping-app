@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import CartItem from '../components/cart/CartItem';
 import classes from '../scss/Cart.module.scss';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency, readPrice } from '../helpers/helpers';
 import Modal from '../components/UI/Modal';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
@@ -11,6 +11,7 @@ import couponImg1 from '../assets/images/coupon1.svg';
 import couponImg2 from '../assets/images/coupon2.svg';
 import couponIcon from '../assets/images/coupon-icon.svg';
 import couponBg from '../assets/images/coupon-bg.svg';
+import couponBgSm from '../assets/images/coupon-bg-sm.svg';
 import couponCondition from '../assets/images/coupon-condition.svg';
 import couponActive from '../assets/images/coupon-active.svg';
 import freeshipCoupon from '../assets/images/freeship.png';
@@ -39,19 +40,20 @@ const couponList = [
         date: '10/03/2022'
     },
     {
+        id: 4,
         type: 'discount',
         discount: 100,
         condition: 2000000,
         date: '10/03/2022'
     },
     {
-        id: 4,
+        id: 5,
         discount: 20,
         condition: 500000,
         date: '10/03/2022'
     },
     {
-        id: 5,
+        id: 6,
         type: 'shipping',
         discount: 30,
         condition: 5000000,
@@ -61,10 +63,12 @@ const couponList = [
 
 const CartPage = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [customerInfo, setCustomerInfo] = useState(null);
     const [isSelectAll, setIsSelectAll] = useState(false);
     const [showCouponModal, setShowCouponModal] = useState(false);
     const [selectedCoupons, setSelectedCoupons] = useState([]);
+    const [couponCode, setCouponCode] = useState('');
 
     const showCart = useSelector(state => state.cart.isShowCart);
     const cart = useSelector((state) => state.cart);
@@ -110,6 +114,11 @@ const CartPage = () => {
             localStorage.removeItem('cartItems');
         }
     }, [cart.items]);
+
+    useEffect(() => {
+        const updatedSelectedCoupons = selectedCoupons.filter(val => val.condition <= cart.totalPrice);
+        setSelectedCoupons(updatedSelectedCoupons);
+    }, [cart.totalPrice]);
 
     const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {
@@ -195,17 +204,41 @@ const CartPage = () => {
         setShowCouponModal(false);
     };
 
+    const onChangeCoupon = (e) => {
+        setCouponCode(e.target.value);
+    };
+
+    const applyCouponCode = () => {
+
+    };
+
+    // Get total discount
+    const calculateDiscount = useCallback(() => {
+        if (selectedCoupons.length) {
+            return selectedCoupons.reduce((n, { discount }) => n + discount * 1000, 0);
+        }
+
+        return 0;
+    }, [selectedCoupons]);
+    const totalDiscount = useMemo(() => calculateDiscount(), [calculateDiscount]);
+
     const addCoupon = (item) => {
-        const index = selectedCoupons.findIndex(val => val === item.id);
+        const index = selectedCoupons.findIndex(val => val.id === item.id);
 
         if (index < 0) {
-            const coupons = [...selectedCoupons, item.id];
+            const coupons = [...selectedCoupons, item];
             setSelectedCoupons(coupons);
         } else {
             let coupons = [...selectedCoupons]
             coupons.splice(index, 1);
             setSelectedCoupons(coupons);
         }
+    };
+
+    const goToCartConfirm = () => {
+        if (cart.finalItems.length > 0) {
+            navigate('/cartConfirm');
+        } 
     };
     
     return (
@@ -265,7 +298,38 @@ const CartPage = () => {
                                         </div>
                                     </div>
                                     <div className={classes.block}>
-                                        <div className={classes['block-inner']}>
+                                        <div className={`${classes['applied-coupons']} ${classes['block-inner']}`}>
+                                            {
+                                                selectedCoupons.length > 0 && (
+                                                    <ul>
+                                                        {
+                                                            selectedCoupons.map(item => (
+                                                                <li key={item.id} className={classes['coupon-bg']}>
+                                                                    <img src={couponBgSm} alt='coupon-bg-sm' /> 
+                                                                    <div className={classes['coupon-content']}>
+                                                                        <div className={classes.left}>
+                                                                            {
+                                                                                item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship'/> :
+                                                                                <img src={couponIcon} alt='coupon-icon'/>
+                                                                            }
+                                                                        </div>
+                                                                        <div className={classes.right}>
+                                                                            <div className={classes['coupon-info']}>
+                                                                                <h5 className={classes.sale}>
+                                                                                    {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`}
+                                                                                </h5>
+                                                                            </div>
+                                                                            <div className={classes['coupon-action']}>
+                                                                                <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </li>
+                                                            ))
+                                                        }
+                                                    </ul>
+                                                )
+                                            }
                                             <p className={classes['coupon-txt']} onClick={showCouponModalHandler}>
                                                 <img src={couponImg2} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác
                                             </p>
@@ -279,17 +343,20 @@ const CartPage = () => {
                                             </p>
                                             <p>
                                                 <span>Giảm giá: </span>
-                                                <strong>0<small>đ</small></strong>
+                                                <strong>{formatCurrency(totalDiscount)}<small>đ</small></strong>
                                             </p>
                                         </div>
                                         <div className={`${classes.total} ${classes['block-inner']}`}>
                                             Tổng cộng: 
                                             {cart.totalPrice > 0 ? (
-                                                <span className={classes.lg}>{formatCurrency(cart.totalPrice)}<small>đ</small></span>
+                                                <span className={classes.lg}>{formatCurrency(cart.totalPrice - totalDiscount)}<small>đ</small></span>
                                             ) : <span className={classes.sm}>Vui lòng chọn sản phẩm</span>}               
                                         </div> 
                                     </div>
-                                    <button className={classes['cart-btn']}>Mua hàng ({cart.finalItems.length})</button>
+                                    <button className={classes['cart-btn']} onClick={goToCartConfirm}
+                                        disabled={cart.finalItems.length > 0 ? false : true}>
+                                        Mua hàng ({cart.finalItems.length})
+                                    </button>
                                 </div>
                             </div>
                         </Fragment>
@@ -311,10 +378,12 @@ const CartPage = () => {
                             <div className={classes.header}>Khuyến mãi</div>
                             <div className={classes['wrap-coupon']}>
                                 <div className={classes['wrap-ip']}>
-                                <img src={couponImg1} alt="coupon" />
-                                    <input type='text' placeholder='Nhập mã giảm giá'/>
+                                    <img src={couponImg1} alt="coupon" />
+                                    <input type='text' placeholder='Nhập mã giảm giá' onChange={onChangeCoupon} value={couponCode || ''} />
+                                    <span className={classes.clear} style={{display: couponCode.length ? 'flex' : 'none'}} 
+                                        onClick={() => setCouponCode('')}>&times;</span>
                                 </div>
-                                <button disabled={selectedCoupons.length > 0 ? false : true}>Áp dụng</button>
+                                <button disabled={couponCode.length ? false : true} onClick={applyCouponCode}>Áp dụng</button>
                             </div>
                             <div className={classes['body-scroll']}>
                             <div className={classes['coupon-list-wrapper']}>
@@ -322,9 +391,9 @@ const CartPage = () => {
                                     <div className={classes['coupon-list']}>
                                         {
                                             [...couponList].sort(val => val.condition <= cart.totalPrice ? -1 : 1).map((item, index) => (
-                                                <div key={index} className={`${classes['coupon-bg']} ${cart.totalPrice < item.condition ? classes.disabled : ''}`}>
+                                                <div key={item.id} className={`${classes['coupon-bg']} ${cart.totalPrice < item.condition ? classes.disabled : ''}`}>
                                                     {
-                                                        selectedCoupons.includes(item.id) ? <img src={couponActive} alt='coupon-active' /> : <img src={couponBg} alt="coupon-bg" />
+                                                        selectedCoupons.some(val => val.id === item.id) ? <img src={couponActive} alt='coupon-active' /> : <img src={couponBg} alt="coupon-bg" />
                                                     }
                                                     <div className={classes['coupon-content']}>
                                                         <div className={classes.left}>
@@ -344,7 +413,7 @@ const CartPage = () => {
                                                                 <p className={classes.expire}>HSD: {item.date}</p>
                                                                 {
                                                                     cart.totalPrice >= item.condition ? (
-                                                                        selectedCoupons.includes(item.id) ? <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button> : 
+                                                                        selectedCoupons.some(val => val.id === item.id) ? <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button> : 
                                                                             <button className={classes.apply} onClick={() => addCoupon(item)}>Áp Dụng</button>
                                                                     ) : <img src={couponCondition} alt='condition' />
                                                                 }

@@ -25,11 +25,11 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 50px;
-    .left {
+    > .left {
         width: 70%;
         margin-right: 20px;
     }
-    .right {
+    > .right {
         flex: 1;
     }
 }
@@ -108,6 +108,44 @@ h2 {
     }
 }
 
+.applied-coupons{
+    ul{
+        margin-bottom: 15px;
+        .coupon-bg{
+            height: 65px;
+            img{
+                width: 100%;
+            }
+            .coupon-content{
+                .left{
+                    width: 60px;
+                }
+                .right{
+                    flex-direction: row;
+                    align-items: center;
+                }
+                .coupon-info{
+                    flex: 1;
+                    .sale{
+                        font-size: 14px;
+                        margin-right: 5px;
+                        display: -webkit-box;
+                        -webkit-box-orient: vertical;
+                        -webkit-line-clamp: 1;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+                .coupon-action{
+                    .apply{
+                        font-size: 13px;
+                    }
+                }
+            }
+        }
+    }
+}
+
 .coupon-txt {
     display: flex;
     align-items: center;
@@ -167,6 +205,10 @@ h2 {
     background-color: #ff424e;
     &:hover {
         opacity: 0.8;
+    }
+    &:disabled{
+        pointer-events: none;
+        opacity: 0.5;
     }
 }
 
@@ -233,6 +275,7 @@ h2 {
             padding: 0 15px;
             border-radius: 4px;
             color: #fff;
+            border: 1px solid transparent;
             background-color: #0b74e5;
             &:disabled {
                 pointer-events: none;
@@ -240,6 +283,22 @@ h2 {
                 border: 1px solid #dddde3;
                 color: #c4c4cf;
             }
+        }
+        .clear{
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #808089;
+            color: #fff;
+            font-size: 15px;
+            line-height: 1;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
         }
     }
     .body-scroll{
@@ -252,55 +311,56 @@ h2 {
         .group-header {
             margin-bottom: 20px;
         }
-        .coupon-bg {
-            width: 100%;
-            height: 128px;
-            filter: drop-shadow(rgba(0, 0, 0, 0.2) 0px 1px 3px);
-            position: relative;
+    }
+}
+.coupon-bg {
+    width: 100%;
+    height: 128px;
+    margin-bottom: 2px;
+    filter: drop-shadow(rgba(0, 0, 0, 0.2) 0px 1px 3px);
+    position: relative;
+    &.disabled{
+        .left img{
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
+        .sale{
+            color: #787878;
+        }
+    }
+    .coupon-content{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        .left{
+            width: 124px;
+            padding: 8px;
             img{
-                height: 100%;
-            }
-            &.disabled{
-                .left img{
-                    filter: grayscale(1);
-                    opacity: 0.6;
-                }
-                .sale{
-                    color: #787878;
-                }
+                border-radius: 10px;
             }
         }
-        .coupon-content{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .right{
             display: flex;
-            .left{
-                width: 124px;
-                padding: 8px;
-                img{
-                    border-radius: 10px;
-                }
-            }
-            .right{
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                flex: 1 1 0;
-                padding: 15px 12px;
-                p{
-                    color: #787878;
-                    font-size: 13px;
-                }
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1 1 0;
+            padding: 15px 12px;
+            p{
+                color: #787878;
+                font-size: 13px;
             }
         }
     }
 }
+
 .coupon-info{
     .sale{
         font-size: 16px;
+        word-break: break-word;
         line-height: 1;
         margin-bottom: 6px;
     }
