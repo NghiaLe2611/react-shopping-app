@@ -17,11 +17,28 @@ import couponActive from '../assets/images/coupon-active.svg';
 import freeshipCoupon from '../assets/images/freeship.png';
 import Swal from 'sweetalert2';
 
+function convertCouponByDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    if (day.toString().length < 2) {
+        day = '0' + day;
+    }
+
+    if (month.toString().length < 2) {
+        month = '0' + month;
+    }
+
+    return day + month + year;
+}
+
 const couponList = [
     {
         id: 1,
         type: 'discount',
         discount: 500,
+        code: 'DISCOUNT500KFOR16000000',
         condition: 16000000,
         date: '10/03/2022'
     },
@@ -29,6 +46,7 @@ const couponList = [
         id: 2,
         type: 'discount',
         discount: 300,
+        code: 'DISCOUNT300KFOR9000000',
         condition: 9000000,
         date: '10/03/2022'
     },
@@ -36,6 +54,7 @@ const couponList = [
         id: 3,
         type: 'discount',
         discount: 200,
+        code: 'DISCOUNT200KFOR5000000',
         condition: 5000000,
         date: '10/03/2022'
     },
@@ -43,12 +62,15 @@ const couponList = [
         id: 4,
         type: 'discount',
         discount: 100,
+        code: 'DISCOUNT100KFOR2000000',
         condition: 2000000,
         date: '10/03/2022'
     },
     {
         id: 5,
+        type: 'discount',
         discount: 20,
+        code: 'DISCOUNT20KFOR500000',
         condition: 500000,
         date: '10/03/2022'
     },
@@ -56,10 +78,13 @@ const couponList = [
         id: 6,
         type: 'shipping',
         discount: 30,
+        code: 'FREESHIP',
         condition: 5000000,
         date: '20/03/2022'
     }
 ];
+
+let modalStyles = {};
 
 const CartPage = () => {
     const dispatch = useDispatch();
@@ -67,6 +92,8 @@ const CartPage = () => {
     const [customerInfo, setCustomerInfo] = useState(null);
     const [isSelectAll, setIsSelectAll] = useState(false);
     const [showCouponModal, setShowCouponModal] = useState(false);
+    const [showCouponPopup, setShowCouponPopup] = useState(false);
+    const [activeInfoCoupon, setActiveInfoCoupon] = useState(null);
     const [selectedCoupons, setSelectedCoupons] = useState([]);
     const [couponCode, setCouponCode] = useState('');
 
@@ -76,6 +103,16 @@ const CartPage = () => {
     const selectAlInput = useRef();
 
     const shouldRenderCouponModal = useDelayUnmount(showCouponModal, 300);
+    const shouldRenderCouponPopup = useDelayUnmount(showCouponPopup, 300);
+
+    // Get total discount
+    const calculateDiscount = useCallback(() => {
+        if (selectedCoupons.length) {
+            return selectedCoupons.reduce((n, { discount }) => n + discount * 1000, 0);
+        }
+        return 0;
+    }, [selectedCoupons]);
+    const totalDiscount = useMemo(() => calculateDiscount(), [calculateDiscount]);
 
     useEffect(() => {
         if (showCart) {
@@ -119,6 +156,10 @@ const CartPage = () => {
         const updatedSelectedCoupons = selectedCoupons.filter(val => val.condition <= cart.totalPrice);
         setSelectedCoupons(updatedSelectedCoupons);
     }, [cart.totalPrice]);
+
+    useEffect(() => {
+        dispatch(cartActions.setDiscount(totalDiscount));
+    }, [dispatch, totalDiscount]);
 
     const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {
@@ -202,6 +243,7 @@ const CartPage = () => {
 
     const closeCouponModalHandler = () => {
         setShowCouponModal(false);
+        setCouponCode('');
     };
 
     const onChangeCoupon = (e) => {
@@ -209,30 +251,73 @@ const CartPage = () => {
     };
 
     const applyCouponCode = () => {
+        const specialCoupon = {
+            id: 99,
+            type: 'special',
+            discount: 20,
+            code: convertCouponByDate(new Date()),
+            condition: 0,
+            date: 'XXX'
+        };
 
-    };
-
-    // Get total discount
-    const calculateDiscount = useCallback(() => {
-        if (selectedCoupons.length) {
-            return selectedCoupons.reduce((n, { discount }) => n + discount * 1000, 0);
+        if (!cart.finalItems.length) {
+            alert('Ban chua chon san pham');
+            return;
         }
 
-        return 0;
-    }, [selectedCoupons]);
-    const totalDiscount = useMemo(() => calculateDiscount(), [calculateDiscount]);
+        if (couponCode === convertCouponByDate(new Date())) {
+            setSelectedCoupons([...selectedCoupons, specialCoupon]);
+        } else {
+            alert('Ma giam gia khong hop le');
+        }
+    };
 
     const addCoupon = (item) => {
         const index = selectedCoupons.findIndex(val => val.id === item.id);
+        let coupons = [...selectedCoupons, item];
 
-        if (index < 0) {
-            const coupons = [...selectedCoupons, item];
-            setSelectedCoupons(coupons);
+        if (index < 0) { 
+            const discountExistIndex = selectedCoupons.findIndex(val => val.type === 'discount');
+            
+            if (discountExistIndex >= 0) {
+                if (item.type === 'shipping') {
+                    setSelectedCoupons(coupons);
+                } else {
+                    coupons.splice(discountExistIndex, 1);
+                    setSelectedCoupons(coupons);
+                }
+            }
+
+            if (selectedCoupons.length < 2) {
+                setSelectedCoupons(coupons);
+                // setSelectedCoupons(obj => 
+                //     obj = coupons,
+                //         data => { // data: selectedCoupons
+                //             console.log(1, data);
+                //         }
+                // );
+            }
         } else {
-            let coupons = [...selectedCoupons]
-            coupons.splice(index, 1);
-            setSelectedCoupons(coupons);
+            let updatedCoupons = [...selectedCoupons]
+            updatedCoupons.splice(index, 1);
+            setSelectedCoupons(updatedCoupons);
         }
+
+    };
+
+    const showInfoCoupon = (e, item) => {
+        const pos = e.target.getBoundingClientRect();
+        console.log(pos);
+        modalStyles['left'] = pos.left - 11*16 + 'px';
+        modalStyles['top'] = pos.y + 30 + 'px';
+        console.log(modalStyles);
+        setActiveInfoCoupon(item);
+        setShowCouponPopup(true);
+    };
+    
+    const hideInfoCoupon = () => {
+        setActiveInfoCoupon(null);
+        setShowCouponPopup(false);
     };
 
     const goToCartConfirm = () => {
@@ -312,12 +397,15 @@ const CartPage = () => {
                                                                                 item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship'/> :
                                                                                 <img src={couponIcon} alt='coupon-icon'/>
                                                                             }
+                                                                            { item.type === 'special' && <span className='icon-star'></span> }
                                                                         </div>
                                                                         <div className={classes.right}>
                                                                             <div className={classes['coupon-info']}>
-                                                                                <h5 className={classes.sale}>
-                                                                                    {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`}
-                                                                                </h5>
+                                                                                <div className={classes.sale}>
+                                                                                    {item.type === 'shipping' && `Giảm ${item.discount}K phí vận chuyển`}
+                                                                                    {item.type === 'discount' && `Giảm ${item.discount}K cho đơn hàng từ ${readPrice(item.condition)}`}
+                                                                                    {item.type === 'special' && `Giảm ${item.discount}K (đặc biệt)`}
+                                                                                </div>
                                                                             </div>
                                                                             <div className={classes['coupon-action']}>
                                                                                 <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button>
@@ -331,7 +419,7 @@ const CartPage = () => {
                                                 )
                                             }
                                             <p className={classes['coupon-txt']} onClick={showCouponModalHandler}>
-                                                <img src={couponImg2} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác
+                                                <img src={couponImg2} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác (tối đa 2)
                                             </p>
                                         </div>
                                     </div>
@@ -372,8 +460,8 @@ const CartPage = () => {
 
             {
                 shouldRenderCouponModal && (
-                    <Modal isShowModal={showCouponModalHandler} animation='none' contentClass={classes.couponModal}
-                        closeModal={closeCouponModalHandler}>
+                    <Modal isShowModal={showCouponModalHandler} closeModal={closeCouponModalHandler} 
+                        animation='none' contentClass={classes.couponModal}>
                         <div className={classes['wrap-coupon-modal']}>
                             <div className={classes.header}>Khuyến mãi</div>
                             <div className={classes['wrap-coupon']}>
@@ -408,6 +496,9 @@ const CartPage = () => {
                                                                     {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`}
                                                                 </h5>
                                                                 <p>Cho đơn hàng từ {readPrice(item.condition)}</p>
+                                                                <span className={classes.info} onClick={(e) => showInfoCoupon(e, item)}
+                                                                    // onMouseOut={hideInfoCoupon}
+                                                                >i</span>
                                                             </div>
                                                             <div className={classes['coupon-action']}>
                                                                 <p className={classes.expire}>HSD: {item.date}</p>
@@ -426,6 +517,32 @@ const CartPage = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </Modal>
+                )
+            }
+
+            {
+                shouldRenderCouponPopup && activeInfoCoupon && (
+                    <Modal isShowModal={showCouponPopup} closeModal={hideInfoCoupon} backdrop={false} type='popup'
+                        contentClass={`${classes['modal-info-coupon']}`}>
+                        <div className={classes['wrap-info-coupon']}>
+                            <p>
+                                <span>Mã</span>
+                                <span>{activeInfoCoupon.code}</span>
+                            </p>
+                            <p>
+                                <span>Hạn sử dụng</span>
+                                <span>{activeInfoCoupon.date}</span>
+                            </p>
+                            <p>
+                                <span>Điều kiện</span>
+                                <span>•&nbsp;
+                                    {activeInfoCoupon.type === 'shipping' && `Giảm ${activeInfoCoupon.discount}K phí vận chuyển`}
+                                    {activeInfoCoupon.type === 'discount' && `Giảm ${activeInfoCoupon.discount}K cho đơn hàng từ ${readPrice(activeInfoCoupon.condition)}`}
+                                    {activeInfoCoupon.type === 'special' && `Giảm ${activeInfoCoupon.discount}K (mã đặc biệt)`}
+                                </span>
+                            </p>
                         </div>
                     </Modal>
                 )

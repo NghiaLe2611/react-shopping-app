@@ -111,7 +111,7 @@ const Filter = (props) => {
                         price: filter.price
                     })
                 }
-        )
+        );
         
         setActiveFilter(null);
        

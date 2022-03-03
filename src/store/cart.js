@@ -19,6 +19,7 @@ const cartSlice = createSlice({
         finalItems: [],
         totalQuantity: initialTotalQuantity,
         totalPrice: 0,
+        discount: 0,
         isShowCart: false
     },
 
@@ -141,6 +142,9 @@ const cartSlice = createSlice({
             } else {
                 state.isShowCart = false;
             }
+        },
+        setDiscount(state, action) {
+            state.discount = action.payload;
         }
     }
 });

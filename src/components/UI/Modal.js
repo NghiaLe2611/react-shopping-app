@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import classes from '../../scss/Modal.module.scss';
 
 const Backdrop = (props) => {
-   
     return (
         props.backdrop === false ? null : (
             // <div className={classes.overlay} onClick={props.onCloseModal}></div>
@@ -23,6 +22,14 @@ const ModalOverlay = (props) => {
         mountedStyle = { animation: 'none'};
         unmountedStyle = { animation: 'none'};
     }
+
+    // if (props.type === 'popup') {
+    //     if (props.modalStyles) {
+    //         console.log(props.inlineStyle);
+    //         mountedStyle= Object.assign(mountedStyle, props.modalStyles);
+    //         unmountedStyle= Object.assign(unmountedStyle, props.modalStyles);
+    //     }
+    // }
 
     const componentRef = useRef();
 
@@ -50,7 +57,8 @@ const ModalOverlay = (props) => {
 
     if (props.type === 'popup') {
         modal = (
-            <div className={classes.popup} style={props.isShowModal ? mountedStyle : unmountedStyle} ref={componentRef}>
+            <div className={`${classes.popup} ${props.contentClass ? props.contentClass : ''}`}
+                style={props.isShowModal ? mountedStyle : unmountedStyle} ref={componentRef}>
                 { props.backdrop !== false && !props.close && <span className={classes.close} onClick={props.onCloseModal}>&times;</span> }
                 <Fragment>{props.children}</Fragment>
             </div>
