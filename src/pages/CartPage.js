@@ -15,7 +15,9 @@ import couponBgSm from '../assets/images/coupon-bg-sm.svg';
 import couponCondition from '../assets/images/coupon-condition.svg';
 import couponActive from '../assets/images/coupon-active.svg';
 import freeshipCoupon from '../assets/images/freeship.png';
+import iconCopy from '../assets/images/icon-copy.svg';
 import Swal from 'sweetalert2';
+import { debounce } from 'lodash';
 
 function convertCouponByDate(date) {
     let day = date.getDate();
@@ -84,7 +86,7 @@ const couponList = [
     }
 ];
 
-let modalStyles = {};
+let isHovering = false; 
 
 const CartPage = () => {
     const dispatch = useDispatch();
@@ -96,10 +98,12 @@ const CartPage = () => {
     const [activeInfoCoupon, setActiveInfoCoupon] = useState(null);
     const [selectedCoupons, setSelectedCoupons] = useState([]);
     const [couponCode, setCouponCode] = useState('');
+    const [modalStylesInline, setModalStylesInline] = useState({});
 
     const showCart = useSelector(state => state.cart.isShowCart);
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
+
     const selectAlInput = useRef();
 
     const shouldRenderCouponModal = useDelayUnmount(showCouponModal, 300);
@@ -160,6 +164,20 @@ const CartPage = () => {
     useEffect(() => {
         dispatch(cartActions.setDiscount(totalDiscount));
     }, [dispatch, totalDiscount]);
+
+    useEffect(() => {
+        function handleMouseEnter(e) {
+            if (e.target.closest('.' + classes['modal-info-coupon']) || e.target.closest('.' + classes['btn-info'])) {
+                return;
+            } else {
+                hideInfoCoupon();
+            }
+        }
+        if (showCouponPopup && activeInfoCoupon) {
+            document.addEventListener('mousemove', debounce(handleMouseEnter, 500));
+        }
+        return () => document.removeEventListener('mousemove', handleMouseEnter);
+    }, [showCouponPopup, activeInfoCoupon])
 
     const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {
@@ -305,17 +323,27 @@ const CartPage = () => {
 
     };
 
+    const copyCode = () => {
+        if (activeInfoCoupon) {
+            navigator.clipboard.writeText(activeInfoCoupon.code);
+        }
+    };
+
     const showInfoCoupon = (e, item) => {
         const pos = e.target.getBoundingClientRect();
-        console.log(pos);
-        modalStyles['left'] = pos.left - 11*16 + 'px';
-        modalStyles['top'] = pos.y + 30 + 'px';
-        console.log(modalStyles);
-        setActiveInfoCoupon(item);
-        setShowCouponPopup(true);
+
+        setModalStylesInline({...modalStylesInline, 
+            left: pos.left - 11*16 + 22 + 'px',
+            top: pos.y + 40 + 'px'
+        });
+
+        setTimeout(() => {
+            setActiveInfoCoupon(item);
+            setShowCouponPopup(true);
+        }, 200);
     };
     
-    const hideInfoCoupon = () => {
+    const hideInfoCoupon = (e) => {
         setActiveInfoCoupon(null);
         setShowCouponPopup(false);
     };
@@ -496,9 +524,12 @@ const CartPage = () => {
                                                                     {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`}
                                                                 </h5>
                                                                 <p>Cho đơn hàng từ {readPrice(item.condition)}</p>
-                                                                <span className={classes.info} onClick={(e) => showInfoCoupon(e, item)}
-                                                                    // onMouseOut={hideInfoCoupon}
-                                                                >i</span>
+                                                                <button className={classes['btn-info']} onMouseEnter={(e) => showInfoCoupon(e, item)}
+                                                                    // onMouseLeave={hideInfoCoupon}
+                                                                >
+                                                                    
+                                                                    <span className={classes.info}>i</span>
+                                                                </button>          
                                                             </div>
                                                             <div className={classes['coupon-action']}>
                                                                 <p className={classes.expire}>HSD: {item.date}</p>
@@ -524,12 +555,17 @@ const CartPage = () => {
 
             {
                 shouldRenderCouponPopup && activeInfoCoupon && (
-                    <Modal isShowModal={showCouponPopup} closeModal={hideInfoCoupon} backdrop={false} type='popup'
-                        contentClass={`${classes['modal-info-coupon']}`}>
+                    <Modal isShowModal={showCouponPopup && activeInfoCoupon} closeModal={hideInfoCoupon} backdrop={false} type='popup' 
+                        position='fixed' modalStyles={modalStylesInline} contentClass={`${classes['modal-info-coupon']}`}>
                         <div className={classes['wrap-info-coupon']}>
-                            <p>
+                                <p>
                                 <span>Mã</span>
-                                <span>{activeInfoCoupon.code}</span>
+                                <span>
+                                    {activeInfoCoupon.code}
+                                    <var onClick={copyCode}>
+                                        <img src={iconCopy} alt='copy-code' />
+                                    </var>
+                                </span>
                             </p>
                             <p>
                                 <span>Hạn sử dụng</span>

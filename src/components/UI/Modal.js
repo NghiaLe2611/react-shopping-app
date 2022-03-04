@@ -23,14 +23,6 @@ const ModalOverlay = (props) => {
         unmountedStyle = { animation: 'none'};
     }
 
-    // if (props.type === 'popup') {
-    //     if (props.modalStyles) {
-    //         console.log(props.inlineStyle);
-    //         mountedStyle= Object.assign(mountedStyle, props.modalStyles);
-    //         unmountedStyle= Object.assign(unmountedStyle, props.modalStyles);
-    //     }
-    // }
-
     const componentRef = useRef();
 
     useEffect(() => {
@@ -56,6 +48,10 @@ const ModalOverlay = (props) => {
     );
 
     if (props.type === 'popup') {
+        if (props.modalStyles) {
+            mountedStyle= Object.assign(mountedStyle, props.modalStyles);
+            unmountedStyle= Object.assign(unmountedStyle, props.modalStyles);
+        }
         modal = (
             <div className={`${classes.popup} ${props.contentClass ? props.contentClass : ''}`}
                 style={props.isShowModal ? mountedStyle : unmountedStyle} ref={componentRef}>
@@ -78,10 +74,12 @@ const ModalOverlay = (props) => {
 };
 
 const portalElement = document.getElementById('overlay');
+const popupPortal = document.getElementById('popup-root');
 
-const Modal = ({ type, closeModal, isShowModal, backdrop, children, position, animation, contentClass, close }) => {
+const Modal = ({ type, closeModal, isShowModal, backdrop, children, position, animation, 
+    contentClass, close, modalStyles,  }) => {
     const modalContent = (
-        <ModalOverlay type={type} onCloseModal={closeModal} isShowModal={isShowModal} close={close}
+        <ModalOverlay type={type} onCloseModal={closeModal} isShowModal={isShowModal} close={close} modalStyles={modalStyles}
             backdrop={backdrop} animation={animation} contentClass={contentClass}> 
                 {children}
         </ModalOverlay>
@@ -90,7 +88,12 @@ const Modal = ({ type, closeModal, isShowModal, backdrop, children, position, an
     return (
         <Fragment>
             { ReactDOM.createPortal(<Backdrop onCloseModal={closeModal} backdrop={backdrop} close={close}/>, portalElement) }
-            { position !== 'absolute' ? ReactDOM.createPortal(modalContent, portalElement) :  modalContent }
+            {
+                type === 'popup' ? (position === 'fixed' ? ReactDOM.createPortal(modalContent, popupPortal) : 
+                (position === 'absolute' && modalContent)) :
+                ReactDOM.createPortal(modalContent, portalElement)
+            }
+            {/* { position !== 'absolute' ? ReactDOM.createPortal(modalContent, portalElement) :  modalContent } */}
         </Fragment>
     )
 };

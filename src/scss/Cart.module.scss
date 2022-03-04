@@ -380,10 +380,16 @@ h2 {
         margin-bottom: 6px;
         position: relative;
     }
-    .info{
+    .btn-info{
         position: absolute;
-        top: 15px;
-        right: 10px;
+        z-index: 9;
+        top: 7px;
+        right: 10px;   
+        cursor: pointer;
+        padding: 15px;
+        background-color: transparent; 
+    }
+    .info{
         width: 16px;
         height: 16px;
         font-size: 11px;
@@ -393,7 +399,6 @@ h2 {
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
     }
 }
 
@@ -415,8 +420,14 @@ h2 {
 
 .modal-info-coupon{
     position: fixed;
-    width: 22rem;   
+    width: 22rem;
     right: inherit;
+    // z-index: 999;
+    &:before{
+        right: inherit;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
 .wrap-info-coupon{
@@ -448,6 +459,12 @@ h2 {
             &:last-child{
                 color: #333;
                 flex: 1;
+                display: flex;
+                align-items: center;
+                var{
+                    cursor: pointer;
+                    margin-left: 4px;
+                }
             }
         }
     }
