@@ -25,11 +25,11 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 50px;
-    > .left {
+    >.left {
         width: 70%;
         margin-right: 20px;
     }
-    > .right {
+    >.right {
         flex: 1;
     }
 }
@@ -108,25 +108,25 @@ h2 {
     }
 }
 
-.applied-coupons{
-    ul{
+.applied-coupons {
+    ul {
         margin-bottom: 15px;
-        .coupon-bg{
+        .coupon-bg {
             height: 65px;
-            img{
+            img {
                 width: 100%;
             }
-            .coupon-content{
-                .left{
+            .coupon-content {
+                .left {
                     width: 60px;
                 }
-                .right{
+                .right {
                     flex-direction: row;
                     align-items: center;
                 }
-                .coupon-info{
+                .coupon-info {
                     flex: 1;
-                    .sale{
+                    .sale {
                         font-size: 14px;
                         font-weight: 500;
                         margin-right: 5px;
@@ -137,8 +137,8 @@ h2 {
                         text-overflow: ellipsis;
                     }
                 }
-                .coupon-action{
-                    .apply{
+                .coupon-action {
+                    .apply {
                         font-size: 13px;
                     }
                 }
@@ -207,7 +207,7 @@ h2 {
     &:hover {
         opacity: 0.8;
     }
-    &:disabled{
+    &:disabled {
         pointer-events: none;
         opacity: 0.5;
     }
@@ -249,6 +249,7 @@ h2 {
         margin: 20px 0;
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         .wrap-ip {
             position: relative;
             flex: 1;
@@ -285,7 +286,7 @@ h2 {
                 color: #c4c4cf;
             }
         }
-        .clear{
+        .clear {
             align-items: center;
             justify-content: center;
             border-radius: 50%;
@@ -302,7 +303,7 @@ h2 {
             transform: translateY(-50%);
         }
     }
-    .body-scroll{
+    .body-scroll {
         overflow-y: scroll;
         max-height: 480px;
         margin: 0 -2rem;
@@ -314,28 +315,29 @@ h2 {
         }
     }
 }
+
 .coupon-bg {
     width: 100%;
     height: 128px;
     margin-bottom: 2px;
     filter: drop-shadow(rgba(0, 0, 0, 0.2) 0px 1px 3px);
     position: relative;
-    &.disabled{
-        .left img{
+    &.disabled {
+        .left img {
             filter: grayscale(1);
             opacity: 0.6;
         }
-        .sale{
+        .sale {
             color: #787878;
         }
-        .coupon-info{
-            .info{
+        .coupon-info {
+            .info {
                 color: #787878;
                 border: 1px solid #787878;
             }
         }
     }
-    .coupon-content{
+    .coupon-content {
         position: absolute;
         top: 0;
         left: 0;
@@ -343,14 +345,14 @@ h2 {
         height: 100%;
         display: flex;
         flex-wrap: wrap;
-        .left{
+        .left {
             width: 124px;
             padding: 8px;
             position: relative;
-            img{
+            img {
                 border-radius: 10px;
             }
-            span{
+            span {
                 position: absolute;
                 top: 10px;
                 right: 10px;
@@ -358,13 +360,13 @@ h2 {
                 font-size: 11px;
             }
         }
-        .right{
+        .right {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             flex: 1 1 0;
             padding: 15px 12px;
-            p{
+            p {
                 color: #787878;
                 font-size: 13px;
             }
@@ -372,24 +374,24 @@ h2 {
     }
 }
 
-.coupon-info{
-    .sale{
+.coupon-info {
+    .sale {
         font-size: 16px;
         word-break: break-word;
         line-height: 1;
         margin-bottom: 6px;
         position: relative;
     }
-    .btn-info{
+    .btn-info {
         position: absolute;
         z-index: 9;
-        top: 7px;
-        right: 10px;   
-        cursor: pointer;
+        top: 0;
+        right: 10px;
         padding: 15px;
-        background-color: transparent; 
+        background-color: transparent;
+        cursor: pointer;
     }
-    .info{
+    .info {
         width: 16px;
         height: 16px;
         font-size: 11px;
@@ -402,66 +404,66 @@ h2 {
     }
 }
 
-.coupon-action{
+.coupon-action {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    .apply{
+    .apply {
         background-color: #017fff;
         padding: 8px 12px;
         color: #fff;
         font-size: 14px;
         border-radius: 4px;
-        &:hover{
+        &:hover {
             opacity: 0.8;
         }
     }
 }
 
-.modal-info-coupon{
+.modal-info-coupon {
     position: fixed;
     width: 22rem;
     right: inherit;
     // z-index: 999;
-    &:before{
+    &:before {
         right: inherit;
         left: 50%;
         transform: translateX(-50%);
     }
 }
 
-.wrap-info-coupon{
-    p{
+.wrap-info-coupon {
+    p {
         display: flex;
         flex-wrap: wrap;
-        font-size: 13px;   
+        font-size: 13px;
         margin: 0 -1rem;
         padding: .8rem 1rem;
-        &:nth-child(odd){
-            background-color: #f5f5f5; 
+        &:nth-child(odd) {
+            background-color: #f5f5f5;
         }
-        &:last-child{
+        &:last-child {
             flex-direction: column;
-            span:first-child{
-               margin-bottom: 10px;
+            span:first-child {
+                margin-bottom: 10px;
             }
-            span:last-child{
+            span:last-child {
                 padding-left: 10px;
             }
         }
-        span{
+        span {
             display: inline-block;
-            &:first-child{
+            &:first-child {
                 color: #787878;
                 width: 30%;
                 margin-right: 20px;
             }
-            &:last-child{
+            &:last-child {
                 color: #333;
                 flex: 1;
                 display: flex;
                 align-items: center;
-                var{
+                var {
                     cursor: pointer;
                     margin-left: 4px;
                 }
@@ -470,8 +472,16 @@ h2 {
     }
 }
 
-.custom-toast{
-    background-color: red;
+.swal {
+    width: initial !important;
+    padding: 1.5em !important;
+    font-size: 0.3rem !important;
+}
+
+.swal .swal-title {
+    color: #068209;
+    font-weight: 500;
+    font-size: 14px;
 }
 
 // Custom checkbox

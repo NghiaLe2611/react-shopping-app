@@ -86,8 +86,6 @@ const couponList = [
     }
 ];
 
-let isHovering = false; 
-
 const CartPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -98,6 +96,7 @@ const CartPage = () => {
     const [activeInfoCoupon, setActiveInfoCoupon] = useState(null);
     const [selectedCoupons, setSelectedCoupons] = useState([]);
     const [couponCode, setCouponCode] = useState('');
+    const [codeStatus, setCodeStatus] = useState(null);
     const [modalStylesInline, setModalStylesInline] = useState({});
 
     const showCart = useSelector(state => state.cart.isShowCart);
@@ -177,7 +176,7 @@ const CartPage = () => {
             document.addEventListener('mousemove', debounce(handleMouseEnter, 500));
         }
         return () => document.removeEventListener('mousemove', handleMouseEnter);
-    }, [showCouponPopup, activeInfoCoupon])
+    }, [showCouponPopup, activeInfoCoupon]);
 
     const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {
@@ -220,7 +219,6 @@ const CartPage = () => {
 
     const removeCartHandler = () => {
         if (cart.finalItems.length > 0) {
-            let r = window.confirm("Bạn có chắc muốn xóa sản phẩm này ?");
             
             Swal.fire({
                 icon: 'warning',
@@ -262,31 +260,71 @@ const CartPage = () => {
     const closeCouponModalHandler = () => {
         setShowCouponModal(false);
         setCouponCode('');
+        setCodeStatus(null);
     };
 
     const onChangeCoupon = (e) => {
         setCouponCode(e.target.value);
     };
 
+    const applyCouponSuccess = (code) => {
+        Swal.fire({
+            icon: 'success',
+            title: `Mã khuyến mãi "${code}" đã được áp dụng`,
+            showConfirmButton: false,
+            iconColor: '#068209',
+            timer: 1500,
+            customClass: {
+                popup: classes.swal,
+                title: classes['swal-title'],
+                icon: classes['swal-icon']
+            }
+        });
+    };
+
     const applyCouponCode = () => {
-        const specialCoupon = {
-            id: 99,
-            type: 'special',
-            discount: 20,
-            code: convertCouponByDate(new Date()),
-            condition: 0,
-            date: 'XXX'
-        };
+        // const specialCoupon = {
+        //     id: 99,
+        //     type: 'special',
+        //     discount: 20,
+        //     code: convertCouponByDate(new Date()),
+        //     condition: 0,
+        //     date: 'XXX'
+        // };
 
         if (!cart.finalItems.length) {
-            alert('Ban chua chon san pham');
-            return;
-        }
-
-        if (couponCode === convertCouponByDate(new Date())) {
-            setSelectedCoupons([...selectedCoupons, specialCoupon]);
+            setCodeStatus(1); // 1: chưa chọn sản phẩm
         } else {
-            alert('Ma giam gia khong hop le');
+            const couponIndex = couponList.findIndex(val => val.code === couponCode);
+            const discountExistIndex = selectedCoupons.findIndex(val => val.type === 'discount');
+
+            // if (couponCode === convertCouponByDate(new Date())) {
+            //     setSelectedCoupons([...selectedCoupons, specialCoupon]);
+            //     applyCouponSuccess(specialCoupon.code);
+            // }
+            
+            if (couponIndex >= 0) {
+                const appliedCoupon = couponList[couponIndex];
+                const coupons = [...selectedCoupons, appliedCoupon];
+
+                if (cart.totalPrice >= appliedCoupon.condition) {
+                    setSelectedCoupons([...selectedCoupons, appliedCoupon]);
+                    applyCouponSuccess(appliedCoupon.code);
+
+                    if (discountExistIndex >= 0) {
+                        if (appliedCoupon.type === 'shipping') {
+                            setSelectedCoupons(coupons);
+                        } else {
+                            coupons.splice(discountExistIndex, 1);
+                            setSelectedCoupons(coupons);
+                        }
+                    }
+                } else {
+                    setCodeStatus(3); // 3: chưa đủ điều kiện áp dụng
+                } 
+            } else {
+                setCodeStatus(2); // 2: mã giảm không hợp lệ
+            }
         }
     };
 
@@ -326,6 +364,19 @@ const CartPage = () => {
     const copyCode = () => {
         if (activeInfoCoupon) {
             navigator.clipboard.writeText(activeInfoCoupon.code);
+
+			Swal.fire({
+                icon: 'success',
+                title: 'Mã giảm giá đã được sao chép',
+                showConfirmButton: false,
+                iconColor: '#068209',
+                timer: 1500,
+                customClass: {
+                    popup: classes.swal,
+                    title: classes['swal-title'],
+                    icon: classes['swal-icon']
+                }
+			});
         }
     };
 
@@ -499,7 +550,17 @@ const CartPage = () => {
                                     <span className={classes.clear} style={{display: couponCode.length ? 'flex' : 'none'}} 
                                         onClick={() => setCouponCode('')}>&times;</span>
                                 </div>
-                                <button disabled={couponCode.length ? false : true} onClick={applyCouponCode}>Áp dụng</button>
+                                <button disabled={couponCode.length ? false : true} onClick={applyCouponCode}>Áp dụng</button>   
+                                {
+                                    codeStatus && (
+                                        <p style={{color: 'red', fontSize: 12, width: '100%', marginTop: 10}}>
+                                            { 
+                                                codeStatus === 1 ? 'Bạn cần chọn sản phẩm trước khi dùng mã giảm giá' : 
+                                                codeStatus === 2 ? 'Mã giảm giá không hợp lệ' : codeStatus === 3 ? 'Bạn chưa đủ điều kiện để áp dụng mã' : null
+                                            }
+                                        </p>
+                                    )
+                                }
                             </div>
                             <div className={classes['body-scroll']}>
                             <div className={classes['coupon-list-wrapper']}>
