@@ -7,6 +7,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency, readPrice } from '../helpers/helpers';
 import Modal from '../components/UI/Modal';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
+import Swal from 'sweetalert2';
+import { debounce } from 'lodash';
 import couponImg1 from '../assets/images/coupon1.svg';
 import couponImg2 from '../assets/images/coupon2.svg';
 import couponIcon from '../assets/images/coupon-icon.svg';
@@ -16,24 +18,22 @@ import couponCondition from '../assets/images/coupon-condition.svg';
 import couponActive from '../assets/images/coupon-active.svg';
 import freeshipCoupon from '../assets/images/freeship.png';
 import iconCopy from '../assets/images/icon-copy.svg';
-import Swal from 'sweetalert2';
-import { debounce } from 'lodash';
 
-function convertCouponByDate(date) {
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    const year = date.getFullYear();
+// function convertCouponByDate(date) {
+//     let day = date.getDate();
+//     let month = date.getMonth() + 1;
+//     const year = date.getFullYear();
 
-    if (day.toString().length < 2) {
-        day = '0' + day;
-    }
+//     if (day.toString().length < 2) {
+//         day = '0' + day;
+//     }
 
-    if (month.toString().length < 2) {
-        month = '0' + month;
-    }
+//     if (month.toString().length < 2) {
+//         month = '0' + month;
+//     }
 
-    return day + month + year;
-}
+//     return day + month + year;
+// }
 
 const couponList = [
     {
@@ -163,6 +163,10 @@ const CartPage = () => {
     useEffect(() => {
         dispatch(cartActions.setDiscount(totalDiscount));
     }, [dispatch, totalDiscount]);
+
+    useEffect(() => {
+        dispatch(cartActions.setAppliedCoupons(selectedCoupons));
+    }, [dispatch, selectedCoupons]);
 
     useEffect(() => {
         function handleMouseEnter(e) {
@@ -450,12 +454,12 @@ const CartPage = () => {
                                             {
                                                 customerInfo ? (
                                                 <Fragment>
-                                                        <div className={classes['ctm-info']}>
-                                                            {customerInfo.name}<var>|</var>{customerInfo.phone}
-                                                        </div>
-                                                        <div className={classes.address}>
-                                                            {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`}
-                                                        </div>
+                                                    <div className={classes['ctm-info']}>
+                                                        {customerInfo.name}<var>|</var>{customerInfo.phone}
+                                                    </div>
+                                                    <div className={classes.address}>
+                                                        {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`}
+                                                    </div>
                                                 </Fragment>
                                                 ) : null
                                             } 

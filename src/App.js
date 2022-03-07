@@ -13,6 +13,7 @@ const DetailPage = React.lazy(() => import('./pages/DetailPage'));
 const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const BrandPage = React.lazy(() => import('./pages/BrandPage'));
 const CartPage = React.lazy(() => import('./pages/CartPage'));
+const CartConfirmPage = React.lazy(() => import('./pages/CartConfirmPage'));
 const ComparePage = React.lazy(() => import('./pages/ComparePage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const SignUpPage = React.lazy(() => import('./pages/SignUpPage'));
@@ -34,7 +35,7 @@ function App() {
 
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: postUserInfo } = useFetch();
-    const { fetchData: updateUserInfo } = useFetch();
+    // const { fetchData: updateUserInfo } = useFetch();
 
     useEffect(() => {
         // Create user data
@@ -143,6 +144,7 @@ function App() {
                     <Route exact path=':category' element={<Root><CategoryPage/></Root>} />
                     <Route path='so-sanh/:category' element={<Root><ComparePage/></Root>} />
                     <Route exact path='cart' element={<Root><CartPage/></Root>} />
+                    <Route exact path='cartConfirm' element={<Root><CartConfirmPage/></Root>} />
                     <Route exact path='dang-nhap' element={userData ? <Navigate to='/tai-khoan' /> : <Root><LoginPage/></Root>} />
                     <Route exact path='dang-ky' element={userData ? <Navigate to='/tai-khoan' /> : <Root><SignUpPage/></Root>} />
                     <Route path='tai-khoan/*'

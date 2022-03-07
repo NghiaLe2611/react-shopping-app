@@ -20,6 +20,7 @@ const cartSlice = createSlice({
         totalQuantity: initialTotalQuantity,
         totalPrice: 0,
         discount: 0,
+        appliedCoupons: [],
         isShowCart: false
     },
 
@@ -42,11 +43,17 @@ const cartSlice = createSlice({
                 }
                 case 'REMOVE': {
                     const updatedItem = payload.item;
+                    const existingFinalItem = state.finalItems.findIndex(val => val._id === updatedItem._id);
+            
                     state.finalItems = state.finalItems.filter(val => val._id !== updatedItem._id);
                     
-                    if (state.totalPrice > 0) {
+                    if (existingFinalItem >= 0 && state.totalPrice > 0) {
                         state.totalPrice -= updatedItem.totalPrice;
-                    }
+                    } 
+
+                    // if (state.totalPrice > 0) {
+                    //     state.totalPrice -= updatedItem.totalPrice;
+                    // }
                     break;
                 }
                 case 'INCREASE': {
@@ -142,6 +149,9 @@ const cartSlice = createSlice({
             } else {
                 state.isShowCart = false;
             }
+        },
+        setAppliedCoupons(state, action) {
+            state.appliedCoupons = action.payload;
         },
         setDiscount(state, action) {
             state.discount = action.payload;
