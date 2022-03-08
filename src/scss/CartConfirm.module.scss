@@ -26,7 +26,7 @@
     border-radius: 4px;
     box-shadow: rgb(0 0 0 / 5%) 0px 1px 1px;
     padding: 15px 20px;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
 .block {
@@ -128,7 +128,6 @@
             .shipping-fee{
                 text-align: right;
                 flex: 1;
-                font-weight: 500;
                 font-size: 14px;
                 color: #787878;
                 var{
@@ -160,17 +159,18 @@ img{
         .icon{
             display: inline-block;
             background: url(../assets/images/sprites.svg) no-repeat;
-            background-size: 150px 162px;
-            width: 55px;
-            height: 35px;
+            background-size: 150px 134px;
+            width: 40px;
+            height: 30px;
+            margin-right: 10px;
             &.payment-01 {
-                background-position: -108px -35px;
+                background-position: -102px -28px;
             }
             &.payment-02 {
-                background-position: -46px -35px;
+                background-position: -50px -27px;
             }
             &.payment-03{
-                background-position: 4px 0px;
+                background-position: -5px 4px;
                 position: relative;
                 top: -3px;
             }
@@ -292,6 +292,9 @@ img{
             font-size: 18px;
             font-weight: 500;
             color: #ee2347;
+        }
+        .discount{
+            color: #009900;
         }
     }
 }

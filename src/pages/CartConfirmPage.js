@@ -1,8 +1,10 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { cartActions } from '../store/cart';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from '../components/UI/Modal';
 import { formatCurrency, convertProductLink, readPrice } from '../helpers/helpers';
+import LoadingIndicator from '../components/UI/LoadingIndicator';
 import couponImg1 from '../assets/images/coupon1.svg';
 import couponImg2 from '../assets/images/coupon2.svg';
 import couponIcon from '../assets/images/coupon-icon.svg';
@@ -22,29 +24,50 @@ const fastShippingFee = 30000;
 const listPayment = [
     {
         id: 1,
-        text: 'Thanh toán khi nhận hàng'
+        text: 'Thanh toán khi nhận hàng',
+        discount: 0
     },
     {
         id: 2,
         text: 'Thanh toán bằng ví ZaloPay',
-        discount: 10
+        discount: 10000
     },
     {
         id: 3,
-        text: 'Thanh toán bằng thẻ quốc tế Visa, Master, JCB'
+        text: 'Thanh toán bằng thẻ quốc tế Visa, Master, JCB',
+        discount: 0
     },
 ];
+let discount = 0;
 
 const CartConfirmPage = () => {
     const dispatch = useDispatch();
 
     const [customerInfo, setCustomerInfo] = useState(null);
     const [showInfoProducts, setShowInfoProducts] = useState(false);
-    const [shippingMethod, setShippingMethod] = useState('1');
+    const [shippingMethod, setShippingMethod] = useState(1);
     const [paymentMethod, setPaymentMethod] = useState(0);
+    const [otherDiscount, setOtherDiscount] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
+
+    const calculateDiscount = useCallback(() => {
+        let total = 0;
+
+        if (cart.appliedCoupons.length) {    
+            cart.appliedCoupons.forEach(obj => {
+                console.log(obj);
+                if (obj.type !== 'shipping') {
+                    total += obj.discount * 1000;
+                }
+            })  
+        }
+
+        return total;
+    }, [cart.appliedCoupons]);
+    const totalDiscountExcludeShipping = useMemo(() => calculateDiscount(), [calculateDiscount]);
 
     useEffect(() => {
         if (userData.listAddress && userData.listAddress.length) {
@@ -52,6 +75,37 @@ const CartConfirmPage = () => {
             setCustomerInfo(userData.listAddress[index]);
         }
     }, [userData]);
+
+    // useEffect(() => {
+    //     const index = listPayment.findIndex(val => val.id === paymentMethod);
+    //     let totalDiscount = cart.discount;
+
+    //     if (index >= 0) {
+    //         if (listPayment[index].discount > 0) {
+    //             totalDiscount += otherDiscount;
+    //             dispatch(cartActions.setDiscount(totalDiscount));
+    //         } else {
+    //             totalDiscount -= otherDiscount;
+    //             dispatch(cartActions.setDiscount(totalDiscount));
+    //         }
+    //     }
+    // }, [paymentMethod, otherDiscount]);
+
+    useEffect(() => {
+        let totalPrice = cart.totalPrice;
+        if (shippingMethod === 1) {
+            totalPrice += fastShippingFee;
+            dispatch(cartActions.setFinalPrice(totalPrice));
+        } else if (shippingMethod === 2) {
+            totalPrice += shippingFee;
+            dispatch(cartActions.setFinalPrice(totalPrice));
+        }
+
+        if (cart.discount > 0) {
+            totalPrice = totalPrice - cart.discount;
+            dispatch(cartActions.setFinalPrice(totalPrice));
+        }
+    }, [shippingMethod, cart.discount]);
 
     const addCoupon = () => {
 
@@ -62,21 +116,52 @@ const CartConfirmPage = () => {
     };
 
     const onChangeShippingMethod = (e) => {
-        setShippingMethod(e.target.value);
+        setShippingMethod(parseInt(e.target.value));
     };
 
     const onChangePaymentMethod = (e) => {
-        setPaymentMethod(e.target.value);
+        const index = listPayment.findIndex(val => val.id === parseInt(e.target.value));
+
+        let coupons = [...cart.appliedCoupons];
+
+        if (index >= 0) {
+            
+            const paymentCoupon = {
+                id: `p-${index}`,
+                type: 'payment',
+                discount: 10,
+                code: 'ZALOPAY10K',
+                condition: 0,
+                date: 'XXX'
+            };
+
+            if (listPayment[index].discount > 0) {
+                coupons.push(paymentCoupon);
+                dispatch(cartActions.setAppliedCoupons(coupons));
+            } else {
+                const couponIndex = coupons.findIndex(val => val.id === `p-${index}`);
+                console.log(123, couponIndex);
+                coupons.slice(couponIndex, 1);
+                dispatch(cartActions.setAppliedCoupons(coupons));
+            }
+        }
+
+        setPaymentMethod(parseInt(e.target.value));
+        setIsLoading(true);
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 800);
     };
 
     return (
         <div className='container'>
-             <Fragment>
+            { isLoading && <div className='overlay'><LoadingIndicator type='fixed'/></div> }
+            <Fragment>
                 {
                     cart.finalItems.length > 0 ? (
                         <div className={classes['wrap-cart-confirm']}>
                             <div className={classes.left}>
-                                <h3 class={classes.title}>1. Chọn hình thức giao hàng</h3>
+                                <h3 className={classes.title}>1. Chọn hình thức giao hàng</h3>
                                 <div className={classes.box}>
                                     <div className={classes['wrap-shipping']}>
                                         <div className={classes['shipping-method']}>
@@ -111,21 +196,21 @@ const CartConfirmPage = () => {
                                                                 </div>
                                                             </div>
                                                             <div className={classes['shipping-info']}>
-                                                                <p class={classes.time}>
-                                                                    {shippingMethod === '1' ? 'Giao trước 11:59 sáng mai' : 'Giao vào ...'}  
+                                                                <p className={classes.time}>
+                                                                    {shippingMethod === 1 ? 'Giao trước 11:59 sáng mai' : 'Giao vào ...'}  
                                                                 </p>
                                                                 <p>
                                                                     {
-                                                                        shippingMethod === '1' ? <img src={iconFastShipping} className={classes.fast} alt='fast-shipping'/> : 
+                                                                        shippingMethod === 1 ? <img src={iconFastShipping} className={classes.fast} alt='fast-shipping'/> : 
                                                                             <img src={iconShipping} className={classes.standard} alt='standard-shipping'/>
                                                                     }
                                                                     <span>
-                                                                        {shippingMethod === '1' ? 'Giao siêu tốc' : 'Giao tiết kiệm'}
+                                                                        {shippingMethod === 1 ? 'Giao siêu tốc' : 'Giao tiết kiệm'}
                                                                     </span>
                                                                 </p>
                                                             </div>
                                                             <div className={classes['shipping-fee']}>
-                                                                {shippingMethod === '1' ? `${formatCurrency(fastShippingFee)}đ` : 
+                                                                {shippingMethod === 1 ? `${formatCurrency(fastShippingFee)}đ` : 
                                                                     <Fragment>
                                                                         <var>{formatCurrency(fastShippingFee)}đ</var><br/>
                                                                         {formatCurrency(shippingFee)}đ
@@ -139,7 +224,7 @@ const CartConfirmPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <h3 class={classes.title}>2. Chọn hình thức thanh toán</h3>
+                                <h3 className={classes.title}>2. Chọn hình thức thanh toán</h3>
                                 <div className={classes.box}>
                                     <ul className={classes['list-payment']}>
                                         {
@@ -152,7 +237,7 @@ const CartConfirmPage = () => {
                                                         <span className={`${classes.icon} ${classes[`payment-0${item.id}`]}`}></span>
                                                         <span className={classes.checkmark}></span>{item.text}
                                                         {
-                                                            item.discount && <span className={classes.discount}>Giảm {item.discount}K</span>
+                                                            item.discount !== 0 && <span className={classes.discount}>Giảm {item.discount/1000}K</span>
                                                         }
                                                     </label>
                                                 </li>
@@ -194,7 +279,7 @@ const CartConfirmPage = () => {
                                                 cart.appliedCoupons && cart.appliedCoupons.length > 0 && (
                                                     <ul>
                                                         {
-                                                            cart.appliedCoupons.map(item => (
+                                                            cart.appliedCoupons.filter(val => val.type !== 'payment').map(item => (
                                                                 <li key={item.id} className={classes['coupon-bg']}>
                                                                     <img src={couponBgSm} alt='coupon-bg-sm' /> 
                                                                     <div className={classes['coupon-content']}>
@@ -236,7 +321,7 @@ const CartConfirmPage = () => {
                                             <div className={classes['head-title']}>
                                                 <b>Đơn hàng</b>
                                                 <p>{cart.finalItems.length} sản phẩm.&nbsp;
-                                                    <span class={`${classes['show-more']} ${showInfoProducts ? classes.active : ''}`} onClick={() => setShowInfoProducts(prev => !prev)}>
+                                                    <span className={`${classes['show-more']} ${showInfoProducts ? classes.active : ''}`} onClick={() => setShowInfoProducts(prev => !prev)}>
                                                         {setShowInfoProducts ? 'Xem thông tin' : 'Thu gọn'}    
                                                     </span>
                                                 </p>
@@ -269,11 +354,31 @@ const CartConfirmPage = () => {
                                             </p>
                                             <p>
                                                 <span>Phí vận chuyển</span>
-                                                <span>{formatCurrency(shippingFee)}đ</span>
+                                                <span>
+                                                    {shippingMethod === 1 ? formatCurrency(fastShippingFee) : formatCurrency(shippingFee)}đ  
+                                                </span>
                                             </p>
+                                            {
+                                                cart.appliedCoupons.filter(val => val.type === 'shipping').map(item => (
+                                                    <p key={item.id}>
+                                                        <span>Khuyến mãi vận chuyển</span>
+                                                        <span className={classes.discount}>-{formatCurrency(item.discount * 1000)}đ</span>
+                                                    </p>  
+                                                ))
+                                            }
+                                            {
+                                                cart.discount > 0 && (
+                                                    <p>
+                                                        <span>Giảm giá</span>
+                                                        <span className={classes.discount}>-{formatCurrency(totalDiscountExcludeShipping)}đ</span>
+                                                    </p>
+                                                )
+                                            }
                                             <p className={classes['total-price']}>
                                                 <span>Thành tiền:</span>
-                                                <span className={classes.total}>{formatCurrency(cart.totalPrice)} ₫</span>
+                                                <span className={classes.total}>
+                                                    {cart.finalPrice > 0 ? formatCurrency(cart.finalPrice) : formatCurrency(cart.totalPrice)} ₫
+                                                </span>
                                             </p>
                                         </div>
                                     </div>

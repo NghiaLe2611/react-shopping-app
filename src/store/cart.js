@@ -19,6 +19,7 @@ const cartSlice = createSlice({
         finalItems: [],
         totalQuantity: initialTotalQuantity,
         totalPrice: 0,
+        finalPrice: 0,
         discount: 0,
         appliedCoupons: [],
         isShowCart: false
@@ -155,6 +156,9 @@ const cartSlice = createSlice({
         },
         setDiscount(state, action) {
             state.discount = action.payload;
+        },
+        setFinalPrice(state, action) {
+            state.finalPrice = action.payload;
         }
     }
 });

@@ -514,7 +514,10 @@ const CartPage = () => {
                                             </p>
                                             <p>
                                                 <span>Giảm giá: </span>
-                                                <strong>{formatCurrency(totalDiscount)}<small>đ</small></strong>
+                                                <strong>
+                                                    { totalDiscount > 0 ? `-${formatCurrency(totalDiscount)}` : formatCurrency(totalDiscount)}
+                                                    <small>đ</small>
+                                                </strong>
                                             </p>
                                         </div>
                                         <div className={`${classes.total} ${classes['block-inner']}`}>

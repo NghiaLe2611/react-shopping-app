@@ -3,6 +3,7 @@ import { convertProductLink, formatCurrency } from '../../helpers/helpers';
 import { cartActions } from '../../store/cart';
 import { useSelector, useDispatch } from 'react-redux';
 import classes from '../../scss/CartItem.module.scss';
+import Swal from 'sweetalert2';
 
 const CartItem = (props) => {
     const dispatch = useDispatch();
@@ -51,7 +52,11 @@ const CartItem = (props) => {
                 }));  
             }
         } else {
-            alert("Bạn chỉ có thể chọn tối đa 5 sản phẩm !");
+            Swal.fire({
+                icon: 'warning',
+                html: `<p>Bạn chỉ có thể chọn tối đa 5 sản phẩm !</p>`,
+                confirmButtonColor: '#2f80ed',
+            });
         }
     };
 
@@ -92,18 +97,31 @@ const CartItem = (props) => {
                 }
             }
         } else {
-            alert("Bạn chỉ có thể chọn tối đa 5 sản phẩm !");
+            Swal.fire({
+                icon: 'warning',
+                html: `<p>Bạn chỉ có thể chọn tối đa 5 sản phẩm !</p>`,
+                confirmButtonColor: '#2f80ed',
+            });
         }
     };
 
     const removeItemCartHandler = () => {
-        let r = window.confirm("Bạn có chắc muốn xóa sản phẩm này ?");
-        if (r) {
-            dispatch(cartActions.removeCartItem(item._id));
-            dispatch(cartActions.confirmChooseCart({
-                type: 'REMOVE', item
-            }));  
-        } 
+        Swal.fire({
+            icon: 'warning',
+            html: `<p>Bạn có chắc muốn xoá sản phẩm này ?</p>`,
+            confirmButtonText: 'Xoá',
+            confirmButtonColor: '#2f80ed',
+            showCancelButton: true,
+            cancelButtonText: 'Huỷ',
+            cancelButtonColor: '#dc3741'
+        }).then(result => {
+            if (result.isConfirmed) {
+                dispatch(cartActions.removeCartItem(item._id));
+                dispatch(cartActions.confirmChooseCart({
+                    type: 'REMOVE', item
+                }));  
+            }
+        });        
     };
 
     const checkCartHandler = (e) => {
