@@ -108,17 +108,14 @@ const LoginPage = () => {
     };
 
     const onChangeInput = (e) => {
-        const { name } = e.target;
-        const { value } = e.target;
+        const { name, value } = e.target;
 
-        setUserInput(data => data = {...data, [name]: e.target.value});
-
+        setUserInput(data => data = {...data, [name]: value});
         validateInput(name, value);
     };
 
     const onBlurInput = (e) => {
-        const { name } = e.target;
-        const { value } = e.target;
+        const { name, value } = e.target;
 
         setIsBlur(data => data = {...data, [name]: true});
         validateInput(name, value);

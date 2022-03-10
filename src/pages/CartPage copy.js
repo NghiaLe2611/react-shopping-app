@@ -1,13 +1,23 @@
-import { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import CartItem from '../components/cart/CartItem';
-import { Link, useNavigate } from 'react-router-dom';
-import { formatCurrency } from '../helpers/helpers';
-import CouponModal from '../components/UI/CouponModal';
-import SelectedCoupons from '../components/UI/SelectedCoupons';
-import Swal from 'sweetalert2';
 import classes from '../scss/Cart.module.scss';
+import { Link, useNavigate } from 'react-router-dom';
+import { formatCurrency, readPrice } from '../helpers/helpers';
+import Modal from '../components/UI/Modal';
+import { useDelayUnmount } from '../hooks/useDelayUnmount';
+import Swal from 'sweetalert2';
+import { debounce } from 'lodash';
+import couponImg1 from '../assets/images/coupon1.svg';
+import couponImg2 from '../assets/images/coupon2.svg';
+import couponIcon from '../assets/images/coupon-icon.svg';
+import couponBg from '../assets/images/coupon-bg.svg';
+import couponBgSm from '../assets/images/coupon-bg-sm.svg';
+import couponCondition from '../assets/images/coupon-condition.svg';
+import couponActive from '../assets/images/coupon-active.svg';
+import freeshipCoupon from '../assets/images/freeship.png';
+import iconCopy from '../assets/images/icon-copy.svg';
 
 // function convertCouponByDate(date) {
 //     let day = date.getDate();
@@ -25,6 +35,57 @@ import classes from '../scss/Cart.module.scss';
 //     return day + month + year;
 // }
 
+const couponList = [
+    {
+        id: 1,
+        type: 'discount',
+        discount: 500,
+        code: 'DISCOUNT500KFOR16000000',
+        condition: 16000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 2,
+        type: 'discount',
+        discount: 300,
+        code: 'DISCOUNT300KFOR9000000',
+        condition: 9000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 3,
+        type: 'discount',
+        discount: 200,
+        code: 'DISCOUNT200KFOR5000000',
+        condition: 5000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 4,
+        type: 'discount',
+        discount: 100,
+        code: 'DISCOUNT100KFOR2000000',
+        condition: 2000000,
+        date: '10/03/2022'
+    },
+    {
+        id: 5,
+        type: 'discount',
+        discount: 20,
+        code: 'DISCOUNT20KFOR500000',
+        condition: 500000,
+        date: '10/03/2022'
+    },
+    {
+        id: 6,
+        type: 'shipping',
+        discount: 30,
+        code: 'FREESHIP',
+        condition: 5000000,
+        date: '20/03/2022'
+    }
+];
+
 const CartPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -32,7 +93,11 @@ const CartPage = () => {
     const [isSelectAll, setIsSelectAll] = useState(false);
     const [showCouponModal, setShowCouponModal] = useState(false);
     const [showCouponPopup, setShowCouponPopup] = useState(false);
-    // const [selectedCoupons, setSelectedCoupons] = useState([]);
+    const [activeInfoCoupon, setActiveInfoCoupon] = useState(null);
+    const [selectedCoupons, setSelectedCoupons] = useState([]);
+    const [couponCode, setCouponCode] = useState('');
+    const [codeStatus, setCodeStatus] = useState(null);
+    const [modalStylesInline, setModalStylesInline] = useState({});
 
     const showCart = useSelector(state => state.cart.isShowCart);
     const cart = useSelector((state) => state.cart);
@@ -40,11 +105,23 @@ const CartPage = () => {
 
     const selectAlInput = useRef();
 
+    const shouldRenderCouponModal = useDelayUnmount(showCouponModal, 300);
+    const shouldRenderCouponPopup = useDelayUnmount(showCouponPopup, 300);
+
+    // Get total discount
+    const calculateDiscount = useCallback(() => {
+        if (selectedCoupons.length) {
+            return selectedCoupons.reduce((n, { discount }) => n + discount * 1000, 0);
+        }
+        return 0;
+    }, [selectedCoupons]);
+    const totalDiscount = useMemo(() => calculateDiscount(), [calculateDiscount]);
+
     useEffect(() => {
         if (showCart) {
             dispatch(cartActions.showCartPopup(false));
         }
-    }, [showCart]);
+    }, []);
 
     useEffect(() => {
         if (showCouponModal) {
@@ -54,6 +131,7 @@ const CartPage = () => {
             document.querySelector('html').classList.remove('modal-open');
             document.body.classList.remove('modal-open');
         }
+
     }, [showCouponModal]);
 
     useEffect(() => {
@@ -76,6 +154,33 @@ const CartPage = () => {
             localStorage.removeItem('cartItems');
         }
     }, [cart.items]);
+
+    useEffect(() => {
+        const updatedSelectedCoupons = selectedCoupons.filter(val => val.condition <= cart.totalPrice);
+        setSelectedCoupons(updatedSelectedCoupons);
+    }, [cart.totalPrice]);
+
+    useEffect(() => {
+        dispatch(cartActions.setDiscount(totalDiscount));
+    }, [dispatch, totalDiscount]);
+
+    useEffect(() => {
+        dispatch(cartActions.setAppliedCoupons(selectedCoupons));
+    }, [dispatch, selectedCoupons]);
+
+    useEffect(() => {
+        function handleMouseEnter(e) {
+            if (e.target.closest('.' + classes['modal-info-coupon']) || e.target.closest('.' + classes['btn-info'])) {
+                return;
+            } else {
+                hideInfoCoupon();
+            }
+        }
+        if (showCouponPopup && activeInfoCoupon) {
+            document.addEventListener('mousemove', debounce(handleMouseEnter, 500));
+        }
+        return () => document.removeEventListener('mousemove', handleMouseEnter);
+    }, [showCouponPopup, activeInfoCoupon]);
 
     const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {
@@ -152,38 +257,150 @@ const CartPage = () => {
         }
     };
 
-    // const onAddCoupon = (item) => {
-    //     const index = selectedCoupons.findIndex(val => val.id === item.id);
-    //     let coupons = [...selectedCoupons, item];
-
-    //     if (index < 0) { 
-    //         const discountExistIndex = selectedCoupons.findIndex(val => val.type === 'discount');
-            
-    //         if (discountExistIndex >= 0) {
-    //             if (item.type === 'shipping') {
-    //                 setSelectedCoupons(coupons);
-    //             } else {
-    //                 coupons.splice(discountExistIndex, 1);
-    //                 setSelectedCoupons(coupons);
-    //             }
-    //         }
-
-    //         if (selectedCoupons.length < 2) {
-    //             setSelectedCoupons(coupons);
-    //         }
-    //     } else {
-    //         let updatedCoupons = [...selectedCoupons]
-    //         updatedCoupons.splice(index, 1);
-    //         setSelectedCoupons(updatedCoupons);
-    //     }
-    // };
-
     const showCouponModalHandler = () => {
         setShowCouponModal(true);
     };
 
     const closeCouponModalHandler = () => {
         setShowCouponModal(false);
+        setCouponCode('');
+        setCodeStatus(null);
+    };
+
+    const onChangeCoupon = (e) => {
+        setCouponCode(e.target.value);
+    };
+
+    const applyCouponSuccess = (code) => {
+        Swal.fire({
+            icon: 'success',
+            title: `Mã khuyến mãi "${code}" đã được áp dụng`,
+            showConfirmButton: false,
+            iconColor: '#068209',
+            timer: 1500,
+            customClass: {
+                popup: classes.swal,
+                title: classes['swal-title'],
+                icon: classes['swal-icon']
+            }
+        });
+    };
+
+    const applyCouponCode = () => {
+        // const specialCoupon = {
+        //     id: 99,
+        //     type: 'special',
+        //     discount: 20,
+        //     code: convertCouponByDate(new Date()),
+        //     condition: 0,
+        //     date: 'XXX'
+        // };
+
+        if (!cart.finalItems.length) {
+            setCodeStatus(1); // 1: chưa chọn sản phẩm
+        } else {
+            const couponIndex = couponList.findIndex(val => val.code === couponCode);
+            const discountExistIndex = selectedCoupons.findIndex(val => val.type === 'discount');
+
+            // if (couponCode === convertCouponByDate(new Date())) {
+            //     setSelectedCoupons([...selectedCoupons, specialCoupon]);
+            //     applyCouponSuccess(specialCoupon.code);
+            // }
+            
+            if (couponIndex >= 0) {
+                const appliedCoupon = couponList[couponIndex];
+                const coupons = [...selectedCoupons, appliedCoupon];
+
+                if (cart.totalPrice >= appliedCoupon.condition) {
+                    setSelectedCoupons([...selectedCoupons, appliedCoupon]);
+                    applyCouponSuccess(appliedCoupon.code);
+
+                    if (discountExistIndex >= 0) {
+                        if (appliedCoupon.type === 'shipping') {
+                            setSelectedCoupons(coupons);
+                        } else {
+                            coupons.splice(discountExistIndex, 1);
+                            setSelectedCoupons(coupons);
+                        }
+                    }
+                } else {
+                    setCodeStatus(3); // 3: chưa đủ điều kiện áp dụng
+                } 
+            } else {
+                setCodeStatus(2); // 2: mã giảm không hợp lệ
+            }
+        }
+    };
+
+    const addCoupon = (item) => {
+        const index = selectedCoupons.findIndex(val => val.id === item.id);
+        let coupons = [...selectedCoupons, item];
+
+        if (index < 0) { 
+            const discountExistIndex = selectedCoupons.findIndex(val => val.type === 'discount');
+            
+            if (discountExistIndex >= 0) {
+                if (item.type === 'shipping') {
+                    setSelectedCoupons(coupons);
+                } else {
+                    coupons.splice(discountExistIndex, 1);
+                    setSelectedCoupons(coupons);
+                }
+            }
+
+            if (selectedCoupons.length < 2) {
+                setSelectedCoupons(coupons);
+                // setSelectedCoupons(obj => 
+                //     obj = coupons,
+                //         data => { // data: selectedCoupons
+                //             console.log(1, data);
+                //         }
+                // );
+            }
+        } else {
+            let updatedCoupons = [...selectedCoupons]
+            updatedCoupons.splice(index, 1);
+            setSelectedCoupons(updatedCoupons);
+        }
+
+    };
+
+    const copyCode = () => {
+        if (activeInfoCoupon) {
+            navigator.clipboard.writeText(activeInfoCoupon.code);
+
+			Swal.fire({
+                icon: 'success',
+                title: 'Mã giảm giá đã được sao chép',
+                showConfirmButton: false,
+                iconColor: '#068209',
+                timer: 1500,
+                customClass: {
+                    popup: classes.swal,
+                    title: classes['swal-title'],
+                    icon: classes['swal-icon']
+                }
+			});
+        }
+    };
+
+    const showInfoCoupon = (e, item) => {
+        const pos = e.target.getBoundingClientRect();
+
+        setModalStylesInline({...modalStylesInline, 
+            left: pos.left - 11*16 + 22 + 'px',
+            top: pos.y + 40 + 'px'
+        });
+
+        setTimeout(() => {
+            setActiveInfoCoupon(item);
+            setShowCouponPopup(true);
+        }, 200);
+    };
+    
+    const hideInfoCoupon = (e) => {
+        setActiveInfoCoupon(null);
+        setShowCouponPopup(false);
     };
 
     const goToCartConfirm = () => {
@@ -249,13 +466,44 @@ const CartPage = () => {
                                         </div>
                                     </div>
                                     <div className={classes.block}>
-                                        <div className={classes['block-inner']}>
-                                            <div className={classes.head}>
-                                                <span>Khuyến mãi (tối đa 2)</span>
-                                            </div>
-                                            <SelectedCoupons showCouponModalHandler={showCouponModalHandler} 
-                                                // addCoupon={onAddCoupon} 
-                                            />
+                                        <div className={`${classes['applied-coupons']} ${classes['block-inner']}`}>
+                                            {
+                                                selectedCoupons.length > 0 && (
+                                                    <ul>
+                                                        {
+                                                            selectedCoupons.map(item => (
+                                                                <li key={item.id} className={classes['coupon-bg']}>
+                                                                    <img src={couponBgSm} alt='coupon-bg-sm' /> 
+                                                                    <div className={classes['coupon-content']}>
+                                                                        <div className={classes.left}>
+                                                                            {
+                                                                                item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship'/> :
+                                                                                <img src={couponIcon} alt='coupon-icon'/>
+                                                                            }
+                                                                            { item.type === 'special' && <span className='icon-star'></span> }
+                                                                        </div>
+                                                                        <div className={classes.right}>
+                                                                            <div className={classes['coupon-info']}>
+                                                                                <div className={classes.sale}>
+                                                                                    {item.type === 'shipping' && `Giảm ${item.discount}K phí vận chuyển`}
+                                                                                    {item.type === 'discount' && `Giảm ${item.discount}K cho đơn hàng từ ${readPrice(item.condition)}`}
+                                                                                    {item.type === 'special' && `Giảm ${item.discount}K (đặc biệt)`}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className={classes['coupon-action']}>
+                                                                                <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </li>
+                                                            ))
+                                                        }
+                                                    </ul>
+                                                )
+                                            }
+                                            <p className={classes['coupon-txt']} onClick={showCouponModalHandler}>
+                                                <img src={couponImg2} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác (tối đa 2)
+                                            </p>
                                         </div>
                                     </div>
                                     <div className={classes.block}>
@@ -267,7 +515,7 @@ const CartPage = () => {
                                             <p>
                                                 <span>Giảm giá: </span>
                                                 <strong>
-                                                    { cart.discount > 0 ? `-${formatCurrency(cart.discount)}` : formatCurrency(cart.discount)}
+                                                    { totalDiscount > 0 ? `-${formatCurrency(totalDiscount)}` : formatCurrency(totalDiscount)}
                                                     <small>đ</small>
                                                 </strong>
                                             </p>
@@ -275,12 +523,13 @@ const CartPage = () => {
                                         <div className={`${classes.total} ${classes['block-inner']}`}>
                                             Tổng cộng: 
                                             {cart.totalPrice > 0 ? (
-                                                <span className={classes.lg}>{formatCurrency(cart.totalPrice - cart.discount)}<small>đ</small></span>
+                                                <span className={classes.lg}>{formatCurrency(cart.totalPrice - totalDiscount)}<small>đ</small></span>
                                             ) : <span className={classes.sm}>Vui lòng chọn sản phẩm</span>}               
                                         </div> 
                                     </div>
                                     <button className={classes['cart-btn']} onClick={goToCartConfirm}
-                                        disabled={cart.finalItems.length > 0 ? false : true}>Mua hàng ({cart.finalItems.length})
+                                        disabled={cart.finalItems.length > 0 ? false : true}>
+                                        Mua hàng ({cart.finalItems.length})
                                     </button>
                                 </div>
                             </div>
@@ -294,13 +543,8 @@ const CartPage = () => {
                     )
                 }
             </Fragment>
-            
-            <CouponModal showCouponModal={showCouponModal} showCouponPopup={showCouponPopup} setShowCouponPopup={setShowCouponPopup}
-                showCouponModalHandler={showCouponModalHandler} closeCouponModalHandler={closeCouponModalHandler} 
-                // selectedCoupons={selectedCoupons} setSelectedCoupons={setSelectedCoupons} addCoupon={onAddCoupon}
-            />
 
-            {/* {
+            {
                 shouldRenderCouponModal && (
                     <Modal isShowModal={showCouponModalHandler} closeModal={closeCouponModalHandler} 
                         animation='none' contentClass={classes.couponModal}>
@@ -406,10 +650,7 @@ const CartPage = () => {
                         </div>
                     </Modal>
                 )
-            } */}
-
-
-
+            }
         </div>
     )
 }

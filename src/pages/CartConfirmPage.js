@@ -1,73 +1,94 @@
-import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
-import { Link, useNavigate } from 'react-router-dom';
-import Modal from '../components/UI/Modal';
-import { formatCurrency, convertProductLink, readPrice } from '../helpers/helpers';
+import { Link } from 'react-router-dom';
+import { formatCurrency, convertProductLink, convertCardNumber, convertCardExpiry } from '../helpers/helpers';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
-import couponImg1 from '../assets/images/coupon1.svg';
-import couponImg2 from '../assets/images/coupon2.svg';
-import couponIcon from '../assets/images/coupon-icon.svg';
-import couponBg from '../assets/images/coupon-bg.svg';
-import couponBgSm from '../assets/images/coupon-bg-sm.svg';
-import couponCondition from '../assets/images/coupon-condition.svg';
-import couponActive from '../assets/images/coupon-active.svg';
-import freeshipCoupon from '../assets/images/freeship.png';
-import iconCopy from '../assets/images/icon-copy.svg';
+import SelectedCoupons from '../components/UI/SelectedCoupons';
 import iconShipping from '../assets/images/icon-shipping.svg';
 import iconFastShipping from '../assets/images/icon-fast-shipping.svg';
 import classes from '../scss/CartConfirm.module.scss';
+import CouponModal from '../components/UI/CouponModal';
+import imgCvv from '../assets/images/img-cvv.jpeg';
 
 const shippingFee = 15000;
 const fastShippingFee = 30000;
 
 const listPayment = [
     {
-        id: 1,
+        id: 'p1',
+        type: 'payment',
+        discount: 0,
+        code: null,
         text: 'Thanh toán khi nhận hàng',
-        discount: 0
+        condition: 0,
+        date: 'XXX'
     },
     {
-        id: 2,
+        id: 'p2',
+        type: 'payment',
+        discount: 10,
+        code: 'ZALOPAY10K',
         text: 'Thanh toán bằng ví ZaloPay',
-        discount: 10000
+        condition: 0,
+        date: 'XXX'
     },
     {
-        id: 3,
+        id: 'p3',
+        type: 'payment',
+        discount: 0,
+        code: null,
         text: 'Thanh toán bằng thẻ quốc tế Visa, Master, JCB',
-        discount: 0
+        condition: 0,
+        date: 'XXX'
     },
 ];
-let discount = 0;
 
 const CartConfirmPage = () => {
     const dispatch = useDispatch();
 
     const [customerInfo, setCustomerInfo] = useState(null);
+    const [selectedCoupons, setSelectedCoupons] = useState([]);
+    const [showCouponModal, setShowCouponModal] = useState(false);
+    const [showCouponPopup, setShowCouponPopup] = useState(false);
     const [showInfoProducts, setShowInfoProducts] = useState(false);
     const [shippingMethod, setShippingMethod] = useState(1);
     const [paymentMethod, setPaymentMethod] = useState(0);
-    const [otherDiscount, setOtherDiscount] = useState(0);
+    const [isShowCardForm, setIsShowCardForm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isFocused, setIsFocused] = useState(null);
+    const [cardInfo, setCardInfo] = useState({});
 
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
+
+    const cardNumberRef = useRef('');
 
     const calculateDiscount = useCallback(() => {
         let total = 0;
 
         if (cart.appliedCoupons.length) {    
             cart.appliedCoupons.forEach(obj => {
-                console.log(obj);
                 if (obj.type !== 'shipping') {
                     total += obj.discount * 1000;
                 }
             })  
         }
-
+        
         return total;
     }, [cart.appliedCoupons]);
     const totalDiscountExcludeShipping = useMemo(() => calculateDiscount(), [calculateDiscount]);
+
+    useEffect(() => {
+        if (showCouponModal) {
+            document.querySelector('html').classList.add('modal-open');
+            document.body.classList.add('modal-open');
+        } else {
+            document.querySelector('html').classList.remove('modal-open');
+            document.body.classList.remove('modal-open');
+        }
+
+    }, [showCouponModal]);
 
     useEffect(() => {
         if (userData.listAddress && userData.listAddress.length) {
@@ -75,21 +96,6 @@ const CartConfirmPage = () => {
             setCustomerInfo(userData.listAddress[index]);
         }
     }, [userData]);
-
-    // useEffect(() => {
-    //     const index = listPayment.findIndex(val => val.id === paymentMethod);
-    //     let totalDiscount = cart.discount;
-
-    //     if (index >= 0) {
-    //         if (listPayment[index].discount > 0) {
-    //             totalDiscount += otherDiscount;
-    //             dispatch(cartActions.setDiscount(totalDiscount));
-    //         } else {
-    //             totalDiscount -= otherDiscount;
-    //             dispatch(cartActions.setDiscount(totalDiscount));
-    //         }
-    //     }
-    // }, [paymentMethod, otherDiscount]);
 
     useEffect(() => {
         let totalPrice = cart.totalPrice;
@@ -107,12 +113,39 @@ const CartConfirmPage = () => {
         }
     }, [shippingMethod, cart.discount]);
 
-    const addCoupon = () => {
+    useEffect(() => {
+        let totalDiscount = 0;
 
-    };
+        if (cart.appliedCoupons.length) {    
+            cart.appliedCoupons.forEach(obj => {
+                totalDiscount += obj.discount * 1000;
+            })  
+        }
+        dispatch(cartActions.setDiscount(totalDiscount));
+    }, [paymentMethod, cart.appliedCoupons]);
+
+    useEffect(() => {
+        if (!isLoading && paymentMethod === 'p3') {
+            setIsShowCardForm(true);
+        } else {
+            setIsShowCardForm(false);
+        }
+    }, [isLoading, paymentMethod]);
 
     const showCouponModalHandler = () => {
+        setShowCouponModal(true);
+    };
 
+    const closeCouponModalHandler = () => {
+        setShowCouponModal(false);
+    };
+
+    const onAddCoupon = (item) => {
+        const appliedCoupons = cart.appliedCoupons;
+        const index = appliedCoupons.findIndex(val => val.id === item.id);
+        let updatedCoupons = [...appliedCoupons];
+        updatedCoupons.splice(index, 1);
+        dispatch(cartActions.setAppliedCoupons(updatedCoupons));
     };
 
     const onChangeShippingMethod = (e) => {
@@ -120,37 +153,54 @@ const CartConfirmPage = () => {
     };
 
     const onChangePaymentMethod = (e) => {
-        const index = listPayment.findIndex(val => val.id === parseInt(e.target.value));
-
+        const index = listPayment.findIndex(val => val.id === e.target.value);
         let coupons = [...cart.appliedCoupons];
 
-        if (index >= 0) {
-            
-            const paymentCoupon = {
-                id: `p-${index}`,
-                type: 'payment',
-                discount: 10,
-                code: 'ZALOPAY10K',
-                condition: 0,
-                date: 'XXX'
-            };
-
-            if (listPayment[index].discount > 0) {
-                coupons.push(paymentCoupon);
+        if (listPayment[index].discount > 0) {
+            coupons.push(listPayment[index]);
+            dispatch(cartActions.setAppliedCoupons(coupons));
+        } else {
+            const couponIndex = coupons.findIndex(val => val.type === 'payment');
+            if (couponIndex >= 0) {
+                coupons.splice(couponIndex, 1);
                 dispatch(cartActions.setAppliedCoupons(coupons));
-            } else {
-                const couponIndex = coupons.findIndex(val => val.id === `p-${index}`);
-                console.log(123, couponIndex);
-                coupons.slice(couponIndex, 1);
-                dispatch(cartActions.setAppliedCoupons(coupons));
-            }
+            }        
         }
 
-        setPaymentMethod(parseInt(e.target.value));
         setIsLoading(true);
+        setPaymentMethod(e.target.value);
         setTimeout(() => {
             setIsLoading(false);
         }, 800);
+    };
+
+    const focusCardInput = (e) => {
+        if (e.target.name) {
+            setIsFocused(e.target.name);
+        }
+    };
+
+    const formatCardNumber = (e) => {
+		const inputVal = e.target.value.replace(/ /g, '');
+		let inputNumbersOnly = inputVal.replace(/\D/g, '');
+
+		if (inputNumbersOnly.length > 16) {
+			inputNumbersOnly = inputNumbersOnly.substr(0, 16);
+		}
+
+		const splits = inputNumbersOnly.match(/.{1,4}/g);
+
+		let spacedNumber = '';
+		if (splits) {
+			spacedNumber = splits.join(' ');
+		}
+
+        setCardInfo(data => data = {...data, 'card_number': spacedNumber});
+	};
+
+    const onChangeCardInput = (e) => {
+        const { name, value } = e.target;
+        setCardInfo(data => data = {...data, [name]: value});
     };
 
     return (
@@ -234,17 +284,108 @@ const CartConfirmPage = () => {
                                                         <input type="radio" name='payment_method' value={item.id}
                                                             onChange={onChangePaymentMethod}
                                                         />
-                                                        <span className={`${classes.icon} ${classes[`payment-0${item.id}`]}`}></span>
+                                                        <span className={`${classes.icon} ${classes[`${item.id}`]}`}></span>
                                                         <span className={classes.checkmark}></span>{item.text}
                                                         {
-                                                            item.discount !== 0 && <span className={classes.discount}>Giảm {item.discount/1000}K</span>
+                                                            item.discount !== 0 && <span className={classes.discount}>Giảm {item.discount}K</span>
                                                         }
                                                     </label>
                                                 </li>
                                             ))
                                         }
                                     </ul>
+                                    {
+                                        isShowCardForm && (
+                                            <Fragment>
+                                                <form className={classes['card-form']}>
+                                                    <h5 className={classes['card-title']}>Thêm Thẻ Tín Dụng/ Ghi Nợ Quốc Tế</h5>
+                                                    <div className={classes['form-left']}>
+                                                        <div className={classes['input-group']}>
+                                                            <label>Số thẻ:</label>
+                                                            <input type='text' name='card_number' placeholder='VD: 4123 4567 8901 2345' 
+                                                                onFocus={focusCardInput} onChange={formatCardNumber}
+                                                                value={cardInfo['card_number'] || ''}                    
+                                                            />
+                                                        </div>
+                                                        <div className={classes['input-group']}>
+                                                            <label>Tên in trên thẻ:</label>
+                                                            <input type='text' name='card_name' placeholder='VD: NGUYEN VAN A' 
+                                                                onFocus={focusCardInput} onChange={onChangeCardInput}
+                                                            />
+                                                        </div>
+                                                        <div className={classes['input-group']}>
+                                                            <label>Ngày hết hạn:</label>
+                                                            <input type='text' name='card_expiry' className={classes.short} placeholder='MM/YY' 
+                                                                onFocus={focusCardInput} onChange={onChangeCardInput}
+                                                                onKeyPress={(e) => {
+                                                                    if (e.target.value.length >= 4) {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className={classes['input-group']}>
+                                                            <label>Mã bảo mật (CVV):</label>
+                                                            <input type='text' name='card_cvv' className={classes.short} placeholder='VD: 123' />
+                                                            <img src={imgCvv} alt='cvv' />
+                                                        </div>
+                                                    </div>
+                                                    <div className={classes['form-right']}>
+                                                        <div className={classes.card}>
+                                                            <div className={classes.inner}>
+                                                                <div className={`${classes.content} ${classes.front}`}>
+                                                                    <div className={classes.background}></div>
+                                                                    <div className={classes.chip}></div>
+                                                                    <div className={`${classes.number} ${isFocused === 'card_number' && classes.focused}`}>  
+                                                                        {/* {cardInfo['card_number'] ? convertCardNumber(cardInfo['card_number']) : '•••• •••• •••• ••••'} */}
+                                                                        {cardInfo['card_number'] ? cardInfo['card_number'] : '•••• •••• •••• ••••'}
+                                                                    </div>
+                                                                    <div className={classes.bottom}>
+                                                                        <div className={`${classes.name} ${isFocused === 'card_name' && classes.focused}`}>
+                                                                            {cardInfo['card_name'] ? cardInfo['card_name'] : 'Tên chủ thẻ'}    
+                                                                        </div>
+                                                                        <div className={`${classes.expiry} ${isFocused === 'card_expiry' && classes.focused}`}>
+                                                                            <p className={classes.valid}>Hiệu lực đến</p>
+                                                                            <p className={classes.value}>
+                                                                                {cardInfo['card_expiry'] ? convertCardExpiry(cardInfo['card_expiry']) : '••/••'}    
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className={`${classes.content} ${classes.back}`}>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className={classes.card}>
+                                                            <div className={classes.inner}>
+                                                                <div className={`${classes.content} ${classes.front}`}>
+                                                                    <div className={`${classes.background} ${classes.visa}`}></div>
+                                                                    <div className={classes.chip}></div>
+                                                                    <div className={classes.number}>•••• •••• •••• ••••</div>
+                                                                    <div className={classes.bottom}>
+                                                                        <div className={classes.name}>Tên chủ thẻ</div>
+                                                                        <div className={classes.expiry}>
+                                                                            <p className={classes.valid}>Hiệu lực đến</p>
+                                                                            <p className={classes.value}>••/••</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className={`${classes.content} ${classes.back}`}>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className={classes['wrap-btn']}>
+                                                        <button className={classes.confirm} type='submit'>Xác nhận</button>
+                                                    </div>
+                                                </form>
+                                            </Fragment>
+                                            
+                                        )
+                                    }
                                 </div>
+                                <button className={classes['btn-booking']}>ĐẶT MUA</button>
                             </div> 
                             <div className={classes.right}>
                                 <div className={classes.block}>
@@ -274,45 +415,7 @@ const CartConfirmPage = () => {
                                         <div className={classes.head}>
                                             <span>Khuyến mãi (có thể chọn 2)</span>
                                         </div>
-                                        <div className={classes['applied-coupons']}>
-                                            {
-                                                cart.appliedCoupons && cart.appliedCoupons.length > 0 && (
-                                                    <ul>
-                                                        {
-                                                            cart.appliedCoupons.filter(val => val.type !== 'payment').map(item => (
-                                                                <li key={item.id} className={classes['coupon-bg']}>
-                                                                    <img src={couponBgSm} alt='coupon-bg-sm' /> 
-                                                                    <div className={classes['coupon-content']}>
-                                                                        <div className={classes.left}>
-                                                                            {
-                                                                                item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship'/> :
-                                                                                <img src={couponIcon} alt='coupon-icon'/>
-                                                                            }
-                                                                            {/* { item.type === 'special' && <span className='icon-star'></span> } */}
-                                                                        </div>
-                                                                        <div className={classes.right}>
-                                                                            <div className={classes['coupon-info']}>
-                                                                                <div className={classes.sale}>
-                                                                                    {item.type === 'shipping' && `Giảm ${item.discount}K phí vận chuyển`}
-                                                                                    {item.type === 'discount' && `Giảm ${item.discount}K`}
-                                                                                    {/* {item.type === 'special' && `Giảm ${item.discount}K (đặc biệt)`} */}
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className={classes['coupon-action']}>
-                                                                                <button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                            ))
-                                                        }
-                                                    </ul>
-                                                )
-                                            }
-                                            <p className={classes['coupon-txt']} onClick={showCouponModalHandler}>
-                                                <img src={couponImg2} alt="coupon" />Chọn hoặc nhập Khuyến mãi khác
-                                            </p>
-                                        </div>
+                                        <SelectedCoupons showCouponModalHandler={showCouponModalHandler} addCoupon={onAddCoupon} />
                                     </div>
                                 </div>
                                 <div className={classes.block}>
@@ -367,10 +470,10 @@ const CartConfirmPage = () => {
                                                 ))
                                             }
                                             {
-                                                cart.discount > 0 && (
+                                                totalDiscountExcludeShipping > 0 && (
                                                     <p>
                                                         <span>Giảm giá</span>
-                                                        <span className={classes.discount}>-{formatCurrency(totalDiscountExcludeShipping)}đ</span>
+                                                        <span className={classes.discount}>-{formatCurrency(totalDiscountExcludeShipping)}đ</span>              
                                                     </p>
                                                 )
                                             }
@@ -394,6 +497,11 @@ const CartConfirmPage = () => {
                 }
             </Fragment>
             
+            <CouponModal showCouponModal={showCouponModal} showCouponPopup={showCouponPopup} setShowCouponPopup={setShowCouponPopup}
+                showCouponModalHandler={showCouponModalHandler} closeCouponModalHandler={closeCouponModalHandler} addCoupon={onAddCoupon}
+                selectedCoupons={selectedCoupons} setSelectedCoupons={setSelectedCoupons}
+            />
+
         </div>
     );
 };

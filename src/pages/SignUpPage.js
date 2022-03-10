@@ -90,8 +90,7 @@ const SignUpPage = () => {
     };
 
     const onChangeInput = (e) => {
-        const { name } = e.target;
-        const { value } = e.target;
+        const { name, value } = e.target;
 
         setUserInput(data => data = {...data, [name]: value});
 
@@ -101,8 +100,7 @@ const SignUpPage = () => {
     };
 
     const onBlurInput = (e) => {
-        const { name } = e.target;
-        const { value } = e.target;
+        const { name, value } = e.target;
 
         setIsBlur(data => data = {...data, [name]: true});
         validateInput(name, value);

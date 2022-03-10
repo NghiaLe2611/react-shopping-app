@@ -163,13 +163,13 @@ img{
             width: 40px;
             height: 30px;
             margin-right: 10px;
-            &.payment-01 {
+            &.p1 {
                 background-position: -102px -28px;
             }
-            &.payment-02 {
+            &.p2 {
                 background-position: -50px -27px;
             }
-            &.payment-03{
+            &.p3{
                 background-position: -5px 4px;
                 position: relative;
                 top: -3px;
@@ -313,6 +313,174 @@ img{
         padding: 10px 30px;
         border-radius: 4px;
         background-color: #4a4a4b;
+    }
+}
+
+.btn-booking{
+    display: block;
+    margin: 40px auto 0 auto;
+    padding: 4px 12px;
+    width: 340px;
+    height: 50px;
+    line-height: 2;
+    color: rgb(255, 255, 255);
+    font-size: 18px;
+    border: 1px solid #ac2227;
+    outline-color: rgb(204, 204, 204);
+    border-radius: 3px;
+    cursor: pointer;
+    background: linear-gradient(rgb(239, 57, 89), rgb(215, 32, 65));
+    &:hover{
+        opacity: 0.8;
+    }
+}
+
+.card-form{
+    margin-top: 20px;
+    padding: 20px 30px;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    .card-title{
+        width: 100%;
+        font-weight: 500;
+        font-size: 16px;
+        margin-bottom: 35px;
+    }
+    .form-left{
+        width: 45%;
+        margin-right: 50px;
+    }
+    .form-right{
+        flex: 1;
+    }
+    .input-group{
+        margin-bottom: 30px;
+        label{
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        input{
+            width: 100%;
+            font-size: 15px;
+            padding: 7px 15px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.15);
+            &.short{
+                width: 90px;
+            }
+            &:focus{
+                border-color: #66afe9;
+            }
+            &.invalid{
+                border-color: #a94442;
+            }
+        }
+        img{
+            width: 60px;
+            margin-left: 15px;
+        }
+    }
+    .card{
+        margin: 0px auto;
+        width: 290px;
+        height: 182.873px;
+        perspective: 1000px;
+        .inner{
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.4s;
+            transform-style: preserve-3d;
+        }
+        .content{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 14.5px;
+            background: linear-gradient(25deg, rgb(153, 153, 153), rgb(153, 153, 153));
+        }
+        .front{
+            color: #fff;
+            padding: 20px 30px;
+            overflow: hidden;
+            .chip{
+                background-image: url(../assets/images/img-chip.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                width: 41px;
+                height: 26px;
+            }
+            .number,.name,.expiry{
+                opacity: 0.5;
+                transition: opacity 0.3s ease 0s;
+            }
+            .number{
+                font-size: 20px;
+                font-family: Consolas, Courier, monospace;
+                margin: 30px 0;
+                text-align: left;
+            }
+            .bottom{
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+            }
+            .name{
+                font-family: Consolas, Courier, monospace;
+                font-size: 17px;
+                line-height: 1;
+                overflow: hidden;
+                text-align: left;
+                text-overflow: ellipsis;
+                text-transform: uppercase;
+            }
+            .expiry{
+                .valid{
+                    font-size: 10px;
+                    margin-bottom: 5px;
+                }
+                .value{
+                    font-family: Consolas, Courier, monospace;
+                    font-size: 16px;
+                }
+            }
+        }
+        .back{
+            transform: rotateY(180deg);
+        }
+        .focused{
+            font-weight: 700;
+            opacity: 1 !important;
+        }
+        .background{
+            height: 200%;
+            position: absolute;
+            top: -60%;
+            transform: rotate(25deg);
+            transition: all 0.5s ease-out 0s;
+            width: 150%;
+            left: -170%;
+            &.visa{
+                background: linear-gradient(25deg, rgb(15, 80, 158), rgb(19, 153, 205));
+                left: -22%;
+            }
+        }
+    }
+    .wrap-btn{
+        width: 100%;
+        .confirm{
+            font-size: 15px;
+            color: #fff;
+            background-color: #0d5cb6;
+            border-radius: 4px;
+            padding: 10px 20px;
+        }
     }
 }
 

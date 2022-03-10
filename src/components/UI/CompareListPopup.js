@@ -10,8 +10,7 @@ const CompareListPopup = (props) => {
     const navigate = useNavigate();
 
     const category = params.category === 'dien-thoai' ? 'smartphone' : 'tablet';
-    const { showCompareModal, closeModalCompare
-    } = props;
+    const { showCompareModal, closeModalCompare } = props;
     const [listCompare, setListCompare] = useState([]);
     const [isComparing, setIsComparing] = useState(false);
     const [searchKey, setSearchKey] = useState('');

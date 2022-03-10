@@ -20,18 +20,33 @@ export const readPrice = (price) => {
     }
 };
 
+export const convertCardNumber = (num) => {
+    let dots = '';
+    const dotLength = 16 - num.length;
+
+    for(let i = 0; i < dotLength; i++){
+        dots += '•';
+    }
+
+    return (num + dots).match(/.{1,4}/g).join(' ');
+};
+
+export const convertCardExpiry = (num) => {
+    return num.match(/.{1,2}/g).join('/');
+};
+
 export const capitalizeFirstLetter = (str) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
-}
+};
 
 export const convertProductLink = (str) => {
     return str.toLowerCase().split(" ").join("-").replace(/\//g, '-');
-}
+};
 
 export const usePrevious = (value) => {
     const ref = useRef();
     useEffect(() => {
-      ref.current = value;
+        ref.current = value;
     });
     return ref.current;
 };

@@ -159,6 +159,33 @@ const cartSlice = createSlice({
         },
         setFinalPrice(state, action) {
             state.finalPrice = action.payload;
+        },
+        addCoupon(state, action) {
+            const appliedCoupons = state.appliedCoupons;
+            const item = action.payload;
+            const index = appliedCoupons.findIndex(val => val.id === item.id);
+            let coupons = [...appliedCoupons, item];
+
+            if (index < 0) { 
+                const discountExistIndex = appliedCoupons.findIndex(val => val.type === 'discount');
+
+                if (discountExistIndex >= 0) {
+                    if (item.type === 'shipping') {
+                        state.appliedCoupons = coupons;
+                    } else {
+                        coupons.splice(discountExistIndex, 1);
+                        state.appliedCoupons = coupons;
+                    }
+                }
+    
+                if (appliedCoupons.length < 2) {
+                    state.appliedCoupons = coupons;
+                }
+            } else {
+                let updatedCoupons = [...appliedCoupons]
+                updatedCoupons.splice(index, 1);
+                state.appliedCoupons = updatedCoupons;
+            }
         }
     }
 });
