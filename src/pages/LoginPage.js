@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const formAlert = withReactContent(Swal);
+
 const errorMessages = {
     email: 'Email không được trống !',
     password: 'Mật khẩu không được trống !',

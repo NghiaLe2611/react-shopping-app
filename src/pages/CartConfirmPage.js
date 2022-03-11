@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import { Link } from 'react-router-dom';
@@ -44,6 +44,16 @@ const listPayment = [
     },
 ];
 
+const cardErrors = {
+    'card_name_empty': 'Vui lòng nhập Tên in trên thẻ',
+    'card_number_empty': 'Vui lòng nhập Số thẻ',
+    'card_number_invalid': 'Số thẻ không hợp lệ',
+    'card_expiry_empty': 'Vui lòng nhập Ngày hết hạn',
+    'card_expiry_invalid': 'Ngày hết hạn không hợp lệ',
+    'card_cvv_empty': 'Vui lòng nhập Mã bảo mật',
+    'card_cvv_invalid': 'Mã bảo mật không hợp lệ'
+};
+
 const CartConfirmPage = () => {
     const dispatch = useDispatch();
 
@@ -58,11 +68,13 @@ const CartConfirmPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isFocused, setIsFocused] = useState(null);
     const [cardInfo, setCardInfo] = useState({});
+    const [cardError, setCardError] = useState({});
+    const [isBlur, setIsBlur] = useState({})
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [cardIsValid, setCardIsValid] = useState(false);
 
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
-
-    const cardNumberRef = useRef('');
 
     const calculateDiscount = useCallback(() => {
         let total = 0;
@@ -132,6 +144,13 @@ const CartConfirmPage = () => {
         }
     }, [isLoading, paymentMethod]);
 
+    // useEffect(() => {
+    //     console.log(cardError['card_name']);
+    //     console.log(cardError['card_number']);
+    //     console.log(cardError['card_expiry']);
+    //     console.log(cardError['card_cvv']);
+    // }, [cardError]);
+
     const showCouponModalHandler = () => {
         setShowCouponModal(true);
     };
@@ -180,27 +199,146 @@ const CartConfirmPage = () => {
         }
     };
 
-    const formatCardNumber = (e) => {
-		const inputVal = e.target.value.replace(/ /g, '');
-		let inputNumbersOnly = inputVal.replace(/\D/g, '');
+    const validateInput = (name, value) => {
+        let error = null;
 
-		if (inputNumbersOnly.length > 16) {
-			inputNumbersOnly = inputNumbersOnly.substr(0, 16);
-		}
+        if (!value.length) {
+            error = `${name}_empty`;
+            setCardError(data => data = {...data, [name]: cardErrors[error] });
+        } else {
+            setCardError(data => data = {...data, [name]: null });
+        }
 
-		const splits = inputNumbersOnly.match(/.{1,4}/g);
+        switch (name) {
+            case 'card_number':
+                const length = value.replace( /\s/g, '').length;
+                if (length > 0 && length < 16) {
+                    error = `${name}_invalid`;
+                    setCardError(data => data = {...data, [name]: cardErrors[error] });
+                } else if (length === 16) {
+                    setCardError(data => data = {...data, [name]: null });
+                }
+                break;
+            case 'card_name': 
+                break;
+            case 'card_expiry': 
+                // let year = parseInt(num) + (1 - Math.round(parseInt(num)/100))*2000 + Math.round(parseInt(num)/100)*1900;
+                let cardExpiry = value.replace(/\//g, '').substr(0, 4);
+                const currentYear = (new Date().getFullYear()).toString().slice(2, 4);
+                let month = parseInt(cardExpiry.substr(0,2));
+                let year = parseInt(cardExpiry.slice(2,4));
+                
+                const monthIsValid = month > 0 && month <= 12;
+                const yearIsValid = year >= parseInt(currentYear);
 
-		let spacedNumber = '';
-		if (splits) {
-			spacedNumber = splits.join(' ');
-		}
+                if (cardExpiry.length > 0) {
+                    if (monthIsValid && yearIsValid) {
+                        setCardError(data => data = {...data, [name]: null });
+                    }
+                    if (!monthIsValid || !yearIsValid) {
+                        error = `${name}_invalid`;
+                        setCardError(data => data = {...data, [name]: cardErrors[error] });
+                    }
+                }
 
-        setCardInfo(data => data = {...data, 'card_number': spacedNumber});
-	};
+                break;
+            case 'card_cvv': 
+                if (value.length > 0 && value.length < 3) {
+                    error = `${name}_invalid`;
+                    setCardError(data => data = {...data, [name]: cardErrors[error] });
+                }
+                break;
+            default: break;
+        };
+    };
+
+    const onBlurInput = (e) => {
+        const { name, value } = e.target;
+        setIsBlur(data => data = {...data, [name]: true});
+        validateInput(name, value);
+    };
 
     const onChangeCardInput = (e) => {
         const { name, value } = e.target;
-        setCardInfo(data => data = {...data, [name]: value});
+
+        if (name === 'card_number') {
+            const inputVal = e.target.value.replace(/ /g, '');
+            let inputNumbersOnly = inputVal.replace(/\D/g, '');
+
+            if (inputNumbersOnly.length > 16) {
+                inputNumbersOnly = inputNumbersOnly.substr(0, 16);
+            }
+
+            const splits = inputNumbersOnly.match(/.{1,4}/g);
+
+            let spacedNumber = '';
+            if (splits) {
+                spacedNumber = splits.join(' ');
+            }
+
+            setCardInfo(data => data = {...data, [name]: spacedNumber});
+        } else if (name === 'card_expiry') {
+            const inputVal = e.target.value.replace(/ /g, '');
+            let inputNumbersOnly = inputVal.replace(/\D/g, '');
+
+            if (inputNumbersOnly.length > 4) {
+                inputNumbersOnly = inputNumbersOnly.substr(0, 4);
+            }
+
+            const splits = inputNumbersOnly.match(/.{1,2}/g);
+
+            let spacedNumber = '';
+            if (splits) {
+                spacedNumber = splits.join('/');
+            }
+            
+            setCardInfo(data => data = {...data, [name]: spacedNumber});
+        } else {
+            setCardInfo(data => data = {...data, [name]: value});
+        }
+
+        if (isBlur[name] || isSubmitted) {
+            validateInput(name, value);
+        }
+    };
+
+    const onSubmitCard = (e) => {
+        e.preventDefault();
+        setIsSubmitted(true);
+
+        const { card_name, card_number, card_expiry, card_cvv } = cardInfo;
+
+        if (!card_name) {
+            setCardError(data => data = {...data, 'card_name': cardErrors['card_name_empty']});
+        }
+
+        if (!card_number) {
+            setCardError(data => data = {...data, 'card_number': cardErrors['card_number_empty']});
+        }
+
+        if (!card_expiry) {
+            setCardError(data => data = {...data, 'card_expiry': cardErrors['card_expiry_empty']});
+        }
+
+        if (!card_cvv) {
+            setCardError(data => data = {...data, 'card_cvv': cardErrors['card_cvv_empty']});
+        }
+        
+        if (cardError['card_name'] === null && cardError['card_number'] === null && cardError['card_expiry'] === null && cardError['card_cvv'] === null) {
+            setIsLoading(true);
+            setTimeout(() => {
+                setCardIsValid(true);
+                setIsLoading(false);
+            }, 500);
+        }
+    };
+
+    const confirmBooking = () => {
+        if (shippingMethod && paymentMethod) {
+            console.log(111);
+        } else {
+            console.log(222);
+        }
     };
 
     return (
@@ -216,14 +354,14 @@ const CartConfirmPage = () => {
                                     <div className={classes['wrap-shipping']}>
                                         <div className={classes['shipping-method']}>
                                             <label className={classes.checkbox}>
-                                                <input type="radio" name='shipping_method' value='1' defaultChecked={shippingMethod}
+                                                <input type='radio' name='shipping_method' value='1' defaultChecked={shippingMethod}
                                                     onChange={onChangeShippingMethod}
                                                 />
                                                 <img src={iconFastShipping} className={classes.fast} alt='fast-shipping' />
                                                 <span className={classes.checkmark}></span>Giao siêu tốc
                                             </label>
                                             <label className={classes.checkbox}>
-                                                <input type="radio" name='shipping_method' value='2'  onChange={onChangeShippingMethod}/>
+                                                <input type='radio' name='shipping_method' value='2'  onChange={onChangeShippingMethod}/>
                                                 <img src={iconShipping} className={classes.standard} alt='standard-shipping' />
                                                 <span className={classes.checkmark}></span>Giao tiết kiệm
                                             </label>
@@ -281,7 +419,7 @@ const CartConfirmPage = () => {
                                             listPayment.map(item => (
                                                 <li key={item.id}>
                                                      <label className={classes.checkbox}>
-                                                        <input type="radio" name='payment_method' value={item.id}
+                                                        <input type='radio' name='payment_method' value={item.id}
                                                             onChange={onChangePaymentMethod}
                                                         />
                                                         <span className={`${classes.icon} ${classes[`${item.id}`]}`}></span>
@@ -296,96 +434,96 @@ const CartConfirmPage = () => {
                                     </ul>
                                     {
                                         isShowCardForm && (
-                                            <Fragment>
-                                                <form className={classes['card-form']}>
-                                                    <h5 className={classes['card-title']}>Thêm Thẻ Tín Dụng/ Ghi Nợ Quốc Tế</h5>
-                                                    <div className={classes['form-left']}>
-                                                        <div className={classes['input-group']}>
-                                                            <label>Số thẻ:</label>
-                                                            <input type='text' name='card_number' placeholder='VD: 4123 4567 8901 2345' 
-                                                                onFocus={focusCardInput} onChange={formatCardNumber}
-                                                                value={cardInfo['card_number'] || ''}                    
-                                                            />
-                                                        </div>
-                                                        <div className={classes['input-group']}>
-                                                            <label>Tên in trên thẻ:</label>
-                                                            <input type='text' name='card_name' placeholder='VD: NGUYEN VAN A' 
-                                                                onFocus={focusCardInput} onChange={onChangeCardInput}
-                                                            />
-                                                        </div>
-                                                        <div className={classes['input-group']}>
-                                                            <label>Ngày hết hạn:</label>
-                                                            <input type='text' name='card_expiry' className={classes.short} placeholder='MM/YY' 
-                                                                onFocus={focusCardInput} onChange={onChangeCardInput}
-                                                                onKeyPress={(e) => {
-                                                                    if (e.target.value.length >= 4) {
-                                                                        e.preventDefault();
+                                            cardIsValid ? (
+                                                <div className={classes['card-info']}>
+                                                    <img src="https://frontend.tikicdn.com/_desktop-next/static/img/icons/checkout/icon-visa.png" alt="visa" />
+                                                    {
+                                                        cardError['card_number'] === null && <span>••••{cardInfo['card_number']?.slice(-4)}</span>
+                                                    }
+                                                </div>
+                                            ) : (
+                                                <Fragment>
+                                                    <form className={classes['card-form']} onSubmit={onSubmitCard}>
+                                                        <h5 className={classes['card-title']}>Thêm Thẻ Tín Dụng/ Ghi Nợ Quốc Tế</h5>
+                                                        <div className={classes['form-left']}>
+                                                            <div className={classes['input-group']}>
+                                                                <label>Số thẻ:</label>
+                                                                <input type='text' name='card_number' placeholder='VD: 4123 4567 8901 2345' 
+                                                                    onFocus={focusCardInput} onChange={onChangeCardInput} onBlur={onBlurInput}
+                                                                    value={cardInfo['card_number'] || ''} className={cardError['card_number'] ? classes.invalid : null}               
+                                                                />
+                                                                {cardError['card_number'] ? <p className={classes.invalid}>{cardError['card_number']}</p> : null}
+                                                            </div>
+                                                            <div className={classes['input-group']}>
+                                                                <label>Tên in trên thẻ:</label>
+                                                                <input type='text' name='card_name' placeholder='VD: NGUYEN VAN A' maxLength="50" className={cardError['card_name'] ? classes.invalid : null}
+                                                                    onFocus={focusCardInput} onChange={onChangeCardInput} onBlur={onBlurInput} value={cardInfo['card_name']?.toUpperCase() || ''}
+                                                                />
+                                                                {cardError['card_name'] ? <p className={classes.invalid}>{cardError['card_name']}</p> : null}
+                                                            </div>
+                                                            <div className={classes['input-group']}>
+                                                                <label>Ngày hết hạn:</label>
+                                                                <input type='text' name='card_expiry' className={`${classes.short} ${cardError['card_expiry'] ? classes.invalid : null}`} placeholder='MM/YY' 
+                                                                    onFocus={focusCardInput} onChange={onChangeCardInput} value={cardInfo['card_expiry'] || ''}
+                                                                    onBlur={onBlurInput}
+                                                                />
+                                                                {cardError['card_expiry'] ? <p className={classes.invalid}>{cardError['card_expiry']}</p> : null}
+                                                            </div>
+                                                            <div className={classes['input-group']}>
+                                                                <label>Mã bảo mật (CVV):</label>
+                                                                <input type='text' name='card_cvv' className={`${classes.short} ${cardError['card_cvv'] ? classes.invalid : null}`} placeholder='VD: 123' 
+                                                                    onFocus={focusCardInput} onChange={onChangeCardInput} onBlur={onBlurInput} value={cardInfo['card_cvv'] || ''}
+                                                                    onKeyPress={(e) => {
+                                                                            e.target.value.replace(/\D/g, '');
+                                                                            if (e.target.value.length >= 3 || !/[0-9]/.test(e.key)) e.preventDefault();
+                                                                        }
                                                                     }
-                                                                }}
-                                                            />
+                                                                />
+                                                                <img src={imgCvv} alt='cvv' />
+                                                                {cardError['card_cvv'] ? <p className={classes.invalid}>{cardError['card_cvv']}</p> : null}
+                                                            </div>
                                                         </div>
-                                                        <div className={classes['input-group']}>
-                                                            <label>Mã bảo mật (CVV):</label>
-                                                            <input type='text' name='card_cvv' className={classes.short} placeholder='VD: 123' />
-                                                            <img src={imgCvv} alt='cvv' />
-                                                        </div>
-                                                    </div>
-                                                    <div className={classes['form-right']}>
-                                                        <div className={classes.card}>
-                                                            <div className={classes.inner}>
-                                                                <div className={`${classes.content} ${classes.front}`}>
-                                                                    <div className={classes.background}></div>
-                                                                    <div className={classes.chip}></div>
-                                                                    <div className={`${classes.number} ${isFocused === 'card_number' && classes.focused}`}>  
-                                                                        {/* {cardInfo['card_number'] ? convertCardNumber(cardInfo['card_number']) : '•••• •••• •••• ••••'} */}
-                                                                        {cardInfo['card_number'] ? cardInfo['card_number'] : '•••• •••• •••• ••••'}
-                                                                    </div>
-                                                                    <div className={classes.bottom}>
-                                                                        <div className={`${classes.name} ${isFocused === 'card_name' && classes.focused}`}>
-                                                                            {cardInfo['card_name'] ? cardInfo['card_name'] : 'Tên chủ thẻ'}    
+                                                        <div className={classes['form-right']}>
+                                                            <div className={classes.card}>
+                                                                <div className={`${classes.inner} ${isFocused === 'card_cvv' && classes.flipped}`}>
+                                                                    <div className={`${classes.content} ${classes.front}`}>
+                                                                        <div className={`${classes.background} ${cardInfo['card_number']?.replace( /\s/g, '').length === 16 && classes.visa}`}></div>
+                                                                        <div className={classes.chip}></div>
+                                                                        <div className={`${classes.number} ${isFocused === 'card_number' && classes.focused}`}>  
+                                                                            {cardInfo['card_number'] ? convertCardNumber(cardInfo['card_number'].replace( /\s/g, '')) : '•••• •••• •••• ••••'}
                                                                         </div>
-                                                                        <div className={`${classes.expiry} ${isFocused === 'card_expiry' && classes.focused}`}>
-                                                                            <p className={classes.valid}>Hiệu lực đến</p>
-                                                                            <p className={classes.value}>
-                                                                                {cardInfo['card_expiry'] ? convertCardExpiry(cardInfo['card_expiry']) : '••/••'}    
-                                                                            </p>
+                                                                        <div className={classes.bottom}>
+                                                                            <div className={`${classes.name} ${isFocused === 'card_name' && classes.focused}`}>
+                                                                                {cardInfo['card_name'] ? cardInfo['card_name'] : 'Tên chủ thẻ'}    
+                                                                            </div>
+                                                                            <div className={`${classes.expiry} ${isFocused === 'card_expiry' && classes.focused}`}>
+                                                                                <p className={classes.valid}>Hiệu lực đến</p>
+                                                                                <p className={classes.value}>
+                                                                                    {cardInfo['card_expiry'] ? convertCardExpiry(cardInfo['card_expiry'].replace(/\//g, '')) : '••/••'}  
+                                                                                </p>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className={`${classes.content} ${classes.back}`}>
+                                                                    <div className={`${classes.content} ${classes.back}`}>
+                                                                        <div className={`${classes.background} ${cardInfo['card_number']?.replace( /\s/g, '').length === 16 && classes.visa}`}></div>
+                                                                        <div className={classes.stripe}></div>
+                                                                        <div className={classes.signature}>{cardInfo['card_cvv']}</div>
+                                                                        <div className={classes.img}></div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-
-                                                        <div className={classes.card}>
-                                                            <div className={classes.inner}>
-                                                                <div className={`${classes.content} ${classes.front}`}>
-                                                                    <div className={`${classes.background} ${classes.visa}`}></div>
-                                                                    <div className={classes.chip}></div>
-                                                                    <div className={classes.number}>•••• •••• •••• ••••</div>
-                                                                    <div className={classes.bottom}>
-                                                                        <div className={classes.name}>Tên chủ thẻ</div>
-                                                                        <div className={classes.expiry}>
-                                                                            <p className={classes.valid}>Hiệu lực đến</p>
-                                                                            <p className={classes.value}>••/••</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className={`${classes.content} ${classes.back}`}>
-                                                                </div>
-                                                            </div>
+                                                        <div className={classes['wrap-btn']}>
+                                                            <button className={classes.confirm} type='submit'>Xác nhận</button>
                                                         </div>
-                                                    </div>
-                                                    <div className={classes['wrap-btn']}>
-                                                        <button className={classes.confirm} type='submit'>Xác nhận</button>
-                                                    </div>
-                                                </form>
-                                            </Fragment>
+                                                    </form>
+                                                </Fragment>
+                                            )
                                             
                                         )
                                     }
                                 </div>
-                                <button className={classes['btn-booking']}>ĐẶT MUA</button>
+                                <button className={classes['btn-booking']} onClick={confirmBooking}>ĐẶT MUA</button>
                             </div> 
                             <div className={classes.right}>
                                 <div className={classes.block}>
@@ -403,8 +541,7 @@ const CartConfirmPage = () => {
                                                         {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`}
                                                     </p>
                                                     <p className={classes.phone}>Điện thoại: {customerInfo.phone}</p>
-                                                </div>
-                                                
+                                                </div>   
                                             </Fragment>
                                             ) : null
                                         }

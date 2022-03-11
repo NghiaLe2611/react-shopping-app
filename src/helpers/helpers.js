@@ -32,7 +32,14 @@ export const convertCardNumber = (num) => {
 };
 
 export const convertCardExpiry = (num) => {
-    return num.match(/.{1,2}/g).join('/');
+    let dots = '';
+    const dotLength = 4 - num.length;
+
+    for(let i = 0; i < dotLength; i++){
+        dots += '•';
+    }
+
+    return (num + dots).match(/.{1,2}/g).join('/');
 };
 
 export const capitalizeFirstLetter = (str) => {
