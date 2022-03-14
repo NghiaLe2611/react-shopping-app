@@ -14,6 +14,7 @@ const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const BrandPage = React.lazy(() => import('./pages/BrandPage'));
 const CartPage = React.lazy(() => import('./pages/CartPage'));
 const CartConfirmPage = React.lazy(() => import('./pages/CartConfirmPage'));
+const OrderDetailPage = React.lazy(() => import('./pages/OrderDetailPage'));
 const ComparePage = React.lazy(() => import('./pages/ComparePage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const SignUpPage = React.lazy(() => import('./pages/SignUpPage'));
@@ -145,6 +146,7 @@ function App() {
                     <Route path='so-sanh/:category' element={<Root><ComparePage/></Root>} />
                     <Route exact path='cart' element={<Root><CartPage/></Root>} />
                     <Route exact path='cartConfirm' element={<Root><CartConfirmPage/></Root>} />
+                    <Route exact path='orderDetail/:orderId' element={<Root><OrderDetailPage/></Root>} />
                     <Route exact path='dang-nhap' element={userData ? <Navigate to='/tai-khoan' /> : <Root><LoginPage/></Root>} />
                     <Route exact path='dang-ky' element={userData ? <Navigate to='/tai-khoan' /> : <Root><SignUpPage/></Root>} />
                     <Route path='tai-khoan/*'

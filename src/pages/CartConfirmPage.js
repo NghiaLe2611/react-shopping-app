@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency, convertProductLink, convertCardNumber, convertCardExpiry } from '../helpers/helpers';
+import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
 import iconShipping from '../assets/images/icon-shipping.svg';
@@ -10,6 +11,8 @@ import iconFastShipping from '../assets/images/icon-fast-shipping.svg';
 import classes from '../scss/CartConfirm.module.scss';
 import CouponModal from '../components/UI/CouponModal';
 import imgCvv from '../assets/images/img-cvv.jpeg';
+import iconVisa from '../assets/images/icon-visa.png';
+import Swal from 'sweetalert2';
 
 const shippingFee = 15000;
 const fastShippingFee = 30000;
@@ -56,6 +59,7 @@ const cardErrors = {
 
 const CartConfirmPage = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [customerInfo, setCustomerInfo] = useState(null);
     const [selectedCoupons, setSelectedCoupons] = useState([]);
@@ -63,7 +67,7 @@ const CartConfirmPage = () => {
     const [showCouponPopup, setShowCouponPopup] = useState(false);
     const [showInfoProducts, setShowInfoProducts] = useState(false);
     const [shippingMethod, setShippingMethod] = useState(1);
-    const [paymentMethod, setPaymentMethod] = useState(0);
+    const [paymentMethod, setPaymentMethod] = useState('p1');
     const [isShowCardForm, setIsShowCardForm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isFocused, setIsFocused] = useState(null);
@@ -75,6 +79,8 @@ const CartConfirmPage = () => {
 
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
+
+    const { fetchData: submitOrder } = useFetch();
 
     const calculateDiscount = useCallback(() => {
         let total = 0;
@@ -334,10 +340,85 @@ const CartConfirmPage = () => {
     };
 
     const confirmBooking = () => {
+        setIsLoading(true);
+
+        const submitOrderHandler = (orderData) => {
+            submitOrder({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/submitOrder`,
+                body: orderData
+            }, data => {
+                setIsLoading(false);
+                setTimeout(() => {
+                    navigate('/orderDetail/' + data.orderId, {
+                        state: { orderId: data.orderId }
+                    });
+                }, 500);
+            });
+        };
+
+        let products = [];
+
+        if (cart.finalItems.length > 0) {
+            products = cart.finalItems;
+        }
+
         if (shippingMethod && paymentMethod) {
-            console.log(111);
+            if (paymentMethod === 'p3') {
+                if (cardIsValid) {
+                    const orderData = {
+                        products: products,
+                        customerId: userData._id ? userData._id : '',
+                        customerName: customerInfo ? customerInfo.name : '',
+                        address: customerInfo ? customerInfo.address : '',
+                        phone: customerInfo ? customerInfo.phone : '',
+                        orderDate: new Date(),
+                        shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
+                        shippingMethod: shippingMethod,
+                        paymentMethod: {
+                            id: paymentMethod,
+                            card: `**********${cardInfo['card_number'].slice(-4)}`
+                        },
+                        discount: cart.discount,
+                        totalPrice: cart.finalPrice
+                    };
+
+                    submitOrderHandler(orderData);
+                } else {
+                    setIsLoading(false);
+                    Swal.fire({
+                        icon: 'warning',
+                        html: '<p style="font-size: 16px;font-weight:500;">Bạn cần nhập thông tin thẻ tính dụng.</p>',
+                        confirmButtonColor: '#2f80ed',
+                        confirmButtonText: 'Đã hiểu'
+                    });
+                }
+            } else {
+                const orderData = {
+                    products: products,
+                    customerId: userData._id ? userData._id : '',
+                    customerName: customerInfo ? customerInfo.name : '',
+                    address: customerInfo ? customerInfo.address : '',
+                    phone: customerInfo ? customerInfo.phone : '',
+                    orderDate: new Date(),
+                    shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
+                    shippingMethod: shippingMethod,
+                    paymentMethod: paymentMethod,
+                    discount: cart.discount,
+                    totalPrice: cart.finalPrice
+                };
+
+                submitOrderHandler(orderData);
+            }
         } else {
-            console.log(222);
+            setIsLoading(false);
+            Swal.fire({
+                icon: 'warning',
+                html: '<p style="font-size: 16px;font-weight:500;">Bạn cần kiểm tra lại phương thức giao hàng và thanh toán !</p>',
+                confirmButtonColor: '#2f80ed',
+                confirmButtonText: 'Đã hiểu'
+            });
         }
     };
 
@@ -419,7 +500,7 @@ const CartConfirmPage = () => {
                                             listPayment.map(item => (
                                                 <li key={item.id}>
                                                      <label className={classes.checkbox}>
-                                                        <input type='radio' name='payment_method' value={item.id}
+                                                        <input type='radio' name='payment_method' value={item.id} defaultChecked={item.id === paymentMethod ? true : false}
                                                             onChange={onChangePaymentMethod}
                                                         />
                                                         <span className={`${classes.icon} ${classes[`${item.id}`]}`}></span>
@@ -436,7 +517,7 @@ const CartConfirmPage = () => {
                                         isShowCardForm && (
                                             cardIsValid ? (
                                                 <div className={classes['card-info']}>
-                                                    <img src="https://frontend.tikicdn.com/_desktop-next/static/img/icons/checkout/icon-visa.png" alt="visa" />
+                                                    <img src={iconVisa} alt="visa" />
                                                     {
                                                         cardError['card_number'] === null && <span>••••{cardInfo['card_number']?.slice(-4)}</span>
                                                     }
