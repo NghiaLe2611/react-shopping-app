@@ -67,6 +67,8 @@ const couponList = [
     }
 ];
 
+let timer;
+
 const CouponModal = (props) => {
     const dispatch = useDispatch();
     const cart = useSelector((state) => state.cart);
@@ -94,6 +96,13 @@ const CouponModal = (props) => {
     }, [selectedCoupons]);
     const totalDiscount = useMemo(() => calculateDiscount(), [calculateDiscount]);
 
+    // const timer = (item) => {
+    //     setTimeout(() => {
+    //         setActiveInfoCoupon(item);
+    //         setShowCouponPopup(true);
+    //     }, 200);
+    // };
+
     useEffect(() => {
         const updatedSelectedCoupons = selectedCoupons.filter(val => val.condition <= cart.totalPrice);
         setSelectedCoupons(updatedSelectedCoupons);
@@ -118,8 +127,14 @@ const CouponModal = (props) => {
         if (showCouponPopup && activeInfoCoupon) {
             document.addEventListener('mousemove', debounce(handleMouseEnter, 500));
         }
-        return () => document.removeEventListener('mousemove', handleMouseEnter);
+        return () => {
+            document.removeEventListener('mousemove', handleMouseEnter);
+            if (timer) {
+                clearTimeout(timer);
+            }
+        };
     }, [showCouponPopup, activeInfoCoupon]);
+
 
     const closeCouponModal = () => {
         closeCouponModalHandler();
@@ -132,6 +147,8 @@ const CouponModal = (props) => {
         setShowCouponPopup(false);
     };
 
+    
+
     const showInfoCoupon = (e, item) => {
         const pos = e.target.getBoundingClientRect();
 
@@ -140,10 +157,10 @@ const CouponModal = (props) => {
             top: pos.y + 40 + 'px'
         });
 
-        setTimeout(() => {
+        timer = window.setTimeout(function(){
             setActiveInfoCoupon(item);
             setShowCouponPopup(true);
-        }, 200);
+        }, 200); 
     };
 
     const onChangeCoupon = (e) => {

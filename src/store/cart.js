@@ -31,6 +31,11 @@ const cartSlice = createSlice({
             state.finalItems = payload.updatedItems;
             state.totalQuantity = payload.updatedItems.length;
             state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
+
+            if (payload.updatedItems.length === 0) {
+                state.items = [];
+                localStorage.removeItem('cartItems'); // empty cart
+            }
         },
         confirmChooseCart(state, action) {
             const payload = action.payload;

@@ -143,19 +143,22 @@ const CartConfirmPage = () => {
     }, [paymentMethod, cart.appliedCoupons]);
 
     useEffect(() => {
+        let timer;
+
         if (!isLoading && paymentMethod === 'p3') {
             setIsShowCardForm(true);
         } else {
             setIsShowCardForm(false);
         }
-    }, [isLoading, paymentMethod]);
 
-    // useEffect(() => {
-    //     console.log(cardError['card_name']);
-    //     console.log(cardError['card_number']);
-    //     console.log(cardError['card_expiry']);
-    //     console.log(cardError['card_cvv']);
-    // }, [cardError]);
+        if (isLoading) {
+            timer = setTimeout(() => {
+                setIsLoading(false);
+            }, 500);
+        }
+
+        return () => clearTimeout(timer);
+    }, [isLoading, paymentMethod]);
 
     const showCouponModalHandler = () => {
         setShowCouponModal(true);
@@ -194,9 +197,6 @@ const CartConfirmPage = () => {
 
         setIsLoading(true);
         setPaymentMethod(e.target.value);
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 800);
     };
 
     const focusCardInput = (e) => {
@@ -341,7 +341,6 @@ const CartConfirmPage = () => {
 
     const confirmBooking = () => {
         setIsLoading(true);
-
         const submitOrderHandler = (orderData) => {
             submitOrder({
                 method: 'POST',
@@ -349,12 +348,35 @@ const CartConfirmPage = () => {
                 url: `${process.env.REACT_APP_API_URL}/submitOrder`,
                 body: orderData
             }, data => {
-                setIsLoading(false);
-                setTimeout(() => {
-                    navigate('/orderDetail/' + data.orderId, {
-                        state: { orderId: data.orderId }
-                    });
-                }, 500);
+                const payment = paymentMethod === 'p3' ? {
+                    id: paymentMethod,
+                    card: `**********${cardInfo['card_number'].slice(-4)}`
+                } : {
+                    id: paymentMethod
+                };
+                
+                if (data && data.message) {
+                    dispatch(cartActions.updateCartItems({
+                        updatedItems: []
+                    })); 
+    
+                    setTimeout(() => {
+                        setIsLoading(false);
+                        navigate('/orderDetail/' + data.orderId, {
+                            state: {
+                                orderId: data.orderId,
+                                products: cart.finalItems,
+                                customerInfo: {
+                                    name: customerInfo.name,
+                                    phone: customerInfo.phone,
+                                    address: `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`
+                                },
+                                shippingMethod: shippingMethod,
+                                paymentMethod: payment
+                            }
+                        });
+                    }, 500);
+                }
             });
         };
 

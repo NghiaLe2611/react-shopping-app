@@ -31,14 +31,15 @@ const SelectedCoupons = (props) => {
                                             item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship'/> :
                                             <img src={couponIcon} alt='coupon-icon'/>
                                         }
-                                        { item.type === 'special' && <span className='icon-star'></span> }
+                                        {/* { item.type === 'special' && <span className='icon-star'></span> } */}
                                     </div>
                                     <div className={classes.right}>
                                         <div className={classes['coupon-info']}>
                                             <div className={classes.sale}>
                                                 {item.type === 'shipping' && `Giảm ${item.discount}K phí vận chuyển`}
                                                 {item.type === 'discount' && `Giảm ${item.discount}K cho đơn hàng từ ${readPrice(item.condition)}`}
-                                                {item.type === 'special' && `Giảm ${item.discount}K (đặc biệt)`}
+                                                {item.type === 'payment' && `Giảm ${item.discount}K ${item.text.charAt(0).toLowerCase() + item.text.slice(1)}`}
+                                                {/* {item.type === 'special' && `Giảm ${item.discount}K (đặc biệt)`} */}
                                             </div>
                                         </div>
                                         <div className={classes['coupon-action']}>
