@@ -5,7 +5,7 @@ const useFetch = () => {
 	const [error, setError] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const fetchData = useCallback(async ({ url, method, body = null, headers = {} }, applyData) => {
+	const fetchData = useCallback(async ({ url, method, body = null, params = null, headers = {} }, applyData) => {
         setIsLoading(true);
 		setError(null);
 
@@ -34,6 +34,7 @@ const useFetch = () => {
                 url: url,
 				headers: headers ? headers : {},
 				data: body ? JSON.stringify(body) : null,
+				params: params ? params : null
 			});
 
             applyData(response.data);

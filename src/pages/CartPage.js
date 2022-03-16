@@ -3,9 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import CartItem from '../components/cart/CartItem';
 import { Link, useNavigate } from 'react-router-dom';
-import { formatCurrency } from '../helpers/helpers';
 import CouponModal from '../components/UI/CouponModal';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
+import AddressModal from '../components/UI/AddressModal';
+import { formatCurrency } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import classes from '../scss/Cart.module.scss';
 
@@ -32,11 +33,13 @@ const CartPage = () => {
     const [isSelectAll, setIsSelectAll] = useState(false);
     const [showCouponModal, setShowCouponModal] = useState(false);
     const [showCouponPopup, setShowCouponPopup] = useState(false);
+    const [showAddressModal, setShowAddressModal] = useState(false);
     // const [selectedCoupons, setSelectedCoupons] = useState([]);
 
     const showCart = useSelector(state => state.cart.isShowCart);
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
+	const shippingInfo = useSelector((state) => state.auth.shippingInfo);
 
     const selectAlInput = useRef();
 
@@ -56,12 +59,16 @@ const CartPage = () => {
         }
     }, [showCouponModal]);
 
-    useEffect(() => {
+    useEffect(() => {   
+        if (shippingInfo) {
+            setCustomerInfo(shippingInfo);
+            return;
+        }
         if (userData.listAddress && userData.listAddress.length) {
             const index = userData.listAddress.findIndex(val => val.default === true);
             setCustomerInfo(userData.listAddress[index]);
         }
-    }, [userData]);
+    }, [userData, shippingInfo]);
 
     useEffect(() => {
         if (isSelectAll) {
@@ -186,6 +193,15 @@ const CartPage = () => {
         setShowCouponModal(false);
     };
 
+    const showAddressModalHandler = (e) =>{
+        e.preventDefault();
+        setShowAddressModal(true);
+    };
+
+    const closeAddressModalHandler = (e) =>{
+        setShowAddressModal(false);
+    };
+
     const goToCartConfirm = () => {
         if (cart.finalItems.length > 0) {
             navigate('/cartConfirm');
@@ -232,7 +248,7 @@ const CartPage = () => {
                                         <div className={`${classes['wrap-ctm-info']} ${classes['block-inner']}`}>
                                             <div className={classes.head}>
                                                 <span>Giao tới</span>
-                                                <a href="/#">Thay đổi</a>
+                                                <a href="/#" onClick={showAddressModalHandler}>Thay đổi</a>
                                             </div>
                                             {
                                                 customerInfo ? (
@@ -299,6 +315,8 @@ const CartPage = () => {
                 showCouponModalHandler={showCouponModalHandler} closeCouponModalHandler={closeCouponModalHandler} 
                 // selectedCoupons={selectedCoupons} setSelectedCoupons={setSelectedCoupons} addCoupon={onAddCoupon}
             />
+
+            <AddressModal showAddressModal={showAddressModal} closeAddModalHandler={closeAddressModalHandler} />
 
             {/* {
                 shouldRenderCouponModal && (

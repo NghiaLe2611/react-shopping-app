@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react'
 
+export const shippingFee = 15000;
+export const fastShippingFee = 30000;
+
 export const formatCurrency = (x) => {
     // const price = parseInt(x) * 23000;
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
 export const readPrice = (price) => {
@@ -96,16 +99,30 @@ export const timeSince = (date) => {
 	return Math.floor(seconds) + ' giây trước';
 };
 
+export const convertDateTime = (date) => {
+    const day = date.getDate();
+    let month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+
+    if (month.toString().length === 1) {
+        month = '0' + month;
+    }
+
+    return hour + ':' + minute + ' ' + day + '/' + month + '/' + year;
+};
+
 export const emailIsValid = (email) => {
     const regex = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/gm;
     return email.match(regex);
 };
 
 export const passwordIsValid = (password) => {
-    // Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and no special character
+    // Minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and no special character
     // /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
 
-    // Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number
+    // Minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number
     const regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/;
     return password.match(regex);
 };

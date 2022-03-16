@@ -111,6 +111,8 @@ const ProfilePage = () => {
 	});
 	const [formIsValid, setFormIsValid] = useState({});
 	const [itemOnEdit, setItemOnEdit] = useState(null);
+	const [orderList, setOrderList] = useState([]);
+
 
 	const slug = location.pathname;
 	
@@ -122,6 +124,7 @@ const ProfilePage = () => {
     const { fetchData: removeFav } = useFetch();
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: removeAddress } = useFetch();
+	const { fetchData: getOrders } = useFetch();
 
 	const imgRef = useRef('');
 	const cityRef = useRef('');
@@ -180,7 +183,7 @@ const ProfilePage = () => {
 		if (slug === '/tai-khoan/dia-chi' && cities.length === 0) {
 			fetchCities(
 				{
-					url: `${process.env.REACT_APP_API_URL}/cities`,
+					url: `${process.env.REACT_APP_API_URL}/cities`
 				}, (data) => {
 					// console.log(data);
 					if (data) {
@@ -191,6 +194,21 @@ const ProfilePage = () => {
 			);
 		}
 	}, [slug, fetchCities, cities]);
+
+	useEffect(() => {
+		const randomStr = Math.random().toString(36).substr(2, 16);
+
+		if (slug === '/tai-khoan/don-hang') {
+			getOrders({
+				url: `${process.env.REACT_APP_API_URL}/order/getOrders`,
+				headers: { 'x-request-id': randomStr + '_' + userData._id }
+			}, (data) => {
+				if (data) {
+					console.log(data);
+				}
+			});
+		}
+	}, [slug, getOrders]);
 
 	const onChangeDay = (e) => {
 		// console.log(e.target.value);

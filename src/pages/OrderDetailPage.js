@@ -2,6 +2,8 @@ import { Fragment } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import classes from '../scss/OrderDetail.module.scss';
 import { Link } from 'react-router-dom';
+import { convertDateTime, formatCurrency, convertProductLink, 
+    shippingFee, fastShippingFee } from '../helpers/helpers';
 
 const OrderDetailPage = () => {
     const location = useLocation();
@@ -13,19 +15,23 @@ const OrderDetailPage = () => {
     };
 
     if (location.state) {
-        const { orderId, customerInfo, shippingMethod, paymentMethod} = location.state;
+        const { orderId, customerInfo, shippingMethod, paymentMethod, orderDate, products,
+            discount, totalPrice, finalPrice } = location.state;
         return (
             <div className='container'>
                 <div className={classes['wrap-order']}>
                     <div className={classes.confirm}>
                         <div className={classes.checked}>
                             <span className='icon-check-circle'></span><br/>
-                            <p className={classes.lg}>Đơn hàng của bạn đã được xác nhận và đang trong quá trình xử lý.</p>
+                            <p className={classes.lg}>Đơn hàng của bạn đã được hệ thống xác nhận và đang xử lý.</p>
                         </div>   
                         <div className={classes.txt}>
                             <p>Mã đơn hàng: <span style={{fontWeight: '500'}}>#{orderId}</span></p>
                             <p>Thông tin xác nhận đơn hàng với chi tiết và theo dõi tình trạng đơn hàng đã được gửi về email của bạn.</p>
                             <p>Bạn cũng có thể kiểm tra tình trạng đơn hàng tại <Link to='/tai-khoan/don-hang'>đây</Link>.</p>
+                            <p>
+                                <Link to='/' className={classes.shopping}>Tiếp tục mua hàng</Link>
+                            </p>
                         </div>
                     </div>
                     <div className={classes.detail}>
@@ -39,7 +45,7 @@ const OrderDetailPage = () => {
                                 </p>
                                 <p>
                                     <span className={classes.lbl}>Ngày đặt hàng: </span>
-                                    <span className={classes.txt}>{ new Date().toString() }</span>
+                                    <span className={classes.txt}>{ convertDateTime(orderDate) }</span>
                                 </p>
                                 <p>
                                     <span className={classes.lbl}>Hình thức giao hàng: </span>
@@ -87,13 +93,43 @@ const OrderDetailPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
+                                    {
+                                        products.map(item => (
+                                            <tr key={item._id}>
+                                                <td>
+                                                    <div className={classes.product}>
+                                                        <img src={item.img} alt={item.name} />
+                                                        <div className={classes['product-info']}>
+                                                            <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>{item.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {item.name}</Link>
+                                                            <span className={classes.review}>Viết nhận xét</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>{formatCurrency(item.price)}đ</td>
+                                                <td>{item.quantity}</td>
+                                                <td>{formatCurrency(item.price*item.quantity)}₫</td>
+                                            </tr>
+                                        ))
+                                    }
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"><span>Tạm tính</span></td>
+                                        <td>{formatCurrency(totalPrice)} đ</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"><span>Phí vận chuyển</span></td>
+                                        <td>{shippingMethod === 1 ? formatCurrency(fastShippingFee) : formatCurrency(shippingFee)} đ</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"><span>Giảm giá</span></td>
+                                        <td>{discount > 0 ? `-${formatCurrency(discount)} đ` : `0 đ`}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"><span>Tổng cộng</span></td>
+                                        <td><span className={classes.sum}>{formatCurrency(finalPrice)} ₫</span></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>

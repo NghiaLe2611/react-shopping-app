@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import { Link, useNavigate } from 'react-router-dom';
-import { formatCurrency, convertProductLink, convertCardNumber, convertCardExpiry } from '../helpers/helpers';
+import { formatCurrency, convertProductLink, 
+    convertCardNumber, convertCardExpiry, shippingFee, fastShippingFee } from '../helpers/helpers';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
+import AddressModal from '../components/UI/AddressModal';
 import iconShipping from '../assets/images/icon-shipping.svg';
 import iconFastShipping from '../assets/images/icon-fast-shipping.svg';
 import classes from '../scss/CartConfirm.module.scss';
@@ -13,9 +15,6 @@ import CouponModal from '../components/UI/CouponModal';
 import imgCvv from '../assets/images/img-cvv.jpeg';
 import iconVisa from '../assets/images/icon-visa.png';
 import Swal from 'sweetalert2';
-
-const shippingFee = 15000;
-const fastShippingFee = 30000;
 
 const listPayment = [
     {
@@ -76,9 +75,11 @@ const CartConfirmPage = () => {
     const [isBlur, setIsBlur] = useState({})
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [cardIsValid, setCardIsValid] = useState(false);
+    const [showAddressModal, setShowAddressModal] = useState(false);
 
     const cart = useSelector((state) => state.cart);
 	const userData = useSelector((state) => state.auth.userData);
+	const shippingInfo = useSelector((state) => state.auth.shippingInfo);
 
     const { fetchData: submitOrder } = useFetch();
 
@@ -109,11 +110,15 @@ const CartConfirmPage = () => {
     }, [showCouponModal]);
 
     useEffect(() => {
+        if (shippingInfo) {
+            setCustomerInfo(shippingInfo);
+            return;
+        }
         if (userData.listAddress && userData.listAddress.length) {
             const index = userData.listAddress.findIndex(val => val.default === true);
             setCustomerInfo(userData.listAddress[index]);
         }
-    }, [userData]);
+    }, [userData, shippingInfo]);
 
     useEffect(() => {
         let totalPrice = cart.totalPrice;
@@ -356,26 +361,27 @@ const CartConfirmPage = () => {
                 };
                 
                 if (data && data.message) {
+                    setIsLoading(false);
                     dispatch(cartActions.updateCartItems({
                         updatedItems: []
-                    })); 
-    
-                    setTimeout(() => {
-                        setIsLoading(false);
-                        navigate('/orderDetail/' + data.orderId, {
-                            state: {
-                                orderId: data.orderId,
-                                products: cart.finalItems,
-                                customerInfo: {
-                                    name: customerInfo.name,
-                                    phone: customerInfo.phone,
-                                    address: `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`
-                                },
-                                shippingMethod: shippingMethod,
-                                paymentMethod: payment
-                            }
-                        });
-                    }, 500);
+                    }));
+                    navigate('/orderDetail/' + data.orderId, {
+                        state: {
+                            orderId: data.orderId,
+                            products: cart.finalItems,
+                            customerInfo: {
+                                name: customerInfo.name,
+                                phone: customerInfo.phone,
+                                address: `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`
+                            },
+                            orderDate: new Date(),
+                            shippingMethod: shippingMethod,
+                            paymentMethod: payment,
+                            discount: cart.discount,
+                            totalPrice: cart.totalPrice,
+                            finalPrice: cart.finalPrice
+                        }
+                    });
                 }
             });
         };
@@ -442,6 +448,15 @@ const CartConfirmPage = () => {
                 confirmButtonText: 'Đã hiểu'
             });
         }
+    };
+
+    const showAddressModalHandler = (e) =>{
+        e.preventDefault();
+        setShowAddressModal(true);
+    };
+
+    const closeAddressModalHandler = (e) =>{
+        setShowAddressModal(false);
     };
 
     return (
@@ -633,19 +648,19 @@ const CartConfirmPage = () => {
                                     <div className={classes['wrap-ctm-info']}>
                                         <div className={classes.head}>
                                             <span>Địa chỉ giao hàng</span>
-                                            <a href='/#'>Sửa</a>
+                                            <a href="/#" onClick={showAddressModalHandler}>Sửa</a>
                                         </div>
                                        {
                                             customerInfo ? (
-                                            <Fragment>
-                                                <div className={classes['ctm-info']}>
-                                                    <p className={classes.name}>{customerInfo.name}</p>
-                                                    <p className={classes.address}>
-                                                        {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`}
-                                                    </p>
-                                                    <p className={classes.phone}>Điện thoại: {customerInfo.phone}</p>
-                                                </div>   
-                                            </Fragment>
+                                                <Fragment>
+                                                    <div className={classes['ctm-info']}>
+                                                        <p className={classes.name}>{customerInfo.name}</p>
+                                                        <p className={classes.address}>
+                                                            {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`}
+                                                        </p>
+                                                        <p className={classes.phone}>Điện thoại: {customerInfo.phone}</p>
+                                                    </div>   
+                                                </Fragment>
                                             ) : null
                                         }
                                     </div>
@@ -741,6 +756,8 @@ const CartConfirmPage = () => {
                 showCouponModalHandler={showCouponModalHandler} closeCouponModalHandler={closeCouponModalHandler} addCoupon={onAddCoupon}
                 selectedCoupons={selectedCoupons} setSelectedCoupons={setSelectedCoupons}
             />
+
+            <AddressModal showAddressModal={showAddressModal} closeAddModalHandler={closeAddressModalHandler} />
 
         </div>
     );
