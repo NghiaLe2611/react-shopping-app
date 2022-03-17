@@ -543,6 +543,139 @@ aside {
     }
 }
 
+.order-tab{
+    display: flex;
+    overflow: hidden;
+    position: sticky;
+    top: 0px;
+    z-index: 10;
+    background-color: #fff;
+    border: 1px solid #f5f5f5;
+    margin-bottom: 20px;
+    > div{
+        cursor: pointer;
+        width: 20%;
+        padding: 12px 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #808089;
+        border-bottom: none;
+        &.active{
+            color: #0d5cb6;
+            border-bottom: 2px solid #0d5cb6;
+        }
+    }
+}
+.order-search{
+    position: relative;
+    margin-bottom: 20px;
+    input{
+        width: 100%;
+        font-size: 14px;
+        padding: 10px 15px 10px 35px;
+        border-radius: 4px;
+        border: 1px solid #c4c4cf;
+        &::placeholder{
+            color: #a6a6ae;
+        }
+        &:focus{
+            border-color: #0b74e5;
+        }
+    }
+    .search,span{
+        position: absolute;
+        top: 10px;
+    }
+    .search{
+        right: 15px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        background-color: transparent;
+        color: #0b74e5;
+        border-left: 2px solid rgb(221, 221, 227);
+        padding-left: 15px;
+    }
+    span{
+        left: 15px;
+        color: #a6a6ae;
+    }
+}
+.wrap-order-list{
+
+}
+.order-item{
+    padding: 15px;
+    border-radius: 4px;
+    background-color: #fff;
+    border: 1px solid #f5f5f5;
+    margin-bottom: 20px;
+    .status{
+        color: #808089;
+        font-size: 15px;
+        font-weight: 500;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #ebebf0;
+    }
+    .product{
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #ebebf0;
+        padding: 15px 0;
+        cursor: pointer;
+        .detail{
+            display: flex;
+            .img{
+                width: 80px;
+                height: 80px;
+                padding: 10px;
+                border-radius: 4px;
+                border: 1px solid #eeeeee;
+                margin-right: 10px;
+                position: relative;
+                img{
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                }
+                .quantity{
+                    font-size: 12px;
+                    background-color: #ebebf0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: absolute;
+                    right: 0px;
+                    bottom: 0px;
+                    width: 26px;
+                    height: 26px;
+                    color: #808089;     
+                    border-top-left-radius: 10px;
+                }
+            }
+            .name{
+                font-size: 14px;
+                padding-top: 4px;
+                font-weight: 400;
+            }
+        }
+        .price{
+            font-size: 14px;
+            color: #38383d;
+        }
+    }
+    .total{
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        font-size: 16px;
+        .lbl{
+            color: #808089;
+            margin-right: 8px;
+        }
+    }
+}
+
 // Custom checkbox
 .checkbox {
     display: block;

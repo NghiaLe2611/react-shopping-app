@@ -31,11 +31,11 @@ const profileNav = [
 		slug: '/tai-khoan/dia-chi',
 		name: 'Sổ địa chỉ',
 	},
-	{
-		icon: 'icon-card',
-		slug: '/tai-khoan/thanh-toan',
-		name: 'Thông tin thanh toán',
-	},
+	// {
+	// 	icon: 'icon-card',
+	// 	slug: '/tai-khoan/thanh-toan',
+	// 	name: 'Thông tin thanh toán',
+	// },
 	{
 		icon: 'icon-heart',
 		link: '/tai-khoan/yeu-thich',
@@ -49,6 +49,25 @@ const profileNav = [
 		name: 'Nhận xét của tôi',
 	},
 ];
+
+const statusList = [
+	{
+		id: 0, text: 'Tất cả đơn'
+	},
+	{
+		id: 1, text: 'Đang xử lý'
+	},
+	{
+		id: 2, text: 'Đang vận chuyển'
+	},
+	{
+		id: 3, text: 'Đã giao'
+	},
+	{
+		id: 4, text: 'Đã huỷ'
+	}
+];
+
 const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i + 1900).toString()).reverse();
 function getDaysInMonth(month, year) {
 	return new Date(year, month, 0).getDate();
@@ -112,7 +131,7 @@ const ProfilePage = () => {
 	const [formIsValid, setFormIsValid] = useState({});
 	const [itemOnEdit, setItemOnEdit] = useState(null);
 	const [orderList, setOrderList] = useState([]);
-
+	const [orderStatus, setOrderStatus] = useState(0);
 
 	const slug = location.pathname;
 	
@@ -196,15 +215,14 @@ const ProfilePage = () => {
 	}, [slug, fetchCities, cities]);
 
 	useEffect(() => {
-		const randomStr = Math.random().toString(36).substr(2, 16);
-
+		const randomStr = Math.random().toString(36).substring(2, 16);
 		if (slug === '/tai-khoan/don-hang') {
 			getOrders({
 				url: `${process.env.REACT_APP_API_URL}/order/getOrders`,
-				headers: { 'x-request-id': randomStr + '_' + userData._id }
+				headers: { 'x-request-id': randomStr + '_' + userData?._id }
 			}, (data) => {
 				if (data) {
-					console.log(data);
+					setOrderList(data.results);
 				}
 			});
 		}
@@ -647,6 +665,17 @@ const ProfilePage = () => {
         setWards([]);
     }
 
+	const searchOrder = (e) => {
+		e.preventDefault();
+	};
+
+	const getOrderStatus = (status) => {
+		if (status === 1) return 'Đang xử lý';
+		if (status === 2) return 'Đang vận chuyển';
+		if (status === 3) return 'Đã giao';
+		if (status === 4) return 'Đã huỷ';
+	};
+
 	let profileContent, reviewsContent;
 
 	if (isLoadingReviews) {
@@ -738,6 +767,63 @@ const ProfilePage = () => {
 			profileContent = (
 				<Fragment>
 					<h3>Đơn hàng của tôi</h3>
+					<div className={classes['order-tab']}>
+						{
+							statusList.map(item => (
+								<div key={item.id} className={orderStatus === item.id ? classes.active : ''}>{item.text}</div>
+							))
+						}
+					</div>
+					<form className={classes['order-search']} onSubmit={searchOrder}>
+						<span className='icon-search'></span>
+						<input name='search' placeholder='Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm' type='search' />
+						<button className={classes.search} type='submit'>Tìm đơn hàng</button>
+					</form>
+					<div className={classes['wrap-order-list']}>
+						<div className={classes['order-content']}>
+							{
+								orderList.length > 0 && orderList.map(item => (
+									<div className={classes['order-item']} key={item._id}>
+										<p className={classes.status}>{getOrderStatus(item.status)}</p>
+										{
+											item.products && item.products.map(prod => (
+												<Fragment>
+													<div className={classes.product} key={prod._id}>
+														<div className={classes.detail}>
+															<div className={classes.img}>
+																<img src={prod.img} alt={prod.name} />
+																<span className={classes.quantity}>x{prod.quantity}</span>
+															</div>
+															<h4 className={classes.name}>
+																{prod.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {prod.name}
+															</h4>
+														</div>
+														<div className={classes.price}>{formatCurrency(prod.price)} ₫</div>
+													</div>
+												</Fragment>
+											))
+										}
+										<div className={classes.total}>
+											<span className={classes.lbl}>Tổng tiền: </span>
+											<span className={classes.price}>{formatCurrency(item.totalPrice)} ₫</span>
+										</div>
+									</div>
+								))
+							}
+						</div>
+						<div className={classes['order-content']}>
+							
+						</div>
+						<div className={classes['order-content']}>
+							
+						</div>
+						<div className={classes['order-content']}>
+							
+						</div>
+						<div className={classes['order-content']}>
+							
+						</div>
+					</div>
 				</Fragment>
 			);
 			break;
@@ -885,15 +971,15 @@ const ProfilePage = () => {
 			);
 			break;
 		}
-		case '/tai-khoan/thanh-toan': {
-			profileContent = (
-				<Fragment>
-					<h3>Thông tin thanh toán</h3>
+		// case '/tai-khoan/thanh-toan': {
+		// 	profileContent = (
+		// 		<Fragment>
+		// 			<h3>Thông tin thanh toán</h3>
 					
-				</Fragment>
-			);
-			break;
-		}
+		// 		</Fragment>
+		// 	);
+		// 	break;
+		// }
 		case '/tai-khoan/yeu-thich': {
 			profileContent = (
 				<Fragment>

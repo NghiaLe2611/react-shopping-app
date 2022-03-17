@@ -363,7 +363,8 @@ const CartConfirmPage = () => {
                 if (data && data.message) {
                     setIsLoading(false);
                     dispatch(cartActions.updateCartItems({
-                        updatedItems: []
+                        type: 'booking',
+                        items: cart.finalItems
                     }));
                     navigate('/orderDetail/' + data.orderId, {
                         state: {
@@ -487,7 +488,7 @@ const CartConfirmPage = () => {
                                         <div className={classes['shipping-products']}>
                                             {
                                                 cart.finalItems.length > 0 && (
-                                                    cart.finalItems.map(item => (
+                                                    cart.finalItems.map((item, index) => (
                                                         <div key={item._id} className={classes.item}>
                                                             <div className={classes.img}>
                                                                 <img src={item.img} alt={item.name} />
@@ -515,14 +516,18 @@ const CartConfirmPage = () => {
                                                                     </span>
                                                                 </p>
                                                             </div>
-                                                            <div className={classes['shipping-fee']}>
-                                                                {shippingMethod === 1 ? `${formatCurrency(fastShippingFee)}đ` : 
-                                                                    <Fragment>
-                                                                        <var>{formatCurrency(fastShippingFee)}đ</var><br/>
-                                                                        {formatCurrency(shippingFee)}đ
-                                                                    </Fragment>
-                                                                }
-                                                            </div>
+                                                            {
+                                                                index === 0 && (
+                                                                    <div className={`${classes['shipping-fee']} ${classes.all}`}>
+                                                                        {shippingMethod === 1 ? `${formatCurrency(fastShippingFee)}đ` : 
+                                                                            <Fragment>
+                                                                                <var>{formatCurrency(fastShippingFee)}đ</var><br/>
+                                                                                {formatCurrency(shippingFee)}đ
+                                                                            </Fragment>
+                                                                        }
+                                                                    </div>
+                                                                )
+                                                            }
                                                         </div>
                                                     ))
                                                 )

@@ -28,13 +28,23 @@ const cartSlice = createSlice({
     reducers: {
         updateCartItems(state, action) {
             const payload = action.payload;
-            state.finalItems = payload.updatedItems;
-            state.totalQuantity = payload.updatedItems.length;
-            state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
 
-            if (payload.updatedItems.length === 0) {
-                state.items = [];
-                localStorage.removeItem('cartItems'); // empty cart
+            if (payload.type === 'booking') {
+                // const cartItems = JSON.parse(localStorage.getItem('cartItems'));
+                const cloneItems = [...state.items];
+                const updatedItems = cloneItems.filter(val1 => !payload.items.find(val2 => val2._id === val1._id));
+                state.items = updatedItems;
+                state.totalQuantity = state.items.length;
+                localStorage.setItem('cartItems', JSON.stringify(state.items));
+            } else {
+                state.finalItems = payload.updatedItems;
+                state.totalQuantity = payload.updatedItems.length;
+                state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
+
+                // if (payload.updatedItems.length === 0) {
+                //     state.items = [];
+                //     localStorage.removeItem('cartItems'); // empty cart
+                // }
             }
         },
         confirmChooseCart(state, action) {

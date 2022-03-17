@@ -82,6 +82,7 @@
         border: 1px solid #efefef;
         border-radius: 4px;
         padding: 20px;
+        position: relative;
         .item{
             display: flex;
             flex-wrap: wrap;
@@ -133,6 +134,11 @@
                 var{
                     text-decoration: line-through;
                     font-style: normal;
+                }
+                &.all{
+                    position: absolute;
+                    right: 20px;
+                    bottom: 50%;
                 }
             }
         }
