@@ -36,7 +36,7 @@ function BoxThumbnail({ children }) {
     )
 }
 
-const reviewsLimit = 5;
+const reviewsLimit = 1;
 const starArr = [1,2,3,4,5];
 const colorCodeList = ['Đen', 'Bạc', 'Xanh dương', 'Vàng đồng', 'Đỏ', 'Trắng', 'Xám đậm'];
 const reviewSwal = withReactContent(Swal);
@@ -64,6 +64,7 @@ const DetailPage = () => {
     const [reviews, setReviews] = useState([]);
     const [allReviews, setAllReviews] = useState([]);
     const [averagePoint, setAveragePoint] = useState(0);
+    const [arrayPercent, setArrayPercent] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [isWriteReview, setIsWriteReview] = useState(false);
     const [isShowAllReviews, setIsShowAllReviews] = useState(false);
@@ -120,6 +121,7 @@ const DetailPage = () => {
                     setReviews(data.reviews);
                     setAveragePoint(data.averagePoint);
                     setReviewsCount(data.count);
+                    setArrayPercent(data.pointPercent);
                 }
             });
         }
@@ -294,12 +296,12 @@ const DetailPage = () => {
         setActiveModalTab('');
     };
 
-    const calculatePercentReview = (rating) => {
-        const total = reviews.length;
-        const amount = reviews.filter(val => val.star === rating).length;
+    // const calculatePercentReview = (rating) => {
+    //     const total = reviews.length;
+    //     const amount = reviews.filter(val => val.star === rating).length;
 
-        return parseFloat(amount/total * 100).toFixed(0)  + "%";
-    };
+    //     return parseFloat(amount/total * 100).toFixed(0)  + "%";
+    // };
     
     // Get review's average point
     // const calculateAveragePoint = useCallback(() => {
@@ -632,15 +634,15 @@ const DetailPage = () => {
                                         </div>
                                         <ul className={classes['rating-list']}>
                                             {
-                                                [...starArr].reverse().map(item => (
+                                                [...starArr].reverse().map((item, index) => (
                                                     <li key={item}>
                                                         <span className={classes.star}>
                                                             {item}<i className='icon-star'></i>
                                                         </span>
                                                         <div className={classes['timeline-star']}>
-                                                            <p style={{width: calculatePercentReview(item)}}></p>
+                                                            <p style={{width: arrayPercent[index]}}></p>
                                                         </div>
-                                                        <span className={classes.percent}>{calculatePercentReview(item)}</span>
+                                                        <span className={classes.percent}>{arrayPercent[index]}%</span>
                                                     </li>
                                                 ))
                                             }  

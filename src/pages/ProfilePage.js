@@ -10,10 +10,18 @@ import { formatCurrency, convertProductLink, timeSince } from '../helpers/helper
 import Swal from 'sweetalert2';
 import { authApp } from '../firebase/config';
 // import { updateProfile } from 'firebase/auth';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, list } from 'firebase/storage';
 import { authActions } from '../store/auth';
 import userAvatar from '../assets/images/avatar.png';
 import EditAddress from '../components/profile/EditAddress';
+import Pagination from '../components/UI/Pagination';
+
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import '../scss/SlickSlider.scss';
+
+import noOrderImg from '../assets/images/no-order.png';
 
 const profileNav = [
 	{
@@ -72,6 +80,7 @@ const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i
 function getDaysInMonth(month, year) {
 	return new Date(year, month, 0).getDate();
 }
+const viewLimit = 5;
 
 const ProfilePage = () => {
 	const location = useLocation();
@@ -129,8 +138,8 @@ const ProfilePage = () => {
 		isDefault: false
 	});
 	const [formIsValid, setFormIsValid] = useState({});
-	const [itemOnEdit, setItemOnEdit] = useState(null);
-	const [orderList, setOrderList] = useState([]);
+	// const [itemOnEdit, setItemOnEdit] = useState(null);
+	const [orderList, setOrderList] = useState({});
 	const [orderStatus, setOrderStatus] = useState(0);
 
 	const slug = location.pathname;
@@ -143,12 +152,14 @@ const ProfilePage = () => {
     const { fetchData: removeFav } = useFetch();
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: removeAddress } = useFetch();
-	const { fetchData: getOrders } = useFetch();
+	const { isLoading: isLoadingOrders, error: ordersError, fetchData: getOrders } = useFetch();
 
 	const imgRef = useRef('');
 	const cityRef = useRef('');
 	const districtRef = useRef('');
 	const wardRef = useRef('');
+
+	const slider = useRef({});
 
     useEffect(() => {
         setUserInfo({
@@ -217,16 +228,18 @@ const ProfilePage = () => {
 	useEffect(() => {
 		const randomStr = Math.random().toString(36).substring(2, 16);
 		if (slug === '/tai-khoan/don-hang') {
+			const url = orderStatus === 0 ? `${process.env.REACT_APP_API_URL}/order/getOrders` : 
+				`${process.env.REACT_APP_API_URL}/order/getOrders?status=${orderStatus}`;
 			getOrders({
-				url: `${process.env.REACT_APP_API_URL}/order/getOrders`,
+				url: url,
 				headers: { 'x-request-id': randomStr + '_' + userData?._id }
 			}, (data) => {
 				if (data) {
-					setOrderList(data.results);
+					setOrderList(list => list = {...list, [orderStatus]: data.results});
 				}
 			});
 		}
-	}, [slug, getOrders]);
+	}, [slug, getOrders, orderStatus]);
 
 	const onChangeDay = (e) => {
 		// console.log(e.target.value);
@@ -571,8 +584,11 @@ const ProfilePage = () => {
 	};
 
 	const editAddress = (item) => {
-        navigate(`dia-chi/cap-nhat/${item._id}`);
-        setItemOnEdit(item);
+		// /${item._id}
+        navigate(`dia-chi/cap-nhat`, {
+			state: { addressId: item._id }
+		});
+        // setItemOnEdit(item);
 	};
 
 	const onRemoveAddress = (id) => {
@@ -658,12 +674,12 @@ const ProfilePage = () => {
 		});
 	};
 
-    const exitEdit = (e) => {
-        e.preventDefault();
-        setItemOnEdit(null);
-        setDistricts([]);
-        setWards([]);
-    }
+    // const exitEdit = (e) => {
+    //     e.preventDefault();
+    //     setItemOnEdit(null);
+    //     setDistricts([]);
+    //     setWards([]);
+    // }
 
 	const searchOrder = (e) => {
 		e.preventDefault();
@@ -674,6 +690,23 @@ const ProfilePage = () => {
 		if (status === 2) return 'Đang vận chuyển';
 		if (status === 3) return 'Đã giao';
 		if (status === 4) return 'Đã huỷ';
+	};
+
+	const setActiveTab = (id) => {
+		setOrderStatus(id);
+		slider.current.slickGoTo(id, true);
+	};
+
+	const settings = {
+		dots: false,
+		arrows: false,
+		infinite: false,
+		speed: 400,
+		slidesToShow: 1,
+		slidesToScroll: 1,
+		draggable: false,
+		adaptiveHeight: true,
+		className: classes['order-slides']
 	};
 
 	let profileContent, reviewsContent;
@@ -699,10 +732,9 @@ const ProfilePage = () => {
                                         {item.product_name}
                                     </Link>
                                     <p className={classes.rating}>
-                                        ({Array(item.star).fill()
-                                            .map((item, index) => (
-                                                <i key={index} className='icon-star'></i>
-                                            ))}
+                                        ({Array(item.star).fill().map((item, index) => (
+											<i key={index} className='icon-star'></i>
+										))}
                                         {
                                             item.star < 5 && Array(5 - item.star).fill().map((item, index) => 
                                                 <i key={index} className={`icon-star ${classes.black}`}></i>
@@ -723,45 +755,49 @@ const ProfilePage = () => {
 	if (!isLoadingReviews && !reviewsError) {
 		if (userReviews.length > 0) {
 			reviewsContent = (
-				<ul className={classes['list-reviews']}>
-					{userReviews.map((item) => (
-						<li key={item._id}>
-							<div className={classes.img}>
-                                <Link className={classes.img} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
-                                    item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
-                                    <img src={item.thumbnail_url} alt={item.product_name} />
-                                </Link>
-                            </div>
-							<div className={classes.info}>
-                                <div className={classes.overview}>
-                                    <Link className={classes.name} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
-                                        item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
-                                        {item.product_name}
-                                    </Link>
-                                    <p className={classes.rating}>
-                                        ({Array(item.star).fill()
-                                            .map((item, index) => (
-                                                <i key={index} className='icon-star'></i>
-                                            ))}
-                                        {
-                                            item.star < 5 && Array(5 - item.star).fill().map((item, index) => 
-                                                <i key={index} className={`icon-star ${classes.black}`}></i>
-                                            )
-                                        })
-                                    </p>
-                                    {/* <span className={classes.time}>{timeSince(item.createdAt)}</span> */}
-                                </div>
-                                <p className={classes.comment}>{item.comment}</p>
-                            </div>
-						</li>
-					))}
-				</ul>
+				<Fragment>
+					<ul className={classes['list-reviews']}>
+						{userReviews.map((item) => (
+							<li key={item._id}>
+								<div className={classes.img}>
+									<Link className={classes.img} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
+										item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
+										<img src={item.thumbnail_url} alt={item.product_name} />
+									</Link>
+								</div>
+								<div className={classes.info}>
+									<div className={classes.overview}>
+										<Link className={classes.name} to={`${item.product_category === 'smartphone' ? '/dien-thoai/' : 
+											item.product_category === 'tablet' ? '/may-tinh-bang/' : ''}${convertProductLink(item.product_name)}`}>
+											{item.product_name}
+										</Link>
+										<p className={classes.rating}>
+											({Array(item.star).fill().map((item, index) => (
+												<i key={index} className='icon-star'></i>
+											))}
+											{
+												item.star < 5 && Array(5 - item.star).fill().map((item, index) => 
+													<i key={index} className={`icon-star ${classes.black}`}></i>
+												)
+											})
+										</p>
+										{/* <span className={classes.time}>{timeSince(item.createdAt)}</span> */}
+									</div>
+									<p className={classes.comment}>{item.comment}</p>
+								</div>
+							</li>
+						))}
+					</ul>
+					{
+						userReviews.length > viewLimit && <p>Pagination</p>
+					}
+				</Fragment>
 			);
 		} else {
 			reviewsContent = <p>Bạn chưa có nhận xét nào</p>;
 		}
 	}
-    
+
 	switch (slug) {
 		case '/tai-khoan/don-hang': {
 			profileContent = (
@@ -770,7 +806,9 @@ const ProfilePage = () => {
 					<div className={classes['order-tab']}>
 						{
 							statusList.map(item => (
-								<div key={item.id} className={orderStatus === item.id ? classes.active : ''}>{item.text}</div>
+								<div key={item.id} className={orderStatus === item.id ? classes.active : ''}
+									onClick={() => setActiveTab(item.id)}
+								>{item.text}</div>
 							))
 						}
 					</div>
@@ -779,51 +817,50 @@ const ProfilePage = () => {
 						<input name='search' placeholder='Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm' type='search' />
 						<button className={classes.search} type='submit'>Tìm đơn hàng</button>
 					</form>
-					<div className={classes['wrap-order-list']}>
-						<div className={classes['order-content']}>
-							{
-								orderList.length > 0 && orderList.map(item => (
-									<div className={classes['order-item']} key={item._id}>
-										<p className={classes.status}>{getOrderStatus(item.status)}</p>
-										{
-											item.products && item.products.map(prod => (
-												<Fragment>
-													<div className={classes.product} key={prod._id}>
-														<div className={classes.detail}>
-															<div className={classes.img}>
-																<img src={prod.img} alt={prod.name} />
-																<span className={classes.quantity}>x{prod.quantity}</span>
+					<Slider {...settings} ref={slider}>
+						{
+							statusList.map(item => (
+								<div className={classes['order-content']} key={item.id}>
+									{
+										orderList[item.id] && orderList[item.id].length > 0 ? orderList[item.id].map(item => (
+											<div className={classes['order-item']} key={item._id}>
+												<p className={classes.status}>{getOrderStatus(item.status)}</p>
+												{
+													item.products && item.products.map(prod => (
+														<div className={classes.product} key={prod._id}>
+															<div className={classes.detail}>
+																<div className={classes.img}>
+																	<img src={prod.img} alt={prod.name} />
+																	<span className={classes.quantity}>x{prod.quantity}</span>
+																</div>
+																<h4 className={classes.name}>
+																	{prod.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {prod.name}
+																</h4>
 															</div>
-															<h4 className={classes.name}>
-																{prod.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {prod.name}
-															</h4>
+															<div className={classes.price}>{formatCurrency(prod.price)} ₫</div>
 														</div>
-														<div className={classes.price}>{formatCurrency(prod.price)} ₫</div>
-													</div>
-												</Fragment>
-											))
-										}
-										<div className={classes.total}>
-											<span className={classes.lbl}>Tổng tiền: </span>
-											<span className={classes.price}>{formatCurrency(item.totalPrice)} ₫</span>
-										</div>
-									</div>
-								))
-							}
-						</div>
-						<div className={classes['order-content']}>
-							
-						</div>
-						<div className={classes['order-content']}>
-							
-						</div>
-						<div className={classes['order-content']}>
-							
-						</div>
-						<div className={classes['order-content']}>
-							
-						</div>
-					</div>
+													))
+												}
+												<div className={classes.total}>
+													<span className={classes.lbl}>Tổng tiền: </span>
+													<span className={classes.price}>{formatCurrency(item.totalPrice)} ₫</span>
+												</div>
+											</div>
+										)) : (
+											isLoadingOrders ? (
+												<div style={{backgroundColor: '#fff', minHeight: 300}}></div>
+											) : (
+												<div className={classes['empty-order']}>
+													<img src={noOrderImg} alt='empty-order'/>
+													<p>Chưa có đơn hàng</p>
+												</div>
+											)
+										)
+									}
+								</div>
+							))
+						}
+					</Slider>
 				</Fragment>
 			);
 			break;
@@ -1104,21 +1141,19 @@ const ProfilePage = () => {
 											<select name='day' id='select-day' aria-labelledby='day' onChange={onChangeDay} value={selectedDay}>
 												<option value='0'>Ngày</option>
 												{daysInMonth > 0 &&
-													Array(daysInMonth).fill()
-														.map((item, index) => (
-															<option key={index + 1} value={index + 1}>
-																{index + 1}
-															</option>
-														))}
-											</select>
-											<select name='month' id='select-month' aria-labelledby='month' onChange={onChangeMonth} value={selectedMonth}>
-												<option value='0'>Tháng</option>
-												{Array(12).fill()
-													.map((item, index) => (
+													Array(daysInMonth).fill().map((item, index) => (
 														<option key={index + 1} value={index + 1}>
 															{index + 1}
 														</option>
 													))}
+											</select>
+											<select name='month' id='select-month' aria-labelledby='month' onChange={onChangeMonth} value={selectedMonth}>
+												<option value='0'>Tháng</option>
+												{Array(12).fill().map((item, index) => (
+													<option key={index + 1} value={index + 1}>
+														{index + 1}
+													</option>
+												))}
 											</select>
 											<select name='year' aria-labelledby='year' onChange={onChangeYear} value={selectedYear}>
 												<option value='0'>Năm</option>

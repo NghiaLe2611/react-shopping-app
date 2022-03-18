@@ -26,17 +26,19 @@ const EditAddress = (props) => {
     // const { fetchData: fetchAddress } = useFetch();
 
     useEffect(() => {
-        const addressId = location.pathname.substring(location.pathname.lastIndexOf('/') + 1)
-
+        // const addressId = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
+        
         if (listAddress) {
-            const currentAdd = listAddress.find(item => {
-                return item._id === addressId;
-            });
-            setCurrentAddress(currentAdd);
-            setNewAddress(currentAdd);
+            if (location.state && location.state.addressId) {
+                const currentAdd = listAddress.find(item => {
+                    return item._id === location.state.addressId;
+                });
+                setCurrentAddress(currentAdd);
+                setNewAddress(currentAdd);
+            } 
         }
 
-    }, [listAddress, location.pathname]);
+    }, [listAddress, location]);
 
     useEffect(() => {
         if (currentAddress) {
