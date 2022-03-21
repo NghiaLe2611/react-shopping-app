@@ -100,11 +100,11 @@ export const timeSince = (date) => {
 };
 
 export const convertDateTime = (date) => {
-    const day = date.getDate();
-    let month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    const hour = date.getHours();
-    const minute = date.getMinutes();
+    const day = new Date(date).getDate();
+    let month = new Date(date).getMonth() + 1;
+    const year = new Date(date).getFullYear();
+    const hour = new Date(date).getHours();
+    const minute = new Date(date).getMinutes();
 
     if (month.toString().length === 1) {
         month = '0' + month;

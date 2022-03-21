@@ -35,6 +35,8 @@ const cartSlice = createSlice({
                 const updatedItems = cloneItems.filter(val1 => !payload.items.find(val2 => val2._id === val1._id));
                 state.items = updatedItems;
                 state.totalQuantity = state.items.length;
+                state.discount = 0;
+                state.appliedCoupons = [];
                 localStorage.setItem('cartItems', JSON.stringify(state.items));
             } else {
                 state.finalItems = payload.updatedItems;
@@ -66,6 +68,9 @@ const cartSlice = createSlice({
                     if (existingFinalItem >= 0 && state.totalPrice > 0) {
                         state.totalPrice -= updatedItem.totalPrice;
                     } 
+
+                    state.discount = 0;
+                    state.appliedCoupons = [];
 
                     // if (state.totalPrice > 0) {
                     //     state.totalPrice -= updatedItem.totalPrice;

@@ -375,7 +375,7 @@ const CartConfirmPage = () => {
                                 phone: customerInfo.phone,
                                 address: `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`
                             },
-                            orderDate: new Date(),
+                            orderDate: new Date().getTime(),
                             shippingMethod: shippingMethod,
                             paymentMethod: payment,
                             discount: cart.discount,

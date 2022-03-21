@@ -80,7 +80,7 @@ const yearList = Array.from(Array(new Date().getFullYear() - 1899), (_, i) => (i
 function getDaysInMonth(month, year) {
 	return new Date(year, month, 0).getDate();
 }
-const viewLimit = 5;
+const pageSize = 5;
 
 const ProfilePage = () => {
 	const location = useLocation();
@@ -141,6 +141,9 @@ const ProfilePage = () => {
 	// const [itemOnEdit, setItemOnEdit] = useState(null);
 	const [orderList, setOrderList] = useState({});
 	const [orderStatus, setOrderStatus] = useState(0);
+	const [orderCount, setOrderCount] = useState(0);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [searchKey, setSearchKey] = useState('');
 
 	const slug = location.pathname;
 	
@@ -153,6 +156,7 @@ const ProfilePage = () => {
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: removeAddress } = useFetch();
 	const { isLoading: isLoadingOrders, error: ordersError, fetchData: getOrders } = useFetch();
+	const { fetchData: searchOrders } = useFetch();
 
 	const imgRef = useRef('');
 	const cityRef = useRef('');
@@ -228,18 +232,23 @@ const ProfilePage = () => {
 	useEffect(() => {
 		const randomStr = Math.random().toString(36).substring(2, 16);
 		if (slug === '/tai-khoan/don-hang') {
-			const url = orderStatus === 0 ? `${process.env.REACT_APP_API_URL}/order/getOrders` : 
-				`${process.env.REACT_APP_API_URL}/order/getOrders?status=${orderStatus}`;
+			const url = orderStatus === 0 ? `${process.env.REACT_APP_API_URL}/orders?page=${currentPage}` : 
+				`${process.env.REACT_APP_API_URL}/orders?status=${orderStatus}?page=${currentPage}`;
 			getOrders({
 				url: url,
 				headers: { 'x-request-id': randomStr + '_' + userData?._id }
 			}, (data) => {
 				if (data) {
 					setOrderList(list => list = {...list, [orderStatus]: data.results});
+					setOrderCount(data.count);
 				}
 			});
 		}
-	}, [slug, getOrders, orderStatus]);
+	}, [slug, getOrders, orderStatus, currentPage]);
+
+	useEffect(() => {
+		document.querySelector('h3').scrollIntoView({behavior: 'smooth'});
+	}, [currentPage]);
 
 	const onChangeDay = (e) => {
 		// console.log(e.target.value);
@@ -681,8 +690,20 @@ const ProfilePage = () => {
     //     setWards([]);
     // }
 
-	const searchOrder = (e) => {
+	const onSearchOrder = (e) => {
 		e.preventDefault();
+
+		if (searchKey) {
+			const randomStr = Math.random().toString(36).substring(2, 16);
+			searchOrders({
+				url: `${process.env.REACT_APP_API_URL}/orders/search?status=${orderStatus}&text=${searchKey.toLowerCase()}`,
+				headers: { 'x-request-id': randomStr + '_' + userData?._id }
+			}, data => {
+				if (data) {
+					console.log(data);
+				}
+			});
+		}
 	};
 
 	const getOrderStatus = (status) => {
@@ -708,6 +729,18 @@ const ProfilePage = () => {
 		adaptiveHeight: true,
 		className: classes['order-slides']
 	};
+
+	const paginate = (e, pageNumber) => {
+        e.preventDefault();
+
+        if (pageNumber === 'prev') {
+            setCurrentPage(currentPage - 1);
+        } else if (pageNumber === 'next') {
+            setCurrentPage(currentPage + 1);
+        } else {
+            setCurrentPage(pageNumber);
+        }
+    };
 
 	let profileContent, reviewsContent;
 
@@ -789,7 +822,7 @@ const ProfilePage = () => {
 						))}
 					</ul>
 					{
-						userReviews.length > viewLimit && <p>Pagination</p>
+						userReviews.length > pageSize && <p>Pagination</p>
 					}
 				</Fragment>
 			);
@@ -812,9 +845,11 @@ const ProfilePage = () => {
 							))
 						}
 					</div>
-					<form className={classes['order-search']} onSubmit={searchOrder}>
+					<form className={classes['order-search']} onSubmit={onSearchOrder}>
 						<span className='icon-search'></span>
-						<input name='search' placeholder='Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm' type='search' />
+						<input name='search' placeholder='Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm' type='search' autoComplete='false'
+							onChange={(e) => { setSearchKey(e.target.value); }}
+						/>
 						<button className={classes.search} type='submit'>Tìm đơn hàng</button>
 					</form>
 					<Slider {...settings} ref={slider}>
@@ -861,6 +896,15 @@ const ProfilePage = () => {
 							))
 						}
 					</Slider>
+					{
+						orderCount > pageSize && (
+							<Pagination style={{marginTop: 30}} right={true}
+								pageSize={pageSize} currentPage={currentPage}
+								totalCount={orderCount}
+								paginate={paginate}
+							/>
+						)
+					}
 				</Fragment>
 			);
 			break;

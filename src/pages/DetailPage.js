@@ -36,7 +36,7 @@ function BoxThumbnail({ children }) {
     )
 }
 
-const reviewsLimit = 1;
+const reviewPageSize = 5;
 const starArr = [1,2,3,4,5];
 const colorCodeList = ['Đen', 'Bạc', 'Xanh dương', 'Vàng đồng', 'Đỏ', 'Trắng', 'Xám đậm'];
 const reviewSwal = withReactContent(Swal);
@@ -845,10 +845,10 @@ const DetailPage = () => {
                                         )
                                     }
                                     {
-                                        reviewsCount > reviewsLimit ? (
+                                        reviewsCount > reviewPageSize ? (
                                             <Pagination style={{marginTop: 30}}
-                                                limit={reviewsLimit} currentPage={currentPage}
-                                                total={reviewsCount}
+                                                pageSize={reviewPageSize} currentPage={currentPage}
+                                                totalCount={reviewsCount}
                                                 paginate={paginate}
                                             />
                                         ) : null

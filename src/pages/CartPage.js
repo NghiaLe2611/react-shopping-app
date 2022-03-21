@@ -80,9 +80,10 @@ const CartPage = () => {
         if (cart.items.length > 0) {
             localStorage.setItem('cartItems', JSON.stringify(cart.items));
         } else {
+            setIsSelectAll(false);
             localStorage.removeItem('cartItems');
         }
-    }, [cart.items]);
+    }, [cart.items, isSelectAll]);
 
     const checkInputSelectHandler = () => {
         if (cart.finalItems.length === cart.items.length) {

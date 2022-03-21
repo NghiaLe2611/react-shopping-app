@@ -570,6 +570,7 @@ aside {
     position: relative;
     margin-bottom: 20px;
     input{
+        appearance: none;
         width: 100%;
         font-size: 14px;
         padding: 10px 15px 10px 35px;
@@ -580,6 +581,10 @@ aside {
         }
         &:focus{
             border-color: #0b74e5;
+        }
+        &::-webkit-search-cancel-button{
+            position: absolute;
+            right: 120px;
         }
     }
     .search,span{
@@ -684,9 +689,6 @@ aside {
             margin-right: 8px;
         }
     }
-}
-.order-content{
-    background-color: #fff;
 }
 
 // Custom checkbox
