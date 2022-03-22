@@ -248,10 +248,11 @@ aside {
             font-size: 15px;
         }
     }
-    button {
+    .btn {
         border-radius: 4px;
         font-size: 15px;
         padding: 8px 30px;
+        cursor: pointer;
     }
     .back {
         background-color: #ccc;
@@ -259,6 +260,10 @@ aside {
     }
     .update {
         background-color: #fdd835;
+    }
+    .cancel{
+        background-color: #ccc;
+        margin-left: 10px;
     }
 }
 
@@ -619,6 +624,7 @@ aside {
         font-size: 16px;
     }
 }
+
 .order-item{
     padding: 15px;
     border-radius: 4px;
@@ -689,6 +695,11 @@ aside {
             margin-right: 8px;
         }
     }
+}
+
+.item-loading{
+    display: flex;
+    flex-wrap: wrap;
 }
 
 // Custom checkbox

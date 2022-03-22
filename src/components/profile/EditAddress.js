@@ -339,8 +339,8 @@ const EditAddress = (props) => {
                     <div className={classes['input-group']}>
                         <label></label>
                         <div className={classes['wrap-ip']}>
-                            <button className={classes.back} onClick={exitEdit}>Quay lại</button>
-                            <button type='submit' className={classes.update}>Cập nhật</button>
+                            <button className={`${classes.back} ${classes.btn}`} onClick={exitEdit}>Quay lại</button>
+                            <button type='submit' className={`${classes.update} ${classes.btn}`}>Cập nhật</button>
                         </div>
                     </div>
                 </form>

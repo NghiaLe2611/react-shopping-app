@@ -53,14 +53,6 @@ export const convertProductLink = (str) => {
     return str.toLowerCase().split(" ").join("-").replace(/\//g, '-');
 };
 
-export const usePrevious = (value) => {
-    const ref = useRef();
-    useEffect(() => {
-        ref.current = value;
-    });
-    return ref.current;
-};
-
 export const removeQueryParam = (name, _url) => {
     var reg = new RegExp("((&)*" + name + "=([^&]*))","g");
     return _url.replace(reg,'');
@@ -125,4 +117,12 @@ export const passwordIsValid = (password) => {
     // Minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number
     const regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/;
     return password.match(regex);
+};
+
+export const usePrevious = (value) => {
+    const ref = useRef();
+    useEffect(() => {
+        ref.current = value;
+    });
+    return ref.current;
 };
