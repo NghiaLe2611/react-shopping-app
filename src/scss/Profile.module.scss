@@ -686,7 +686,7 @@ aside {
         }
     }
     .total{
-        margin-top: 20px;
+        margin: 20px 0;
         display: flex;
         justify-content: flex-end;
         font-size: 16px;
@@ -695,8 +695,30 @@ aside {
             margin-right: 8px;
         }
     }
+    .btn-group{
+        display: flex;
+        justify-content: flex-end;
+        span{
+            display: inline-block;
+            cursor: pointer;
+            line-height: 1;
+            padding: 8px 10px;
+            border-radius: 4px;
+            border: 1px solid #0b74e5;
+            color: #0b74e5;
+            font-size: 14px;
+            &:first-child{
+                margin-right: 5px;
+            }
+        }
+    }
 }
 
+.wrap-item-loading{
+    width: 100%;
+    padding: 20px;
+    background-color: #fff;
+}
 .item-loading{
     display: flex;
     flex-wrap: wrap;

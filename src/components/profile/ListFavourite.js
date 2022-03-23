@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import useFetch from '../../hooks/useFetch';
 import { authActions } from '../../store/auth';
 import { formatCurrency, convertProductLink } from '../../helpers/helpers';
+import Swal from 'sweetalert2';
 import classes from '../../scss/Profile.module.scss';
 
 const ListFavourite = (props) => {
@@ -15,34 +16,43 @@ const ListFavourite = (props) => {
     const { fetchData: fetchUser } = useFetch();
 
     const removeFromWishlist = (id) => {
-		removeFav({
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
-			body: { type: 0 }
-		}, data => {
-			if(data.message) {
-				const userDataStorage = JSON.parse(localStorage.getItem('userData'));
-				const userDataObj = {
-					uuid: userDataStorage.uuid,
-					displayName: userDataStorage.displayName,
-					email: userDataStorage.email,
-					photoURL: userDataStorage.photoURL,
-					emailVerified: userDataStorage.emailVerified
-				};
-	
-				fetchUser({
-					url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}` 
-				}, data => {
-					if (data) {
-						const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-						dispatch(authActions.updateState({
-							userData: {...userDataObj, ...cloneData}
-						}));
-					}
-				});
-			}
-		});
+        if (favorite && favorite.length < 10) {
+            removeFav({
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
+                body: { type: 0 }
+            }, data => {
+                if(data.message) {
+                    const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+                    const userDataObj = {
+                        uuid: userDataStorage.uuid,
+                        displayName: userDataStorage.displayName,
+                        email: userDataStorage.email,
+                        photoURL: userDataStorage.photoURL,
+                        emailVerified: userDataStorage.emailVerified
+                    };
+        
+                    fetchUser({
+                        url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}` 
+                    }, data => {
+                        if (data) {
+                            const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+                            dispatch(authActions.updateState({
+                                userData: {...userDataObj, ...cloneData}
+                            }));
+                        }
+                    });
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                html: `<p>Bạn chỉ có thể có tối đa 10 yêu thích !</p>`,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3741'
+            });
+        }
 	};
 
     return (

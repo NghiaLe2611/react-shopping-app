@@ -1,18 +1,12 @@
 import { Fragment } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
-import classes from '../scss/OrderDetail.module.scss';
+import classes from '../scss/ConfirmOrder.module.scss';
 import { Link } from 'react-router-dom';
 import { convertDateTime, formatCurrency, convertProductLink, 
-    shippingFee, fastShippingFee } from '../helpers/helpers';
+    shippingFee, fastShippingFee, getPaymentMethod } from '../helpers/helpers';
 
-const OrderDetailPage = () => {
+const ConfirmOrderPage = () => {
     const location = useLocation();
-
-    const getPaymentMethod = (method) => {
-        if (method === 'p1') return 'Thanh toán khi nhận hàng';
-        if (method === 'p2') return 'Thanh toán bằng ZaloPay';
-        if (method === 'p3') return 'Thanh toán qua thẻ tín dụng, Visa'
-    };
 
     if (location.state) {
         const { orderId, customerInfo, shippingMethod, paymentMethod, orderDate, products,
@@ -83,7 +77,7 @@ const OrderDetailPage = () => {
                             </div>
                         </div>
                         <div className={classes.group}>
-                            <table className={classes['products-table']}>
+                            <table className={classes['product-list']}>
                                 <thead>
                                     <tr>
                                         <th>Sản phẩm</th>
@@ -141,4 +135,4 @@ const OrderDetailPage = () => {
     }
 };
 
-export default OrderDetailPage;
+export default ConfirmOrderPage;

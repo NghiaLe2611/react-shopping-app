@@ -34,9 +34,11 @@ const cartSlice = createSlice({
                 const cloneItems = [...state.items];
                 const updatedItems = cloneItems.filter(val1 => !payload.items.find(val2 => val2._id === val1._id));
                 state.items = updatedItems;
+                state.finalItems = [];
                 state.totalQuantity = state.items.length;
                 state.discount = 0;
                 state.appliedCoupons = [];
+                state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
                 localStorage.setItem('cartItems', JSON.stringify(state.items));
             } else {
                 state.finalItems = payload.updatedItems;

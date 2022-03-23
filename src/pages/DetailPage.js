@@ -14,7 +14,7 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import classes from '../scss/ProductDetail.module.scss';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { capitalizeFirstLetter, formatCurrency, convertProductLink, timeSince } from '../helpers/helpers';
+import { capitalizeFirstLetter, formatCurrency, convertProductLink, timeSince, colorCodeList } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import Pagination from '../components/UI/Pagination';
@@ -38,7 +38,6 @@ function BoxThumbnail({ children }) {
 
 const reviewPageSize = 5;
 const starArr = [1,2,3,4,5];
-const colorCodeList = ['Đen', 'Bạc', 'Xanh dương', 'Vàng đồng', 'Đỏ', 'Trắng', 'Xám đậm'];
 const reviewSwal = withReactContent(Swal);
 
 const DetailPage = () => {

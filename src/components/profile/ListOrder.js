@@ -1,8 +1,10 @@
 import { Fragment, useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { usePrevious, formatCurrency } from '../../helpers/helpers';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import useFetch from '../../hooks/useFetch';
+import { cartActions } from '../../store/cart';
 import Pagination from '../UI/Pagination';
+import { usePrevious, formatCurrency, getOrderStatus } from '../../helpers/helpers';
 
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -35,6 +37,8 @@ const statusList = [
 ];
 
 const ListOrder = (props) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { userData } = props;
     const [orderList, setOrderList] = useState({});
 	const [orderStatus, setOrderStatus] = useState(0);
@@ -96,13 +100,6 @@ const ListOrder = (props) => {
         }
     };
     
-    const getOrderStatus = (status) => {
-        if (status === 1) return 'Đang xử lý';
-        if (status === 2) return 'Đang vận chuyển';
-        if (status === 3) return 'Đã giao';
-        if (status === 4) return 'Đã huỷ';
-    };
-    
     const setActiveTab = (id) => {
         setOrderStatus(id);
         setCurrentPage(1);
@@ -121,6 +118,33 @@ const ListOrder = (props) => {
         }
 
         document.querySelector('h3').scrollIntoView({behavior: 'smooth'});
+    };
+
+    const reBuy = (item) => {
+        console.log(item);
+        for (let i in item.products) {
+            const product = item.products[i];
+            console.log(product);
+
+            dispatch(cartActions.addItemToCart({
+                _id: product._id,
+                category: product.category,
+                quantity: product.quantity, 
+                img: product.img, 
+                name: product.name, 
+                price: product.price, 
+                sale: product.sale ? product.sale : 0,
+                color: product.color
+            }));
+        }
+        
+        setTimeout(() => {
+            navigate('/cart');
+        }, 500);
+    };
+
+    const seeDetail = (item) => {
+        navigate(`/order/${item._id}`)
     };
 
     const settings = {
@@ -164,7 +188,7 @@ const ListOrder = (props) => {
                                         <p className={classes.status}>{getOrderStatus(item.status)}</p>
                                         {
                                             item.products && item.products.map(prod => (
-                                                <div className={classes.product} key={prod._id}>
+                                                <div className={classes.product} key={prod._id} onClick={() => seeDetail(item)}>
                                                     <div className={classes.detail}>
                                                         <div className={classes.img}>
                                                             <img src={prod.img} alt={prod.name} />
@@ -182,18 +206,25 @@ const ListOrder = (props) => {
                                             <span className={classes.lbl}>Tổng tiền: </span>
                                             <span className={classes.price}>{formatCurrency(item.totalPrice)} ₫</span>
                                         </div>
+                                        <div className={classes['btn-group']}>
+                                            <span onClick={() => reBuy(item)}>Mua lại</span>
+                                            <span onClick={() => seeDetail(item)}>Xem chi tiết</span>
+                                        </div>
                                     </div>
                                 )) : (
                                     isLoading ? (
-                                        <div style={{padding: 20, backgroundColor: '#fff', minHeight: 250, marginBottom: 200}}>
-                                            <Skeleton height={20} style={{ marginBottom: 5 }}/>
+                                        <div className={classes['wrap-item-loading']} style={{minHeight: 400, marginBottom: 200}}>
+                                            <Skeleton height={20} style={{ marginBottom: 10 }}/>
                                             <div className={classes['item-loading']}>
-                                                <Skeleton width={80} height={80} style={{ marginRight: 5 }}/>
+                                                <Skeleton width={80} height={80} style={{ marginRight: 10 }}/>
                                                 <div style={{flex: 1}}>
-                                                    <Skeleton height={20} style={{ margin: '6px 0' }}/>
+                                                    <Skeleton height={20} style={{ margin: '10px 0' }}/>
                                                     <Skeleton width={'70%'} height={20}/>
                                                 </div>
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%'}}>
+                                                <div style={{margin: '10px 0', display: 'flex', justifyContent: 'flex-end', width: '100%'}}>
+                                                    <Skeleton height={30} width={300}/>
+                                                </div>
+                                                <div style={{display: 'flex', justifyContent: 'flex-end', width: '100%'}}>
                                                     <Skeleton width={100} height={30} style={{ marginRight: 10 }}/>
                                                     <Skeleton width={100} height={30}/>
                                                 </div>

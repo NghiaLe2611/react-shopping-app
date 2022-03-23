@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 export const shippingFee = 15000;
 export const fastShippingFee = 30000;
+export const colorCodeList = ['Đen', 'Bạc', 'Xanh dương', 'Vàng đồng', 'Đỏ', 'Trắng', 'Xám đậm'];
 
 export const formatCurrency = (x) => {
     // const price = parseInt(x) * 23000;
@@ -117,6 +118,19 @@ export const passwordIsValid = (password) => {
     // Minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number
     const regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/;
     return password.match(regex);
+};
+
+export const getOrderStatus = (status) => {
+    if (status === 1) return 'Đang xử lý';
+    if (status === 2) return 'Đang vận chuyển';
+    if (status === 3) return 'Giao hàng thành công';
+    if (status === 4) return 'Đã huỷ';
+};
+
+export const getPaymentMethod = (method) => {
+    if (method === 'p1') return 'Thanh toán khi nhận hàng';
+    if (method === 'p2') return 'Thanh toán bằng ZaloPay';
+    if (method === 'p3') return 'Thanh toán qua thẻ tín dụng, Visa'
 };
 
 export const usePrevious = (value) => {

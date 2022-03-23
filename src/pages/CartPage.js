@@ -44,6 +44,10 @@ const CartPage = () => {
     const selectAlInput = useRef();
 
     useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [])
+
+    useEffect(() => {
         if (showCart) {
             dispatch(cartActions.showCartPopup(false));
         }

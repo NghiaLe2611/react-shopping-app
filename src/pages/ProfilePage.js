@@ -1,6 +1,5 @@
 import { Fragment, useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import classes from '../scss/Profile.module.scss';
 import { useSelector } from 'react-redux';
 import useFetch from '../hooks/useFetch';
 import CustomerInfo from '../components/profile/CustomerInfo';
@@ -9,6 +8,8 @@ import EditAddress from '../components/profile/EditAddress';
 import ListFavourite from '../components/profile/ListFavourite';
 import ListReview from '../components/profile/ListReview';
 import ListOrder from '../components/profile/ListOrder';
+import OrderDetail from '../components/profile/OrderDetail';
+import classes from '../scss/Profile.module.scss';
 // import { updateProfile } from 'firebase/auth';
 
 const profileNav = [
@@ -84,6 +85,12 @@ const ProfilePage = () => {
 		case '/tai-khoan/don-hang': {
 			profileContent = (
 				<ListOrder userData={userData}/>
+			);
+			break;
+		}
+		case (slug.match(/order\/*/)?.input) : {
+			profileContent = (
+				<OrderDetail userData={userData}/>
 			);
 			break;
 		}

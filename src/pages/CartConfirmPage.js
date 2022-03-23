@@ -410,7 +410,8 @@ const CartConfirmPage = () => {
                             card: `**********${cardInfo['card_number'].slice(-4)}`
                         },
                         discount: cart.discount,
-                        totalPrice: cart.finalPrice
+                        totalPrice: cart.totalPrice,
+                        finalPrice: cart.finalPrice
                     };
 
                     submitOrderHandler(orderData);
@@ -424,6 +425,8 @@ const CartConfirmPage = () => {
                     });
                 }
             } else {
+                console.log(cart.totalPrice);
+                console.log(cart.finalPrice);
                 const orderData = {
                     products: products,
                     customerId: userData._id ? userData._id : '',
@@ -435,7 +438,8 @@ const CartConfirmPage = () => {
                     shippingMethod: shippingMethod,
                     paymentMethod: paymentMethod,
                     discount: cart.discount,
-                    totalPrice: cart.finalPrice
+                    totalPrice: cart.totalPrice,
+                    finalPrice: cart.finalPrice
                 };
 
                 submitOrderHandler(orderData);
@@ -511,9 +515,7 @@ const CartConfirmPage = () => {
                                                                         shippingMethod === 1 ? <img src={iconFastShipping} className={classes.fast} alt='fast-shipping'/> : 
                                                                             <img src={iconShipping} className={classes.standard} alt='standard-shipping'/>
                                                                     }
-                                                                    <span>
-                                                                        {shippingMethod === 1 ? 'Giao siêu tốc' : 'Giao tiết kiệm'}
-                                                                    </span>
+                                                                    <span>{shippingMethod === 1 ? 'Giao siêu tốc' : 'Giao tiết kiệm'}</span>
                                                                 </p>
                                                             </div>
                                                             {
