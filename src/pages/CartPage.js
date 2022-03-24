@@ -68,7 +68,7 @@ const CartPage = () => {
             setCustomerInfo(shippingInfo);
             return;
         }
-        if (userData.listAddress && userData.listAddress.length) {
+        if (userData && userData.listAddress && userData.listAddress.length) {
             const index = userData.listAddress.findIndex(val => val.default === true);
             setCustomerInfo(userData.listAddress[index]);
         }

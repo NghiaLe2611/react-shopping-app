@@ -204,7 +204,7 @@ const ListOrder = (props) => {
                                         }
                                         <div className={classes.total}>
                                             <span className={classes.lbl}>Tổng tiền: </span>
-                                            <span className={classes.price}>{formatCurrency(item.totalPrice)} ₫</span>
+                                            <span className={classes.price}>{formatCurrency(item.finalPrice)} ₫</span>
                                         </div>
                                         <div className={classes['btn-group']}>
                                             <span onClick={() => reBuy(item)}>Mua lại</span>

@@ -114,7 +114,7 @@ const CartConfirmPage = () => {
             setCustomerInfo(shippingInfo);
             return;
         }
-        if (userData.listAddress && userData.listAddress.length) {
+        if (userData && userData.listAddress && userData.listAddress.length) {
             const index = userData.listAddress.findIndex(val => val.default === true);
             setCustomerInfo(userData.listAddress[index]);
         }
@@ -346,6 +346,7 @@ const CartConfirmPage = () => {
 
     const confirmBooking = () => {
         setIsLoading(true);
+        const address = `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`;
         const submitOrderHandler = (orderData) => {
             submitOrder({
                 method: 'POST',
@@ -373,7 +374,7 @@ const CartConfirmPage = () => {
                             customerInfo: {
                                 name: customerInfo.name,
                                 phone: customerInfo.phone,
-                                address: `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`
+                                address: address
                             },
                             orderDate: new Date().getTime(),
                             shippingMethod: shippingMethod,
@@ -400,7 +401,7 @@ const CartConfirmPage = () => {
                         products: products,
                         customerId: userData._id ? userData._id : '',
                         customerName: customerInfo ? customerInfo.name : '',
-                        address: customerInfo ? customerInfo.address : '',
+                        address: customerInfo ? address : '',
                         phone: customerInfo ? customerInfo.phone : '',
                         orderDate: new Date(),
                         shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
@@ -425,13 +426,11 @@ const CartConfirmPage = () => {
                     });
                 }
             } else {
-                console.log(cart.totalPrice);
-                console.log(cart.finalPrice);
                 const orderData = {
                     products: products,
                     customerId: userData._id ? userData._id : '',
                     customerName: customerInfo ? customerInfo.name : '',
-                    address: customerInfo ? customerInfo.address : '',
+                    address: customerInfo ? address : '',
                     phone: customerInfo ? customerInfo.phone : '',
                     orderDate: new Date(),
                     shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
