@@ -108,19 +108,19 @@ const ConfirmOrderPage = () => {
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="3"><span>Tạm tính</span></td>
+                                        <td colSpan="3"><span>Tạm tính</span></td>
                                         <td>{formatCurrency(totalPrice)} đ</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3"><span>Phí vận chuyển</span></td>
+                                        <td colSpan="3"><span>Phí vận chuyển</span></td>
                                         <td>{shippingMethod === 1 ? formatCurrency(fastShippingFee) : formatCurrency(shippingFee)} đ</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3"><span>Giảm giá</span></td>
+                                        <td colSpan="3"><span>Giảm giá</span></td>
                                         <td>{discount > 0 ? `-${formatCurrency(discount)} đ` : `0 đ`}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3"><span>Tổng cộng</span></td>
+                                        <td colSpan="3"><span>Tổng cộng</span></td>
                                         <td><span className={classes.sum}>{formatCurrency(finalPrice)} ₫</span></td>
                                     </tr>
                                 </tfoot>

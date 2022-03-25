@@ -4,7 +4,8 @@ const authSlice = createSlice({
     name: 'auth',
     initialState: {
         userData: JSON.parse(localStorage.getItem('userData')) ? JSON.parse(localStorage.getItem('userData')) : null,
-        shippingInfo: null
+        shippingInfo: null,
+        accessToken: localStorage.getItem('access_token') ? localStorage.getItem('access_token') : ''
     },
     reducers: {
         updateState(state, action) {
@@ -13,6 +14,9 @@ const authSlice = createSlice({
         },
         setShippingAddress(state, action) {
             state.shippingInfo = action.payload;
+        },
+        setToken(state, action) {
+            state.accessToken = action.payload;
         }
     },
     extraReducers: {

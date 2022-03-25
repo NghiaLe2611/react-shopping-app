@@ -33,6 +33,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 function App() {
     const dispatch = useDispatch();
     const userData = useSelector(state => state.auth.userData);
+    const accessToken = useSelector(state => state.auth.accessToken);
 
     const { fetchData: fetchUser } = useFetch();
     const { fetchData: postUserInfo } = useFetch();
@@ -79,8 +80,10 @@ function App() {
 
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
-                // console.log('Logged in', user);
-    
+                user.getIdToken().then(token => {
+                    dispatch(authActions.setToken(token));
+                })
+
                 const userDataObj = {
                     uuid: user.uid,
                     displayName: user.displayName,
@@ -132,6 +135,14 @@ function App() {
             localStorage.removeItem('userData');
         }
     }, [userData]);
+
+    useEffect(() => {
+        if (accessToken) {
+            localStorage.setItem('access_token', accessToken);
+        } else {
+            localStorage.removeItem('access_token');
+        }
+    }, [accessToken]);
 
 	return (
 		<Fragment>

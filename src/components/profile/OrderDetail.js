@@ -69,54 +69,56 @@ const OrderDetail = () => {
                                     </div>
                                 </div>
                             </div>
-                            <table className={classes['product-list']}>
-                                <thead>
-                                    <tr>
-                                        <th>Sản phẩm</th>
-                                        <th>Giá</th>
-                                        <th>Số lượng</th>
-                                        <th>Tạm tính</th>
-                                    </tr> 
-                                </thead>
-                                <tbody>
-                                    {
-                                        orderDetail.products.map(item => (
-                                            <tr key={item._id}>
-                                                <td>
-                                                    <div className={classes.product}>
-                                                        <img src={item.img} alt={item.name} />
-                                                        <div className={classes['product-info']}>
-                                                            <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>{item.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {item.name}</Link>
-                                                            <span className={classes.review}>Viết nhận xét</span>
+                            <div className={classes['wrap-product-list']}>
+                                <table className={classes['product-list']}>
+                                    <thead>
+                                        <tr>
+                                            <th>Sản phẩm</th>
+                                            <th>Giá</th>
+                                            <th>Số lượng</th>
+                                            <th>Tạm tính</th>
+                                        </tr> 
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            orderDetail.products.map(item => (
+                                                <tr key={item._id}>
+                                                    <td>
+                                                        <div className={classes.product}>
+                                                            <img src={item.img} alt={item.name} />
+                                                            <div className={classes['product-info']}>
+                                                                <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>{item.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {item.name}</Link>
+                                                                <span className={classes.review}>Viết nhận xét</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td>{formatCurrency(item.price)}đ</td>
-                                                <td>{item.quantity}</td>
-                                                <td>{formatCurrency(item.price*item.quantity)}₫</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3"><span>Tạm tính</span></td>
-                                        <td>{formatCurrency(orderDetail.totalPrice)} đ</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"><span>Phí vận chuyển</span></td>
-                                        <td>{orderDetail.shippingMethod === 1 ? formatCurrency(fastShippingFee) : formatCurrency(shippingFee)} đ</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"><span>Giảm giá</span></td>
-                                        <td>{orderDetail.discount > 0 ? `-${formatCurrency(orderDetail.discount)} đ` : `0 đ`}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"><span>Tổng cộng</span></td>
-                                        <td><span className={classes.sum}>{formatCurrency(orderDetail.finalPrice)} ₫</span></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                                                    </td>
+                                                    <td>{formatCurrency(item.price)}đ</td>
+                                                    <td>{item.quantity}</td>
+                                                    <td>{formatCurrency(item.price*item.quantity)}₫</td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colSpan="3"><span>Tạm tính</span></td>
+                                            <td>{formatCurrency(orderDetail.totalPrice)} đ</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="3"><span>Phí vận chuyển</span></td>
+                                            <td>{orderDetail.shippingMethod === 1 ? formatCurrency(fastShippingFee) : formatCurrency(shippingFee)} đ</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="3"><span>Giảm giá</span></td>
+                                            <td>{orderDetail.discount > 0 ? `-${formatCurrency(orderDetail.discount)} đ` : `0 đ`}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="3"><span>Tổng cộng</span></td>
+                                            <td><span className={classes.sum}>{formatCurrency(orderDetail.finalPrice)} ₫</span></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </Fragment>
                     )
                 }

@@ -8,9 +8,9 @@ const getFirebaseToken = async () => {
     if (currentUser) return currentUser.getIdToken();
 
     // Not logged in
-    const hasToken = localStorage.getItem('firebaseToken');
+    const hasToken = localStorage.getItem('access_token');
     if (!hasToken) return null;
-
+    
     // Logged in but current user is not fetched -> wait
     return new Promise((resolve , reject) => {
         const waitTimer = setTimeout(() => {

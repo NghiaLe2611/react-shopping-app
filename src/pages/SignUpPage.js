@@ -130,7 +130,6 @@ const SignUpPage = () => {
             }});
         }
 
-
         if (isValid.email.status && isValid.password.status && isValid.confirmPassword.status) {
             if (userInput.password === userInput.confirmPassword) {
                 // Register success
@@ -159,7 +158,7 @@ const SignUpPage = () => {
                             willClose: () => {
                                 clearInterval(timerInterval);
                             }
-                        });       
+                        });      
 						Toast.fire({
 							icon: 'success',
 							html: '<p>Đăng nhập thành công.<br/>Hệ thống đang tự động chuyển trang.</p>'
