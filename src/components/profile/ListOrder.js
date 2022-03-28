@@ -56,9 +56,7 @@ const ListOrder = (props) => {
 
     let prevSearchKey = usePrevious(searchKey);
 
-    useEffect(() => {
-		const randomStr = Math.random().toString(36).substring(2, 16);
-		
+    useEffect(() => {		
 		if (slug === '/tai-khoan/don-hang') {
 			let url = `${process.env.REACT_APP_API_URL}/orders?page=${currentPage}${orderStatus !== 0 ? `&status=${orderStatus}` : ''}`;
 		
@@ -66,8 +64,7 @@ const ListOrder = (props) => {
 				url = `${process.env.REACT_APP_API_URL}/orders/search?page=${currentPage}${orderStatus !== 0 ? `&status=${orderStatus}` : ''}&text=${searchKey}`;
 			}
 			getOrders({
-				url: url,
-				headers: { 'x-request-id': randomStr + '_' + userData?._id }
+				url: url
 			}, (data) => {
 				if (data) {
 					setOrderList(list => list = {...list, [orderStatus]: data.results});
@@ -81,14 +78,12 @@ const ListOrder = (props) => {
         e.preventDefault();
     
         if (searchKey) {
-            const randomStr = Math.random().toString(36).substring(2, 16);
             const url = orderStatus === 0 ? `${process.env.REACT_APP_API_URL}/orders/search?text=${searchKey.toLowerCase()}` :
             `${process.env.REACT_APP_API_URL}/orders/search?status=${orderStatus}&text=${searchKey.toLowerCase()}`;
     
             if(prevSearchKey !== searchKey) {
                 searchOrders({
-                    url: url,
-                    headers: { 'x-request-id': randomStr + '_' + userData?._id }
+                    url: url
                 }, data => {
                     if (data) {
                         setOrderList(list => list = {...list, [orderStatus]: data.results});

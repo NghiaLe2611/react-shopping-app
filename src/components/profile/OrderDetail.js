@@ -14,10 +14,8 @@ const OrderDetail = () => {
     const { isLoading, fetchData: getOrderDetail } = useFetch();
 
     useEffect(() => {
-        const randomStr = Math.random().toString(36).substring(2, 16);
         getOrderDetail({
-            url: `${process.env.REACT_APP_API_URL}/order/${orderId}`,
-            headers: { 'x-request-id': randomStr + '_' + orderId }
+            url: `${process.env.REACT_APP_API_URL}/order/${orderId}`
         }, data => {
             if (data) {
                 setOrderDetail(data);

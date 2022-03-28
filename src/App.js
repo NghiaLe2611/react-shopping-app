@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { authActions } from './store/auth';
 import { authApp } from './firebase/config';
 import useFetch from './hooks/useFetch';
+import Cookies from 'js-cookie';
 
 const Root = React.lazy(() => import('./components/UI/Root'));
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -29,6 +30,11 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 // import BrandPage from './pages/BrandPage';
 // import CartPage from './pages/CartPage';
 // import ComparePage from './pages/ComparePage';
+
+function getCookie(name) {
+	const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+	return v ? v[2] : null;
+}
 
 function App() {
     const dispatch = useDispatch();
@@ -77,10 +83,26 @@ function App() {
         //         body: data
         //     });
         // };
-
+       
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
                 user.getIdToken().then(token => {
+                    // window.cookie = '__session=' + token + ';max-age=86400';
+
+                    if (Cookies.get('csrfToken') === undefined) {
+                        // const csrfToken = getCookie('csrfToken');
+                        Cookies.set('csrfToken', token, { expires: 1 }); // 1 day
+                        fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'CSRF-Token': Cookies.get('csrfToken'),
+                            },
+                            body: JSON.stringify({ token }),
+                        });
+                    }
+ 
                     dispatch(authActions.setToken(token));
                 })
 
@@ -116,6 +138,7 @@ function App() {
                 dispatch(authActions.updateState({
                     userData: null
                 }));
+                Cookies.remove('csrfToken');
             }
         });
 

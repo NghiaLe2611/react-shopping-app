@@ -1,6 +1,6 @@
 import { authApp } from '../firebase/config';
 import 'firebase/compat/auth';
-import useFetch from '../hooks/useFetch';
+// import useFetch from '../hooks/useFetch';
 
 const logout = (callback) => {
     // return authApp.signOut();

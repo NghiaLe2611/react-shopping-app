@@ -399,7 +399,7 @@ const CartConfirmPage = () => {
                 if (cardIsValid) {
                     const orderData = {
                         products: products,
-                        customerId: userData._id ? userData._id : '',
+                        customerId: userData.uuid ? userData.uuid : '',
                         customerName: customerInfo ? customerInfo.name : '',
                         address: customerInfo ? address : '',
                         phone: customerInfo ? customerInfo.phone : '',
@@ -428,7 +428,7 @@ const CartConfirmPage = () => {
             } else {
                 const orderData = {
                     products: products,
-                    customerId: userData._id ? userData._id : '',
+                    customerId: userData.uuid ? userData.uuid : '',
                     customerName: customerInfo ? customerInfo.name : '',
                     address: customerInfo ? address : '',
                     phone: customerInfo ? customerInfo.phone : '',
