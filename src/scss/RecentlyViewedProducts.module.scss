@@ -1,0 +1,99 @@
+.title {
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
+.recently-products {
+    .item {
+        &:hover {
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 20px;
+        }
+        .img {
+            padding: 30px;
+        }
+        .name {
+            font-size: 14px;
+            font-weight: 400;
+            text-align: center;
+            color: #000;
+            margin-bottom: 10px;
+        }
+        .price {
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            color: #000;
+            &.discount {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #ff424e;
+            }
+        }
+        .percent {
+            display: inline-block;
+            padding: 0px 2px;
+            line-height: 14px;
+            font-size: 12px;
+            font-weight: 400;
+            margin-left: 8px;
+            border: 1px solid #ff424e;
+            border-radius: 2px;
+            background-color: #fff0f1;
+            color: #ff424e;
+        }
+    }
+    &:hover .arrow {
+        opacity: 1;
+        background-color: #fff;
+    }
+    .arrow {
+        background-color: rgba(255, 255, 255, .9);
+        height: 30px;
+        width: 30px;
+        opacity: 0.4;
+        z-index: 9;
+        border: 1px solid #ccc;
+        &:before {
+            content: '' !important;
+            display: inline-block;
+            font-family: inherit;
+            border-top: 2px solid #666;
+            border-right: 2px solid #666;
+            height: 8px;
+            width: 8px;
+            position: relative;
+        }
+        &.next {
+            right: 0;
+            border-radius: 50%;
+            &:before {
+                right: 2px;
+                transform: rotate(45deg);
+            }
+        }
+        &.prev {
+            left: 0;
+            border-radius: 50%;
+            &:before {
+                left: 2px;
+                transform: rotate(-135deg);
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .title {
+        padding-top: 20px;
+    }
+    .recently-products {
+        padding-bottom: 20px;
+        .item {
+            .img img {
+                max-width: 200px;
+            }
+        }
+    }
+}

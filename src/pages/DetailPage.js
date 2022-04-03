@@ -19,6 +19,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import Pagination from '../components/UI/Pagination';
 import NotFound from './NotFound';
+import RecentlyViewedProducts from '../components/detail/RecentlyViewedProducts';
 import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
 
@@ -99,6 +100,38 @@ const DetailPage = () => {
     if (strHasParentheses) {
         convertedProductId = productId.replace(/ *\([^)]*\) */g, strHasParentheses[0].replace('-', '%2F'));
     }
+
+    const recentlyProductsStorage = JSON.parse(localStorage.getItem('recently_products'));
+
+    useEffect(() => {
+        let recentlyProducts = recentlyProductsStorage ? recentlyProductsStorage : [];
+
+        if (product) {
+            const existingProductId = recentlyProducts?.findIndex(item => {
+                return item._id === product._id;
+            });
+
+            if (existingProductId < 0) {
+                // If length < 10 add to first place if not remove last place and and to first place
+                if (recentlyProducts?.length < 10) {
+                    recentlyProducts.unshift(product);
+                } else {
+                    recentlyProducts.splice(-1);
+                    recentlyProducts.unshift(product);
+                }
+            } else {
+                // If length = 1 and product existed do nothing else move to first place (remove and add to first place)
+                if (recentlyProducts?.length === 1) {
+                    return;
+                } else {
+                    recentlyProducts.splice(existingProductId, 1);
+                    recentlyProducts.unshift(product);
+                }
+            }
+
+            localStorage.setItem('recently_products', JSON.stringify(recentlyProducts));
+        }
+    }, [product]);
 
     useEffect(() => {
         fetchProducts({
@@ -1326,11 +1359,15 @@ const DetailPage = () => {
                         )
                     )
                 }
-				<div className='card'>
+				<div className={`card ${classes.mb}`}>
                     <div className={classes['wrap-product-detail']}>
 					    {productContent}
                     </div>
 				</div>
+                {
+                    recentlyProductsStorage?.length && 
+                    <div className={`card ${classes.mb}`}><RecentlyViewedProducts data={recentlyProductsStorage}/></div>
+                }
 			</div>
 
             {infoModalContent}

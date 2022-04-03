@@ -88,7 +88,6 @@ function App() {
             if (user) {
                 user.getIdToken().then(token => {
                     // window.cookie = '__session=' + token + ';max-age=86400';
-
                     if (Cookies.get('csrfToken') === undefined) {
                         // const csrfToken = getCookie('csrfToken');
                         Cookies.set('csrfToken', token, { expires: 1 }); // 1 day
@@ -117,6 +116,7 @@ function App() {
                 dispatch(authActions.updateState({
                     userData: userDataObj
                 }));
+                dispatch(authActions.setIsLoggingOut(false));
                 
                 fetchUser({
                     url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}` 
@@ -134,10 +134,10 @@ function App() {
                     }
                 });
             } else {
-                // console.log('Not logged in');       
                 dispatch(authActions.updateState({
-                    userData: null
+                    userData: null,
                 }));
+                dispatch(authActions.setToken(""));
                 Cookies.remove('csrfToken');
             }
         });

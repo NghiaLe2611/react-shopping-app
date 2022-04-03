@@ -36,14 +36,14 @@ const Slides = (props) => {
     }
 
     const settings = {
-        dots: false,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        autoplay: true,
-        className: classes.slides,
-        nextArrow: <SampleNextArrow/>,
-        prevArrow: <SamplePrevArrow/>
-    };
+		dots: false,
+		slidesToShow: 1,
+		slidesToScroll: 1,
+		autoplay: true,
+		className: classes.slides,
+		nextArrow: <SampleNextArrow />,
+		prevArrow: <SamplePrevArrow />
+	};
     
     const mainSlides = (
         slides.map((img, index) => (

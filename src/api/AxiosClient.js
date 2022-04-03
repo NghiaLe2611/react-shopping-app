@@ -36,7 +36,7 @@ const axiosClient = axios.create({
 	headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
 	},
-    paramsSerializer: params => queryString.stringify(params),
+    paramsSerializer: params => queryString.stringify(params)
 });
 
 // Add a request interceptor

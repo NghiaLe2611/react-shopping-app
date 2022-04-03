@@ -11,6 +11,7 @@ import { authService } from '../../api/auth-service';
 import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import classes from '../../scss/Header.module.scss';
 import iconCheked from '../../assets/images/icon-check.svg';
+import { authActions } from '../../store/auth';
 
 const brandList = [
     "apple",
@@ -121,13 +122,16 @@ const Header = () => {
 
     const logOutHandler = async (e) => {    
         e.preventDefault() ;
-        
-        authService.logout(() => {
-            setTimeout(() => {
-                console.log('Log out');
-                navigate('/');
-            }, 500);
-        });
+
+        dispatch(authActions.setIsLoggingOut(true));
+        authService.logout(() => { return; });
+
+        // authService.logout(() => {
+        //     setTimeout(() => {
+        //         // console.log('Log out');
+        //         navigate('/');
+        //     }, 500);
+        // });
 
         // try {
         //     await authService.logout().then(() => {

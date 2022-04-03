@@ -213,7 +213,7 @@ const LoginPage = () => {
     };
 
 	return (
-        <div className="container">
+        <div className='container'>
             <div className={classes['wrap-user-form']}>
                 <h3>Đăng nhập</h3>
                 <form className={classes['user-form']} onSubmit={loginWithEmail}>

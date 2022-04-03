@@ -822,6 +822,12 @@ body {
     }
 }
 
+@media (max-width: 768px) {
+    .mb {
+        margin-bottom: 30px;
+    }
+}
+
 @media (min-width: 1200px) {
     .wrap-product-detail {
         display: flex;

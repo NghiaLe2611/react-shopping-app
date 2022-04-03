@@ -1,4 +1,4 @@
-*{
+* {
     min-height: 0;
     min-width: 0;
 }
@@ -21,10 +21,9 @@
     }
 }
 
-.slick-disabled {
-    opacity: 0 !important;
-}
-
+// .slick-disabled {
+//     opacity: 0 !important;
+// }
 .nav-slides .slick-list {
     margin: 0 -5px;
 }
