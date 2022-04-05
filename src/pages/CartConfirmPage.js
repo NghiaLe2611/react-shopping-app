@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency, convertProductLink, 
-    convertCardNumber, convertCardExpiry, shippingFee, fastShippingFee } from '../helpers/helpers';
+    convertCardNumber, convertCardExpiry, shippingFee, fastShippingFee, getDayName } from '../helpers/helpers';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
@@ -507,7 +507,7 @@ const CartConfirmPage = () => {
                                                             </div>
                                                             <div className={classes['shipping-info']}>
                                                                 <p className={classes.time}>
-                                                                    {shippingMethod === 1 ? 'Giao trước 11:59 sáng mai' : 'Giao vào ...'}  
+                                                                    {shippingMethod === 1 ? 'Giao trước 11:59 sáng mai' : `Giao vào ${getDayName()}`}  
                                                                 </p>
                                                                 <p>
                                                                     {

@@ -9,15 +9,16 @@ export default function PrivateRoute({ children }) {
     // const slug = location.pathname.split('/').pop();
     // return isLoggedIn ? children : <Navigate to='/dang-nhap' state={{ from: location }}/>;
 
-    console.log(111, isLoggingOut);
-
     if (userData) {
         return children;
     }
 
     if (!isLoggingOut) {
-        return <Navigate to='/dang-nhap' state={{ from: location }} replace/>;
+        return <Navigate to = '/dang-nhap'
+        state = {
+            { from: location } }
+        replace / > ;
     } else {
-        return <Navigate to='/' />;
+        return <Navigate to = '/' / > ;
     }
 }

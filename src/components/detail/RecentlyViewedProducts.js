@@ -61,32 +61,63 @@ const RecentlyViewedProducts = (props) => {
     return (
         <div className={classes['wrap-recently-products']}>
             <h4 className={classes.title}>Sản Phẩm Bạn Đã Xem</h4>
-            <Slider {...settings}>
-                {
-                    data.map((item) => (
-                        <div key={item._id} className={classes.item}>
-                            <a href={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>
-                                <div className={classes.img}>
-                                    <img src={item.img} alt={item.name} />
+            {
+                data && data.length > 5 ? (
+                    <Slider {...settings}>
+                        {
+                            data.map((item) => (
+                                <div key={item._id} className={classes.item}>
+                                    <a href={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>
+                                        <div className={classes.img}>
+                                            <img src={item.img} alt={item.name} />
+                                        </div>
+                                        <h3 className={classes.name}>{item.name}</h3>
+                                        <div className={classes.rating}></div>
+                                        {
+                                            item.sale ? 
+                                                <p className={`${classes.price} ${classes.discount}`}>
+                                                    {formatCurrency(item.price - item.sale)} ₫
+                                                    <span className={classes.percent}>
+                                                        {Math.round(item.sale*100/item.price)}%
+                                                    </span>
+                                                </p> : 
+                                                <p className={classes.price}>{formatCurrency(item.price)} ₫</p>
+                                            
+                                        }
+                                    </a>
                                 </div>
-                                <h3 className={classes.name}>{item.name}</h3>
-                                <div className={classes.rating}></div>
-                                {
-                                    item.sale ? 
-                                        <p className={`${classes.price} ${classes.discount}`}>
-                                            {formatCurrency(item.price - item.sale)} ₫
-                                            <span className={classes.percent}>
-                                                {Math.round(item.sale*100/item.price)}%
-                                            </span>
-                                        </p> : 
-                                        <p className={classes.price}>{formatCurrency(item.price)} ₫</p>
-                                    
-                                }
-                            </a>
-                        </div>
-                    ))
-                }
-            </Slider>
+                            ))
+                        }
+                    </Slider>
+                ) : (
+                    <ul className={`${classes['recently-products']} ${classes.list}`}>
+                        {
+                            data.map((item) => (
+                                <div key={item._id} className={classes.item}>
+                                    <a href={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>
+                                        <div className={classes.img}>
+                                            <img src={item.img} alt={item.name} />
+                                        </div>
+                                        <h3 className={classes.name}>{item.name}</h3>
+                                        <div className={classes.rating}></div>
+                                        {
+                                            item.sale ? 
+                                                <p className={`${classes.price} ${classes.discount}`}>
+                                                    {formatCurrency(item.price - item.sale)} ₫
+                                                    <span className={classes.percent}>
+                                                        {Math.round(item.sale*100/item.price)}%
+                                                    </span>
+                                                </p> : 
+                                                <p className={classes.price}>{formatCurrency(item.price)} ₫</p>
+                                            
+                                        }
+                                    </a>
+                                </div>
+                            ))
+                        }
+                    </ul>
+                )
+            }
         </div>
     )
 };

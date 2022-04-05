@@ -84,6 +84,15 @@
     }
 }
 
+.list {
+    display: flex;
+    flex-wrap: wrap;
+    .item {
+        width: calc(100% * 1/5);
+        padding: 15px 0;
+    }
+}
+
 @media (max-width: 768px) {
     .title {
         padding-top: 20px;

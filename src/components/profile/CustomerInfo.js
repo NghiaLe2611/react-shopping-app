@@ -33,24 +33,28 @@ const CustomerInfo = (props) => {
         birthday: birthday ? birthday : ''
 	});
 
-	const [selectedDay, setSelectedDay] = useState(() => {
-		if (birthday) {
-			return new Date(birthday).getDate();
-		}
-		return 0;
-	});
-	const [selectedMonth, setSelectedMonth] = useState(() => {
-		if (birthday) {
-			return new Date(birthday).getMonth() + 1;
-		}
-		return 0;
-	});
-	const [selectedYear, setSelectedYear] = useState(() => {
-		if (birthday) {
-			return new Date(birthday).getFullYear();
-		}
-		return 0;
-	});
+	// const [selectedDay, setSelectedDay] = useState(() => {
+	// 	if (birthday) {
+	// 		return new Date(birthday).getDate();
+	// 	}
+	// 	return 0;
+	// });
+	// const [selectedMonth, setSelectedMonth] = useState(() => {
+	// 	if (birthday) {
+	// 		return new Date(birthday).getMonth() + 1;
+	// 	}
+	// 	return 0;
+	// });
+	// const [selectedYear, setSelectedYear] = useState(() => {
+	// 	if (birthday) {
+	// 		return new Date(birthday).getFullYear();
+	// 	}
+	// 	return 0;
+	// });
+
+    const [selectedDay, setSelectedDay] = useState(0);
+	const [selectedMonth, setSelectedMonth] = useState(0);
+	const [selectedYear, setSelectedYear] = useState(0);
 	const [daysInMonth, setDaysInMonth] = useState('');
 
     const imgRef = useRef('');
@@ -66,12 +70,6 @@ const CustomerInfo = (props) => {
     }, [userData]);
 
     useEffect(() => {
-		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
-			setDaysInMonth(getDaysInMonth(selectedMonth, selectedYear));
-		}
-	}, [selectedMonth, selectedYear]);
-
-    useEffect(() => {
 		if (selectedDay !== 0 && selectedMonth !== 0 && selectedYear !== 0) {
 			const day = parseInt(selectedDay);
 			const month = parseInt(selectedMonth);
@@ -83,6 +81,20 @@ const CustomerInfo = (props) => {
 		}
 	}, [selectedDay, selectedMonth, selectedYear]);
 
+    useEffect(() => {
+        const birthdayObj = userData.birthday;
+        if (birthdayObj) {
+            setSelectedDay(new Date(birthdayObj).getDate());
+            setSelectedMonth(new Date(birthdayObj).getMonth() + 1);
+            setSelectedYear(new Date(birthdayObj).getFullYear());
+        }
+    }, [userData.birthday])
+
+    useEffect(() => {
+		if (parseInt(selectedMonth) !== 0 && parseInt(selectedYear) !== 0) {
+			setDaysInMonth(getDaysInMonth(selectedMonth, selectedYear));
+		}
+	}, [selectedMonth, selectedYear]);
 
     const onChangeDay = (e) => {
 		// console.log(e.target.value);
@@ -285,8 +297,21 @@ const CustomerInfo = (props) => {
             <h3>Thông tin tài khoản</h3>
             <div className={classes.content}>
                 <div className={classes.left}>
+                    <h4 className={classes.title}>Thông tin cá nhân</h4>
                     <div className={classes.group}>
-                        <h4>Thông tin cá nhân</h4>
+                        <div className={classes['wrap-choose-avatar']}>
+                            <div className={classes.avatar}>
+                                {photoURL && <span className={classes['remove-img']} onClick={clearPhoto}>&times;</span>}
+                                <img src={userInfo.avatar} alt='avatar' />
+                                {/* {photoURL || userInfo.avatar ? <img src={userInfo.avatar} alt='avatar' /> : <i className='icon-user'></i>} */}
+                            </div>
+                            <div className={classes['choose-avatar']}>
+                                <label htmlFor='upload-avatar'>Chọn ảnh</label>
+                                <input type='file' name='avatar' id='upload-avatar' onChange={onChangePhoto} ref={imgRef} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className={classes.group}>
                         <form onSubmit={updateUserData}>
                             <div className={classes['input-group']}>
                                 <label>Họ và tên</label>
@@ -360,8 +385,10 @@ const CustomerInfo = (props) => {
                             <button type='submit' className={classes.save}>Lưu thay đổi</button>
                         </form>
                     </div>
+                </div>
+                <div className={classes.right}>
                     <div className={classes.group}>
-                        <h4>Bảo mật</h4>
+                        <h4 className={classes.title}>Bảo mật</h4>
                         <div className={classes.item}>
                             <div className={classes.left}>
                                 <i className='icon-lock'></i>
@@ -371,7 +398,7 @@ const CustomerInfo = (props) => {
                         </div>
                     </div>
                     <div className={classes.group}>
-                        <h4>Liên kết mạng xã hội</h4>
+                        <h4 className={classes.title}>Liên kết mạng xã hội</h4>
                         <div className={classes.item}>
                             <div className={classes.left}>
                                 <img src={iconFacebook} alt='icon-facebook' />
@@ -391,17 +418,7 @@ const CustomerInfo = (props) => {
                             )}
                         </div>
                     </div>
-                </div>
-                <div className={classes.right}>
-                    <div className={classes.avatar}>
-                        {photoURL && <span className={classes['remove-img']} onClick={clearPhoto}>&times;</span>}
-                        <img src={userInfo.avatar} alt='avatar' />
-                        {/* {photoURL || userInfo.avatar ? <img src={userInfo.avatar} alt='avatar' /> : <i className='icon-user'></i>} */}
-                    </div>
-                    <div className={classes['choose-avatar']}>
-                        <label htmlFor='upload-avatar'>Chọn ảnh</label>
-                        <input type='file' name='avatar' id='upload-avatar' onChange={onChangePhoto} ref={imgRef} />
-                    </div>
+                    
                 </div>
             </div>
         </Fragment>
