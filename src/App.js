@@ -31,10 +31,10 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 // import CartPage from './pages/CartPage';
 // import ComparePage from './pages/ComparePage';
 
-function getCookie(name) {
-	const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-	return v ? v[2] : null;
-}
+// function getCookie(name) {
+// 	const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+// 	return v ? v[2] : null;
+// }
 
 function App() {
     const dispatch = useDispatch();

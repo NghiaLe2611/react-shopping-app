@@ -833,61 +833,61 @@ const DetailPage = () => {
                     {
                         shouldRenderReviewsModal && (
                             <Modal isShowModal={isShowAllReviews} closeModal={() => setIsShowAllReviews(false)} animation='none' contentClass={classes.reviewModal}>
-                            <div className={classes['wrap-review-modal']}>
-                                <h5>{reviewsCount} đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
-                                    product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
-                                </h5>
-                                <div className={classes['wrap-reviews']}>
-                                    {
-                                        allReviews.length ? (
-                                            <Fragment>
-                                                <ul className={classes['list-review']}>
-                                                    {
-                                                        allReviews.map(item => (
-                                                            <li key={item._id}>
-                                                                <p className={classes['ctm-name']}>
-                                                                    <strong>{item.customerName}</strong>
-                                                                    <span>{timeSince(item.createdAt)}</span>
-                                                                </p>
-                                                                <p className={classes.rating}>
-                                                                    {
-                                                                        Array(item.star).fill().map((item, index) => (
-                                                                            <i key={index} className='icon-star'></i>
-                                                                        ))
-                                                                    }
-                                                                    { item.star < 5 && (
-                                                                        Array(5 - item.star).fill().map((item, index) => (
-                                                                            <i key={index} className={`icon-star ${classes.black}`}></i>
-                                                                        ))
-                                                                    ) }
-                                                                </p>
-                                                                <p className={classes.comment}>{item.comment}</p>
-                                                            </li>
-                                                        ))
-                                                    }
-                                                </ul>    
-                                            </Fragment>
-                                        ) : (
-                                            <Fragment>
-                                                <p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
-                                                <div className={classes['wrap-btn']}>
-                                                    <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
-                                                </div>
-                                            </Fragment>
-                                        )
-                                    }
-                                    {
-                                        reviewsCount > reviewPageSize ? (
-                                            <Pagination style={{marginTop: 30}}
-                                                pageSize={reviewPageSize} currentPage={currentPage}
-                                                totalCount={reviewsCount}
-                                                paginate={paginate}
-                                            />
-                                        ) : null
-                                    }
-                                </div>   
-                            </div>
-                        </Modal>
+                                <div className={classes['wrap-review-modal']}>
+                                    <h5>{reviewsCount} đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
+                                        product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
+                                    </h5>
+                                    <div className={classes['wrap-reviews']}>
+                                        {
+                                            allReviews.length ? (
+                                                <Fragment>
+                                                    <ul className={classes['list-review']}>
+                                                        {
+                                                            allReviews.map(item => (
+                                                                <li key={item._id}>
+                                                                    <p className={classes['ctm-name']}>
+                                                                        <strong>{item.customerName}</strong>
+                                                                        <span>{timeSince(item.createdAt)}</span>
+                                                                    </p>
+                                                                    <p className={classes.rating}>
+                                                                        {
+                                                                            Array(item.star).fill().map((item, index) => (
+                                                                                <i key={index} className='icon-star'></i>
+                                                                            ))
+                                                                        }
+                                                                        { item.star < 5 && (
+                                                                            Array(5 - item.star).fill().map((item, index) => (
+                                                                                <i key={index} className={`icon-star ${classes.black}`}></i>
+                                                                            ))
+                                                                        ) }
+                                                                    </p>
+                                                                    <p className={classes.comment}>{item.comment}</p>
+                                                                </li>
+                                                            ))
+                                                        }
+                                                    </ul>    
+                                                </Fragment>
+                                            ) : (
+                                                <Fragment>
+                                                    <p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
+                                                    <div className={classes['wrap-btn']}>
+                                                        <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
+                                                    </div>
+                                                </Fragment>
+                                            )
+                                        }
+                                        {
+                                            reviewsCount > reviewPageSize ? (
+                                                <Pagination style={{marginTop: 30}}
+                                                    pageSize={reviewPageSize} currentPage={currentPage}
+                                                    totalCount={reviewsCount}
+                                                    paginate={paginate}
+                                                />
+                                            ) : null
+                                        }
+                                    </div>   
+                                </div>
+                            </Modal>
                         )
                     }
                 </Fragment>

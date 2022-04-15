@@ -51,7 +51,7 @@ const Pagination = ({ pageSize, totalCount, paginate, currentPage, siblingCount 
 
 	return (
 		<nav style={style}>
-			<ul className={classes['pagination']} style={right ? {justifyContent: 'flex-end'} : ''}>
+			<ul className={classes['pagination']} style={right && {justifyContent: 'flex-end'}}>
                 {
                     currentPage > 1 && (
                         <li className={classes['page-item']}>
