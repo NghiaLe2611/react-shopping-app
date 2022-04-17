@@ -83,12 +83,23 @@ function App() {
         //         body: data
         //     });
         // };
-       
+
+        // const onChangeToken = authApp.onIdTokenChanged(async (user) => {
+        //     console.log('onChangeToken');
+        //     if (user) {
+        //         console.log(user);
+        //     } else {
+        //         console.log(123)
+        //     }
+        // });
+
         const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
                 user.getIdToken().then(token => {
                     // window.cookie = '__session=' + token + ';max-age=86400';
-                    if (Cookies.get('csrfToken') === undefined) {
+                    const prevCookie = Cookies.get('csrfToken');
+                    console.log('different', prevCookie === token);
+                    if (prevCookie === undefined || prevCookie !== token) {
                         // const csrfToken = getCookie('csrfToken');
                         Cookies.set('csrfToken', token, { expires: 1 }); // 1 day
                         fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
@@ -143,7 +154,10 @@ function App() {
         });
 
         // Cleanup subscription on unmount
-        return () => unregisterAuthObserver();
+        return () => {
+            unregisterAuthObserver();
+            // onChangeToken();
+        }
 
     }, [dispatch, fetchUser, postUserInfo]);
 
