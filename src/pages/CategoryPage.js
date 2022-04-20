@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { Link, useParams, useLocation } from 'react-router-dom'; // Redirect -> Navigate in v6
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'; // Redirect -> Navigate in v6
 import useFetch from '../hooks/useFetch';
 import ProductItem from '../components/products/ProductItem';
 import SkeletonElement from '../components/UI/Skeleton';
@@ -35,7 +35,7 @@ const slides = [
 const CategoryPage = () => {
     const { category } = useParams();
     const location = useLocation();
-
+    const navigate = useNavigate();
     const categoryName = category === 'dien-thoai' ? 'smartphone' : category === 'may-tinh-bang' ? 'tablet' : null;
 
     const [products, setProducts] = useState([]);
@@ -54,7 +54,9 @@ const CategoryPage = () => {
     const { isMobile } = useCheckMobile();
 
     useEffect(() => {
-        setFilterUrl(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
+        if (categoryName) {
+            setFilterUrl(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
+        }
     }, [categoryName]);
 
     useEffect(() => {
@@ -221,14 +223,13 @@ const CategoryPage = () => {
                     breadcrumbsCate =  <Link to="/tablet">Máy tính bảng</Link>;
                     break;
                 default:
-                    return
+                    break;
             }
         }
     };
 
-    return (
-        !categoryName ? <NotFound/> :
-        (
+    if (categoryName) {
+        return (
             <Fragment>
                 {isShowFilter && <div className='overlay' onClick={() => setIsShowFilter(false)}></div>}
                 {
@@ -293,8 +294,10 @@ const CategoryPage = () => {
                     </div>
                 </div>
             </Fragment>
-        )
-    )
+        );
+    } else {
+        return <NotFound/>
+    }
 }
 
 export default CategoryPage;

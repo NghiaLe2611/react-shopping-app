@@ -124,7 +124,8 @@ const Header = () => {
         e.preventDefault() ;
 
         dispatch(authActions.setIsLoggingOut(true));
-        authService.logout(() => { return; });
+        authService.logout();
+        // authService.logout(() => { return; });
 
         // authService.logout(() => {
         //     setTimeout(() => {

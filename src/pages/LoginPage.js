@@ -47,12 +47,13 @@ const LoginPage = () => {
 	const uiConfig = {
 		// Popup signin flow rather than redirect flow.
 		signInFlow: 'popup',
-		// signInSuccessUrl: '/',
+		signInSuccessUrl: '/',
 		signInOptions: [
             // firebase.auth.EmailAuthProvider.PROVIDER_ID,
 			firebase.auth.FacebookAuthProvider.PROVIDER_ID,
             firebase.auth.GoogleAuthProvider.PROVIDER_ID,
 		],
+        /*
         callbacks: {
             // Avoid redirects after sign-in.
             signInSuccessWithAuthResult: () => {
@@ -94,6 +95,7 @@ const LoginPage = () => {
                 });
             }
         }
+        */
 	};
 
     const validateInput = (name, value) => {

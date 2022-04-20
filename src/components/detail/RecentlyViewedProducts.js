@@ -4,8 +4,6 @@ import 'slick-carousel/slick/slick-theme.css';
 import classes from '../../scss/RecentlyViewedProducts.module.scss';
 import { convertProductLink, formatCurrency } from '../../helpers/helpers';
 
-
-
 const RecentlyViewedProducts = (props) => {
     const { data } = props;
 
