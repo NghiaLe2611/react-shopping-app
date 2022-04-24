@@ -22,6 +22,7 @@ import NotFound from './NotFound';
 import RecentlyViewedProducts from '../components/detail/RecentlyViewedProducts';
 import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
+import { findAllByDisplayValue } from '@testing-library/react';
 
 function BoxThumbnail({ children }) {
     return (
@@ -79,6 +80,7 @@ const DetailPage = () => {
     const { fetchData: postReview } = useFetch();
     const { fetchData: addToFav } = useFetch();
     const { fetchData: fetchUser } = useFetch();
+    const { fetchData: updateViewedProduct } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
@@ -99,43 +101,74 @@ const DetailPage = () => {
     const strHasParentheses = productId.match(/\(([^)]+)\)/);
     if (strHasParentheses) {
         convertedProductId = productId.replace(/ *\([^)]*\) */g, strHasParentheses[0].replace('-', '%2F'));
-    }
+    };
 
-    const recentlyProductsStorage = JSON.parse(localStorage.getItem('recently_products'));
+    let { recentlyViewedProducts } = userData;
+
+    // const recentlyProductsStorage = JSON.parse(localStorage.getItem('recently_products'));
+
+    // useEffect(() => {
+    //     let recentlyProducts = recentlyProductsStorage ? recentlyProductsStorage : [];
+
+    //     if (product) {
+    //         const existingProductId = recentlyProducts?.findIndex(item => {
+    //             return item._id === product._id;
+    //         });
+
+    //         if (existingProductId < 0) {
+    //             // If length < 10 add to first place if not remove last place and and to first place
+    //             if (recentlyProducts?.length < 10) {
+    //                 recentlyProducts.unshift(product);
+    //             } else {
+    //                 recentlyProducts.splice(-1);
+    //                 recentlyProducts.unshift(product);
+    //             }
+    //         } else {
+    //             // If length = 1 and product existed do nothing else move to first place (remove and add to first place)
+    //             if (recentlyProducts?.length === 1) {
+    //                 return;
+    //             } else {
+    //                 recentlyProducts.splice(existingProductId, 1);
+    //                 recentlyProducts.unshift(product);
+    //             }
+    //         }
+
+    //         localStorage.setItem('recently_products', JSON.stringify(recentlyProducts));
+    //     }
+    // }, [product]);
 
     useEffect(() => {
-        let recentlyProducts = recentlyProductsStorage ? recentlyProductsStorage : [];
-
         if (product) {
-            const existingProductId = recentlyProducts?.findIndex(item => {
-                return item._id === product._id;
+            updateViewedProduct({
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+                body: {
+                    recentlyProduct: product
+                }
+            }, data => {
+                if (data.message) {
+                    fetchUser(
+                        {
+                            url: `${process.env.REACT_APP_API_URL}/getUserData/${uuid}`,
+                        },(data) => {
+                            if (data) {
+                                dispatch(
+                                    authActions.updateState({
+                                        userData: {...userData, recentlyViewedProducts: data.recentlyViewedProducts}
+                                    })
+                                );
+                            }
+                        }
+                    );
+                }
             });
-
-            if (existingProductId < 0) {
-                // If length < 10 add to first place if not remove last place and and to first place
-                if (recentlyProducts?.length < 10) {
-                    recentlyProducts.unshift(product);
-                } else {
-                    recentlyProducts.splice(-1);
-                    recentlyProducts.unshift(product);
-                }
-            } else {
-                // If length = 1 and product existed do nothing else move to first place (remove and add to first place)
-                if (recentlyProducts?.length === 1) {
-                    return;
-                } else {
-                    recentlyProducts.splice(existingProductId, 1);
-                    recentlyProducts.unshift(product);
-                }
-            }
-
-            localStorage.setItem('recently_products', JSON.stringify(recentlyProducts));
         }
     }, [product]);
 
     useEffect(() => {
         fetchProducts({
-            url: `${process.env.REACT_APP_API_URL}/product/${convertedProductId}` 
+            url: `${process.env.REACT_APP_API_URL}/api/v1/products/${convertedProductId}` 
         }, data => {
             // console.log(data);
             if (data) {
@@ -147,12 +180,12 @@ const DetailPage = () => {
     useEffect(() => {
         if (product) {
             fetchReviews({
-                url: `${process.env.REACT_APP_API_URL}/product/${product._id}/reviews?page=1`
+                url: `${process.env.REACT_APP_API_URL}/api/v1/reviews?product_id=${product._id}&page=1`
             }, data => {
                 if (data) {
                     setReviews(data.reviews);
-                    setAveragePoint(data.averagePoint);
-                    setReviewsCount(data.count);
+                    setAveragePoint(data.rating_average);
+                    setReviewsCount(data.reviews_count);
                     setArrayPercent(data.pointPercent);
                 }
             });
@@ -207,7 +240,7 @@ const DetailPage = () => {
 
             if (isShowAllReviews) {
                 fetchReviews({
-                    url: `${process.env.REACT_APP_API_URL}/product/${product._id}/reviews?page=${currentPage}`
+                    url: `${process.env.REACT_APP_API_URL}/api/v1/reviews?product_id=${product._id}&page=${currentPage}`
                 }, data => {
                     if (data) {
                         setAllReviews(data.reviews);
@@ -401,10 +434,12 @@ const DetailPage = () => {
         let images = [];
 
 		for (let i = 0; i < e.target.files.length; i++) {
-			images.push(e.target.files[i]);
+            if (images.length < 4) {
+                images.push(e.target.files[i]);
+            }
 		}
 		if (images.length > 0) {
-			setReviewImgs(images);
+            setReviewImgs(images);
 		}
 
     };
@@ -447,7 +482,7 @@ const DetailPage = () => {
             postReview({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/submitReview/${product._id}`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/reviews/submit/${product._id}`,
                 body: reviewData
             }, data => {
                 closeWriteReviewModal();
@@ -482,7 +517,6 @@ const DetailPage = () => {
     };
 
     const addToWishlist = (type, id) => {
-        console.log(type);
         if (userData) {
             addToFav({
                 method: 'PUT',
@@ -500,26 +534,30 @@ const DetailPage = () => {
                         });
 
                         const userDataStorage = JSON.parse(localStorage.getItem('userData'));
-                        
+
                         const userDataObj = {
                             uuid: userDataStorage.uuid,
                             displayName: userDataStorage.displayName,
                             email: userDataStorage.email,
                             photoURL: userDataStorage.photoURL,
-                            emailVerified: userDataStorage.emailVerified
+                            emailVerified: userDataStorage.emailVerified,
                         };
-            
-                        fetchUser({
-                            url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}` 
-                        }, data => {
-                            if (data) {
-                                console.log(111, data);
-                                const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-                                dispatch(authActions.updateState({
-                                    userData: {...userDataObj, ...cloneData}
-                                }));
+
+                        fetchUser(
+                            {
+                                url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}`,
+                            },
+                            (data) => {
+                                if (data) {
+                                    const cloneData = (({uuid, displayName, email, photoURL, emailVerified, ...val}) => val)(data);
+                                    dispatch(
+                                        authActions.updateState({
+                                            userData: {...userDataObj, ...cloneData},
+                                        })
+                                    );
+                                }
                             }
-                        });
+                        );
                     } else {
                         reviewSwal.fire({
                             icon: 'error',
@@ -803,7 +841,7 @@ const DetailPage = () => {
                                         </div>
                                         <div className={classes.bottom}>
                                             <label htmlFor="image-upload" className={classes.upload}>
-                                                <i className="icon-camera"></i>Thêm hình ảnh
+                                                <i className="icon-camera"></i>Thêm hình ảnh (tối đa 4)
                                                 <input id="image-upload" type="file" multiple={true} onChange={chooseImage}/> 
                                             </label>
                                             <p className={classes.characters} style={{display: comment.length >= 80 ? 'none' : 'block'}}>
@@ -1319,7 +1357,11 @@ const DetailPage = () => {
         } else {
             productContent = <NotFound/>;
         }
-    };
+    }
+
+    if (error) {
+        productContent = <div>{error}</div>;
+    }
 
     return (
 		<Fragment>
@@ -1352,11 +1394,11 @@ const DetailPage = () => {
                             </li>
                         </ul>
                     ) : (
-                        isLoading && (
+                        isLoading ? (
                             <div style={{ padding: '15px 0' }}>
                                 <Skeleton height={25} />
                             </div>
-                        )
+                        ) : <div style={{ padding: '15px 0' }}></div>
                     )
                 }
 				<div className={`card ${classes.mb}`}>
@@ -1365,8 +1407,7 @@ const DetailPage = () => {
                     </div>
 				</div>
                 {
-                    recentlyProductsStorage?.length && 
-                    <div className={`card ${classes.mb}`}><RecentlyViewedProducts data={recentlyProductsStorage}/></div>
+                    recentlyViewedProducts?.length && <div className={`card ${classes.mb}`}><RecentlyViewedProducts data={recentlyViewedProducts}/></div>
                 }
 			</div>
 

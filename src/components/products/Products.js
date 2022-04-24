@@ -12,7 +12,7 @@ const Products = () => {
 
     useEffect(() => {
         fetchProducts({
-            url: `${process.env.REACT_APP_API_URL}/getProducts`
+            url: `${process.env.REACT_APP_API_URL}/api/v1/products?featured=1`
         }, data => {
             if (data) {
                 setProducts(data.results);

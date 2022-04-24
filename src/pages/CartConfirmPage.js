@@ -2,8 +2,15 @@ import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
 import { Link, useNavigate } from 'react-router-dom';
-import { formatCurrency, convertProductLink, 
-    convertCardNumber, convertCardExpiry, shippingFee, fastShippingFee, getDayName } from '../helpers/helpers';
+import {
+    formatCurrency,
+    convertProductLink,
+    convertCardNumber,
+    convertCardExpiry,
+    shippingFee,
+    fastShippingFee,
+    getDayName
+} from '../helpers/helpers';
 import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
@@ -16,8 +23,7 @@ import imgCvv from '../assets/images/img-cvv.jpeg';
 import iconVisa from '../assets/images/icon-visa.png';
 import Swal from 'sweetalert2';
 
-const listPayment = [
-    {
+const listPayment = [{
         id: 'p1',
         type: 'payment',
         discount: 0,
@@ -57,301 +63,302 @@ const cardErrors = {
 };
 
 const CartConfirmPage = () => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+        const dispatch = useDispatch();
+        const navigate = useNavigate();
 
-    const [customerInfo, setCustomerInfo] = useState(null);
-    const [selectedCoupons, setSelectedCoupons] = useState([]);
-    const [showCouponModal, setShowCouponModal] = useState(false);
-    const [showCouponPopup, setShowCouponPopup] = useState(false);
-    const [showInfoProducts, setShowInfoProducts] = useState(false);
-    const [shippingMethod, setShippingMethod] = useState(1);
-    const [paymentMethod, setPaymentMethod] = useState('p1');
-    const [isShowCardForm, setIsShowCardForm] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isFocused, setIsFocused] = useState(null);
-    const [cardInfo, setCardInfo] = useState({});
-    const [cardError, setCardError] = useState({});
-    const [isBlur, setIsBlur] = useState({})
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [cardIsValid, setCardIsValid] = useState(false);
-    const [showAddressModal, setShowAddressModal] = useState(false);
+        const [customerInfo, setCustomerInfo] = useState(null);
+        const [selectedCoupons, setSelectedCoupons] = useState([]);
+        const [showCouponModal, setShowCouponModal] = useState(false);
+        const [showCouponPopup, setShowCouponPopup] = useState(false);
+        const [showInfoProducts, setShowInfoProducts] = useState(false);
+        const [shippingMethod, setShippingMethod] = useState(1);
+        const [paymentMethod, setPaymentMethod] = useState('p1');
+        const [isShowCardForm, setIsShowCardForm] = useState(false);
+        const [isLoading, setIsLoading] = useState(false);
+        const [isFocused, setIsFocused] = useState(null);
+        const [cardInfo, setCardInfo] = useState({});
+        const [cardError, setCardError] = useState({});
+        const [isBlur, setIsBlur] = useState({})
+        const [isSubmitted, setIsSubmitted] = useState(false);
+        const [cardIsValid, setCardIsValid] = useState(false);
+        const [showAddressModal, setShowAddressModal] = useState(false);
 
-    const cart = useSelector((state) => state.cart);
-	const userData = useSelector((state) => state.auth.userData);
-	const shippingInfo = useSelector((state) => state.auth.shippingInfo);
+        const cart = useSelector((state) => state.cart);
+        const userData = useSelector((state) => state.auth.userData);
+        const shippingInfo = useSelector((state) => state.auth.shippingInfo);
 
-    const { fetchData: submitOrder } = useFetch();
+        const { fetchData: submitOrder } = useFetch();
 
-    const calculateDiscount = useCallback(() => {
-        let total = 0;
+        const calculateDiscount = useCallback(() => {
+            let total = 0;
 
-        if (cart.appliedCoupons.length) {    
-            cart.appliedCoupons.forEach(obj => {
-                if (obj.type !== 'shipping') {
-                    total += obj.discount * 1000;
-                }
-            })  
-        }
-        
-        return total;
-    }, [cart.appliedCoupons]);
-    const totalDiscountExcludeShipping = useMemo(() => calculateDiscount(), [calculateDiscount]);
+            if (cart.appliedCoupons.length) {
+                cart.appliedCoupons.forEach(obj => {
+                    if (obj.type !== 'shipping') {
+                        total += obj.discount * 1000;
+                    }
+                })
+            }
 
-    useEffect(() => {
-        if (showCouponModal) {
-            document.querySelector('html').classList.add('modal-open');
-            document.body.classList.add('modal-open');
-        } else {
-            document.querySelector('html').classList.remove('modal-open');
-            document.body.classList.remove('modal-open');
-        }
+            return total;
+        }, [cart.appliedCoupons]);
+        const totalDiscountExcludeShipping = useMemo(() => calculateDiscount(), [calculateDiscount]);
 
-    }, [showCouponModal]);
+        useEffect(() => {
+            if (showCouponModal) {
+                document.querySelector('html').classList.add('modal-open');
+                document.body.classList.add('modal-open');
+            } else {
+                document.querySelector('html').classList.remove('modal-open');
+                document.body.classList.remove('modal-open');
+            }
 
-    useEffect(() => {
-        if (shippingInfo) {
-            setCustomerInfo(shippingInfo);
-            return;
-        }
-        if (userData && userData.listAddress && userData.listAddress.length) {
-            const index = userData.listAddress.findIndex(val => val.default === true);
-            setCustomerInfo(userData.listAddress[index]);
-        }
-    }, [userData, shippingInfo]);
+        }, [showCouponModal]);
 
-    useEffect(() => {
-        let totalPrice = cart.totalPrice;
-        if (shippingMethod === 1) {
-            totalPrice += fastShippingFee;
-            dispatch(cartActions.setFinalPrice(totalPrice));
-        } else if (shippingMethod === 2) {
-            totalPrice += shippingFee;
-            dispatch(cartActions.setFinalPrice(totalPrice));
-        }
+        useEffect(() => {
+            if (shippingInfo) {
+                setCustomerInfo(shippingInfo);
+                return;
+            }
+            if (userData && userData.listAddress && userData.listAddress.length) {
+                const index = userData.listAddress.findIndex(val => val.default === true);
+                setCustomerInfo(userData.listAddress[index]);
+            }
+        }, [userData, shippingInfo]);
 
-        if (cart.discount > 0) {
-            totalPrice = totalPrice - cart.discount;
-            dispatch(cartActions.setFinalPrice(totalPrice));
-        }
-    }, [shippingMethod, cart.discount]);
+        useEffect(() => {
+            let totalPrice = cart.totalPrice;
+            if (shippingMethod === 1) {
+                totalPrice += fastShippingFee;
+                dispatch(cartActions.setFinalPrice(totalPrice));
+            } else if (shippingMethod === 2) {
+                totalPrice += shippingFee;
+                dispatch(cartActions.setFinalPrice(totalPrice));
+            }
 
-    useEffect(() => {
-        let totalDiscount = 0;
+            if (cart.discount > 0) {
+                totalPrice = totalPrice - cart.discount;
+                dispatch(cartActions.setFinalPrice(totalPrice));
+            }
+        }, [shippingMethod, cart.discount]);
 
-        if (cart.appliedCoupons.length) {    
-            cart.appliedCoupons.forEach(obj => {
-                totalDiscount += obj.discount * 1000;
-            })  
-        }
-        dispatch(cartActions.setDiscount(totalDiscount));
-    }, [paymentMethod, cart.appliedCoupons]);
+        useEffect(() => {
+            let totalDiscount = 0;
 
-    useEffect(() => {
-        let timer;
+            if (cart.appliedCoupons.length) {
+                cart.appliedCoupons.forEach(obj => {
+                    totalDiscount += obj.discount * 1000;
+                })
+            }
+            dispatch(cartActions.setDiscount(totalDiscount));
+        }, [paymentMethod, cart.appliedCoupons]);
 
-        if (!isLoading && paymentMethod === 'p3') {
-            setIsShowCardForm(true);
-        } else {
-            setIsShowCardForm(false);
-        }
+        useEffect(() => {
+            let timer;
 
-        if (isLoading) {
-            timer = setTimeout(() => {
-                setIsLoading(false);
-            }, 500);
-        }
+            if (!isLoading && paymentMethod === 'p3') {
+                setIsShowCardForm(true);
+            } else {
+                setIsShowCardForm(false);
+            }
 
-        return () => clearTimeout(timer);
-    }, [isLoading, paymentMethod]);
+            if (isLoading) {
+                timer = setTimeout(() => {
+                    setIsLoading(false);
+                }, 500);
+            }
 
-    const showCouponModalHandler = () => {
-        setShowCouponModal(true);
-    };
+            return () => clearTimeout(timer);
+        }, [isLoading, paymentMethod]);
 
-    const closeCouponModalHandler = () => {
-        setShowCouponModal(false);
-    };
+        const showCouponModalHandler = () => {
+            setShowCouponModal(true);
+        };
 
-    const onAddCoupon = (item) => {
-        const appliedCoupons = cart.appliedCoupons;
-        const index = appliedCoupons.findIndex(val => val.id === item.id);
-        let updatedCoupons = [...appliedCoupons];
-        updatedCoupons.splice(index, 1);
-        dispatch(cartActions.setAppliedCoupons(updatedCoupons));
-    };
+        const closeCouponModalHandler = () => {
+            setShowCouponModal(false);
+        };
 
-    const onChangeShippingMethod = (e) => {
-        setShippingMethod(parseInt(e.target.value));
-    };
+        const onAddCoupon = (item) => {
+            const appliedCoupons = cart.appliedCoupons;
+            const index = appliedCoupons.findIndex(val => val.id === item.id);
+            let updatedCoupons = [...appliedCoupons];
+            updatedCoupons.splice(index, 1);
+            dispatch(cartActions.setAppliedCoupons(updatedCoupons));
+        };
 
-    const onChangePaymentMethod = (e) => {
-        const index = listPayment.findIndex(val => val.id === e.target.value);
-        let coupons = [...cart.appliedCoupons];
+        const onChangeShippingMethod = (e) => {
+            setShippingMethod(parseInt(e.target.value));
+        };
 
-        if (listPayment[index].discount > 0) {
-            coupons.push(listPayment[index]);
-            dispatch(cartActions.setAppliedCoupons(coupons));
-        } else {
-            const couponIndex = coupons.findIndex(val => val.type === 'payment');
-            if (couponIndex >= 0) {
-                coupons.splice(couponIndex, 1);
+        const onChangePaymentMethod = (e) => {
+            const index = listPayment.findIndex(val => val.id === e.target.value);
+            let coupons = [...cart.appliedCoupons];
+
+            if (listPayment[index].discount > 0) {
+                coupons.push(listPayment[index]);
                 dispatch(cartActions.setAppliedCoupons(coupons));
-            }        
-        }
-
-        setIsLoading(true);
-        setPaymentMethod(e.target.value);
-    };
-
-    const focusCardInput = (e) => {
-        if (e.target.name) {
-            setIsFocused(e.target.name);
-        }
-    };
-
-    const validateInput = (name, value) => {
-        let error = null;
-
-        if (!value.length) {
-            error = `${name}_empty`;
-            setCardError(data => data = {...data, [name]: cardErrors[error] });
-        } else {
-            setCardError(data => data = {...data, [name]: null });
-        }
-
-        switch (name) {
-            case 'card_number':
-                const length = value.replace( /\s/g, '').length;
-                if (length > 0 && length < 16) {
-                    error = `${name}_invalid`;
-                    setCardError(data => data = {...data, [name]: cardErrors[error] });
-                } else if (length === 16) {
-                    setCardError(data => data = {...data, [name]: null });
+            } else {
+                const couponIndex = coupons.findIndex(val => val.type === 'payment');
+                if (couponIndex >= 0) {
+                    coupons.splice(couponIndex, 1);
+                    dispatch(cartActions.setAppliedCoupons(coupons));
                 }
-                break;
-            case 'card_name': 
-                break;
-            case 'card_expiry': 
-                // let year = parseInt(num) + (1 - Math.round(parseInt(num)/100))*2000 + Math.round(parseInt(num)/100)*1900;
-                let cardExpiry = value.replace(/\//g, '').substr(0, 4);
-                const currentYear = (new Date().getFullYear()).toString().slice(2, 4);
-                let month = parseInt(cardExpiry.substr(0,2));
-                let year = parseInt(cardExpiry.slice(2,4));
-                
-                const monthIsValid = month > 0 && month <= 12;
-                const yearIsValid = year >= parseInt(currentYear);
+            }
 
-                if (cardExpiry.length > 0) {
-                    if (monthIsValid && yearIsValid) {
+            setIsLoading(true);
+            setPaymentMethod(e.target.value);
+        };
+
+        const focusCardInput = (e) => {
+            if (e.target.name) {
+                setIsFocused(e.target.name);
+            }
+        };
+
+        const validateInput = (name, value) => {
+            let error = null;
+
+            if (!value.length) {
+                error = `${name}_empty`;
+                setCardError(data => data = {...data, [name]: cardErrors[error] });
+            } else {
+                setCardError(data => data = {...data, [name]: null });
+            }
+
+            switch (name) {
+                case 'card_number':
+                    const length = value.replace(/\s/g, '').length;
+                    if (length > 0 && length < 16) {
+                        error = `${name}_invalid`;
+                        setCardError(data => data = {...data, [name]: cardErrors[error] });
+                    } else if (length === 16) {
                         setCardError(data => data = {...data, [name]: null });
                     }
-                    if (!monthIsValid || !yearIsValid) {
+                    break;
+                case 'card_name':
+                    break;
+                case 'card_expiry':
+                    // let year = parseInt(num) + (1 - Math.round(parseInt(num)/100))*2000 + Math.round(parseInt(num)/100)*1900;
+                    let cardExpiry = value.replace(/\//g, '').substr(0, 4);
+                    const currentYear = (new Date().getFullYear()).toString().slice(2, 4);
+                    let month = parseInt(cardExpiry.substr(0, 2));
+                    let year = parseInt(cardExpiry.slice(2, 4));
+
+                    const monthIsValid = month > 0 && month <= 12;
+                    const yearIsValid = year >= parseInt(currentYear);
+
+                    if (cardExpiry.length > 0) {
+                        if (monthIsValid && yearIsValid) {
+                            setCardError(data => data = {...data, [name]: null });
+                        }
+                        if (!monthIsValid || !yearIsValid) {
+                            error = `${name}_invalid`;
+                            setCardError(data => data = {...data, [name]: cardErrors[error] });
+                        }
+                    }
+
+                    break;
+                case 'card_cvv':
+                    if (value.length > 0 && value.length < 3) {
                         error = `${name}_invalid`;
                         setCardError(data => data = {...data, [name]: cardErrors[error] });
                     }
-                }
-
-                break;
-            case 'card_cvv': 
-                if (value.length > 0 && value.length < 3) {
-                    error = `${name}_invalid`;
-                    setCardError(data => data = {...data, [name]: cardErrors[error] });
-                }
-                break;
-            default: break;
+                    break;
+                default:
+                    break;
+            };
         };
-    };
 
-    const onBlurInput = (e) => {
-        const { name, value } = e.target;
-        setIsBlur(data => data = {...data, [name]: true});
-        validateInput(name, value);
-    };
-
-    const onChangeCardInput = (e) => {
-        const { name, value } = e.target;
-
-        if (name === 'card_number') {
-            const inputVal = e.target.value.replace(/ /g, '');
-            let inputNumbersOnly = inputVal.replace(/\D/g, '');
-
-            if (inputNumbersOnly.length > 16) {
-                inputNumbersOnly = inputNumbersOnly.substr(0, 16);
-            }
-
-            const splits = inputNumbersOnly.match(/.{1,4}/g);
-
-            let spacedNumber = '';
-            if (splits) {
-                spacedNumber = splits.join(' ');
-            }
-
-            setCardInfo(data => data = {...data, [name]: spacedNumber});
-        } else if (name === 'card_expiry') {
-            const inputVal = e.target.value.replace(/ /g, '');
-            let inputNumbersOnly = inputVal.replace(/\D/g, '');
-
-            if (inputNumbersOnly.length > 4) {
-                inputNumbersOnly = inputNumbersOnly.substr(0, 4);
-            }
-
-            const splits = inputNumbersOnly.match(/.{1,2}/g);
-
-            let spacedNumber = '';
-            if (splits) {
-                spacedNumber = splits.join('/');
-            }
-            
-            setCardInfo(data => data = {...data, [name]: spacedNumber});
-        } else {
-            setCardInfo(data => data = {...data, [name]: value});
-        }
-
-        if (isBlur[name] || isSubmitted) {
+        const onBlurInput = (e) => {
+            const { name, value } = e.target;
+            setIsBlur(data => data = {...data, [name]: true });
             validateInput(name, value);
-        }
-    };
+        };
 
-    const onSubmitCard = (e) => {
-        e.preventDefault();
-        setIsSubmitted(true);
+        const onChangeCardInput = (e) => {
+            const { name, value } = e.target;
 
-        const { card_name, card_number, card_expiry, card_cvv } = cardInfo;
+            if (name === 'card_number') {
+                const inputVal = e.target.value.replace(/ /g, '');
+                let inputNumbersOnly = inputVal.replace(/\D/g, '');
 
-        if (!card_name) {
-            setCardError(data => data = {...data, 'card_name': cardErrors['card_name_empty']});
-        }
+                if (inputNumbersOnly.length > 16) {
+                    inputNumbersOnly = inputNumbersOnly.substr(0, 16);
+                }
 
-        if (!card_number) {
-            setCardError(data => data = {...data, 'card_number': cardErrors['card_number_empty']});
-        }
+                const splits = inputNumbersOnly.match(/.{1,4}/g);
 
-        if (!card_expiry) {
-            setCardError(data => data = {...data, 'card_expiry': cardErrors['card_expiry_empty']});
-        }
+                let spacedNumber = '';
+                if (splits) {
+                    spacedNumber = splits.join(' ');
+                }
 
-        if (!card_cvv) {
-            setCardError(data => data = {...data, 'card_cvv': cardErrors['card_cvv_empty']});
-        }
-        
-        if (cardError['card_name'] === null && cardError['card_number'] === null && cardError['card_expiry'] === null && cardError['card_cvv'] === null) {
-            setIsLoading(true);
-            setTimeout(() => {
-                setCardIsValid(true);
-                setIsLoading(false);
-            }, 500);
-        }
-    };
+                setCardInfo(data => data = {...data, [name]: spacedNumber });
+            } else if (name === 'card_expiry') {
+                const inputVal = e.target.value.replace(/ /g, '');
+                let inputNumbersOnly = inputVal.replace(/\D/g, '');
 
-    const confirmBooking = () => {
-        setIsLoading(true);
-        const address = `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`;
+                if (inputNumbersOnly.length > 4) {
+                    inputNumbersOnly = inputNumbersOnly.substr(0, 4);
+                }
+
+                const splits = inputNumbersOnly.match(/.{1,2}/g);
+
+                let spacedNumber = '';
+                if (splits) {
+                    spacedNumber = splits.join('/');
+                }
+
+                setCardInfo(data => data = {...data, [name]: spacedNumber });
+            } else {
+                setCardInfo(data => data = {...data, [name]: value });
+            }
+
+            if (isBlur[name] || isSubmitted) {
+                validateInput(name, value);
+            }
+        };
+
+        const onSubmitCard = (e) => {
+            e.preventDefault();
+            setIsSubmitted(true);
+
+            const { card_name, card_number, card_expiry, card_cvv } = cardInfo;
+
+            if (!card_name) {
+                setCardError(data => data = {...data, 'card_name': cardErrors['card_name_empty'] });
+            }
+
+            if (!card_number) {
+                setCardError(data => data = {...data, 'card_number': cardErrors['card_number_empty'] });
+            }
+
+            if (!card_expiry) {
+                setCardError(data => data = {...data, 'card_expiry': cardErrors['card_expiry_empty'] });
+            }
+
+            if (!card_cvv) {
+                setCardError(data => data = {...data, 'card_cvv': cardErrors['card_cvv_empty'] });
+            }
+
+            if (cardError['card_name'] === null && cardError['card_number'] === null && cardError['card_expiry'] === null && cardError['card_cvv'] === null) {
+                setIsLoading(true);
+                setTimeout(() => {
+                    setCardIsValid(true);
+                    setIsLoading(false);
+                }, 500);
+            }
+        };
+
+        const confirmBooking = () => {
+                setIsLoading(true);
+                const address = `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`;
         const submitOrderHandler = (orderData) => {
             submitOrder({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/submitOrder`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/orders`,
                 body: orderData
             }, data => {
                 const payment = paymentMethod === 'p3' ? {

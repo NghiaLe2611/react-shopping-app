@@ -25,7 +25,7 @@ const CompareListPopup = (props) => {
         const timer = setTimeout(() => {
             if (searchKey) {
                 fetchProducts({
-                    url: `${process.env.REACT_APP_API_URL}/productSearch?category=${category}&name=${searchKey.toLowerCase()}`
+                    url: `${process.env.REACT_APP_API_URL}/api/v1/products/search?category=${category}&name=${searchKey.toLowerCase()}`
                 }, data => {
                     if (data) {
                         setSuggestions(data.results);

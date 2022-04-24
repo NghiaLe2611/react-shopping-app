@@ -58,10 +58,10 @@ const ListOrder = (props) => {
 
     useEffect(() => {		
 		if (slug === '/tai-khoan/don-hang') {
-			let url = `${process.env.REACT_APP_API_URL}/orders?page=${currentPage}${orderStatus !== 0 ? `&status=${orderStatus}` : ''}`;
+			let url = `${process.env.REACT_APP_API_URL}/api/v1/orders?page=${currentPage}${orderStatus !== 0 ? `&status=${orderStatus}` : ''}`;
 		
 			if (searchKey) {
-				url = `${process.env.REACT_APP_API_URL}/orders/search?page=${currentPage}${orderStatus !== 0 ? `&status=${orderStatus}` : ''}&text=${searchKey}`;
+				url = `${process.env.REACT_APP_API_URL}/api/v1/orders/search?page=${currentPage}${orderStatus !== 0 ? `&status=${orderStatus}` : ''}&text=${searchKey}`;
 			}
 			getOrders({
 				url: url
@@ -78,8 +78,8 @@ const ListOrder = (props) => {
         e.preventDefault();
     
         if (searchKey) {
-            const url = orderStatus === 0 ? `${process.env.REACT_APP_API_URL}/orders/search?text=${searchKey.toLowerCase()}` :
-            `${process.env.REACT_APP_API_URL}/orders/search?status=${orderStatus}&text=${searchKey.toLowerCase()}`;
+            const url = orderStatus === 0 ? `${process.env.REACT_APP_API_URL}/api/v1/orders/search?text=${searchKey.toLowerCase()}` :
+            `${process.env.REACT_APP_API_URL}/api/v1/orders/search?status=${orderStatus}&text=${searchKey.toLowerCase()}`;
     
             if(prevSearchKey !== searchKey) {
                 searchOrders({

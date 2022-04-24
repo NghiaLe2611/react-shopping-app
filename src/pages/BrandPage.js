@@ -36,7 +36,7 @@ const BrandPage = () => {
     useEffect(() => {
 
         fetchProducts({
-            url: `${process.env.REACT_APP_API_URL}/products?brand=` + brand + '&category=' + category
+            url: `${process.env.REACT_APP_API_URL}/api/v1/products?brand=` + brand + '&category=' + category
         }, data => {
             if (data) {
                 if (data) {

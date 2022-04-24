@@ -41,7 +41,7 @@ const CategoryPage = () => {
     const [products, setProducts] = useState([]);
     const [isSorting, setIsSorting] = useState(false);
     const [viewBy, setViewBy] = useState('GRID');
-    const [filterUrl, setFilterUrl] = useState(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
+    const [filterUrl, setFilterUrl] = useState(`${process.env.REACT_APP_API_URL}/api/v1/products?category=${categoryName}`);
     const [filter, setFilter] = useState({
         brand: 'all',
         price: 'all',
@@ -55,7 +55,7 @@ const CategoryPage = () => {
 
     useEffect(() => {
         if (categoryName) {
-            setFilterUrl(`${process.env.REACT_APP_API_URL}/products?category=${categoryName}`);
+            setFilterUrl(`${process.env.REACT_APP_API_URL}/api/v1/products?category=${categoryName}`);
         }
     }, [categoryName]);
 

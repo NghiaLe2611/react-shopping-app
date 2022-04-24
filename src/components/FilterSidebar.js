@@ -24,7 +24,7 @@ const FilterSidebar = (props) => {
     useEffect(() => {
         if (category) {
             fetchBrandList({
-                url: `${process.env.REACT_APP_API_URL}/getBrandList?category=${category}`
+                url: `${process.env.REACT_APP_API_URL}/api/v1/products/brand_list?category=${category}`
             }, data => {
                 if (data) {
                     setBrandList(data);
