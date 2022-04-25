@@ -123,9 +123,9 @@ const Header = () => {
     const logOutHandler = async (e) => {    
         e.preventDefault() ;
 
-        dispatch(authActions.setIsLoggingOut(true));
+        // dispatch(authActions.setIsLoggingOut(true));
         authService.logout();
-        // authService.logout(() => { return; });
+        // authService.logout(() => { navigate('/') });
 
         // authService.logout(() => {
         //     setTimeout(() => {

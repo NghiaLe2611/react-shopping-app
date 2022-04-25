@@ -4,6 +4,7 @@ import LoadingIndicator from './components/UI/LoadingIndicator';
 import PrivateRoute from './components/PrivateRoute';
 import { useSelector, useDispatch } from 'react-redux';
 import { authActions } from './store/auth';
+import { cartActions } from './store/cart';
 import { authApp } from './firebase/config';
 import useFetch from './hooks/useFetch';
 import Cookies from 'js-cookie';
@@ -45,6 +46,45 @@ function App() {
 	const { fetchData: postUserInfo } = useFetch();
 	// const { fetchData: updateUserInfo } = useFetch();
 
+    const handleSignedInUser = (user) => {
+        return user.getIdToken().then(async (token) => {
+            // window.cookie = '__session=' + token + ';max-age=86400';
+        
+            const csrfToken = Cookies.get('XSRF-TOKEN');
+
+            return fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'CSRF-Token': csrfToken,
+                    'Origin': 'http://localhost:3000'
+                },
+                body: JSON.stringify({
+                    idToken: token,
+                    csrfToken: csrfToken
+                }),
+            })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    dispatch(authActions.setToken(token));
+                    // dispatch(authActions.setIsLoggingOut(true));
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // dispatch(authActions.setIsLoggingOut(false));
+            });
+        });
+    }
+
 	useEffect(() => {
 		// Create user data
 		const postUserData = () => {
@@ -67,6 +107,38 @@ function App() {
 				body: data,
 			});
 		};
+
+        const getUserData = (user) => {
+            const userDataObj = {
+                uuid: user.uid,
+                displayName: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                emailVerified: user.emailVerified,
+            };
+
+            fetchUser({
+                url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}`,
+            }, (data) => {
+                    // console.log('fetchUser', data);
+                    if (!data) {
+                        postUserData();
+                    } else {
+                        // updateUser();
+                        const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+
+                        dispatch(
+                            authActions.updateState({
+                                userData: {
+                                    ...userDataObj,
+                                    ...cloneData,
+                                },
+                            }),
+                        );
+                    }
+                }
+            );
+        };
 
 		// Update user data
 		// const updateUser = () => {
@@ -96,40 +168,22 @@ function App() {
 		// 		});
 		// });
 
+        // Get user data
+        
 		const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
-			if (user) {
-				const lastTimeLogin = user.metadata.lastLoginAt;
-				const currentTime = new Date().getTime();
-				// Log out user if more than 1 day
-				if (currentTime - lastTimeLogin >= 86400000) { // 86400000: 1 day
-					await authApp.signOut();
-					return;
-				}
+            if (user) {
+                const lastTimeLogin = user.metadata.lastLoginAt;
+                const currentTime = new Date().getTime();
 
-				user.getIdToken().then((token) => {
-					// window.cookie = '__session=' + token + ';max-age=86400';
-					const prevCookie = Cookies.get('csrfToken');
+                // Log out user if more than 1 day
+                if (currentTime - lastTimeLogin >= 86400000) { // 86400000: 1 day
+                    await authApp.signOut();
+                    return;
+                }
 
-					if (prevCookie === undefined || prevCookie !== token) {
-						// const csrfToken = getCookie('csrfToken');
-						Cookies.set('csrfToken', token, {
-							expires: 1,
-						}); // 1 day
-						fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
-							method: 'POST',
-							headers: {
-								Accept: 'application/json',
-								'Content-Type': 'application/json',
-								'CSRF-Token': Cookies.get('csrfToken'),
-							},
-							body: JSON.stringify({
-								token,
-							}),
-						});
-					}
-
-					dispatch(authActions.setToken(token));
-				});
+                // handleSignedInUser(user).then(() => {
+                //     console.log('handleSignedInUser');
+                // });
 
 				const userDataObj = {
 					uuid: user.uid,
@@ -139,45 +193,31 @@ function App() {
 					emailVerified: user.emailVerified,
 				};
 
-				dispatch(
-					authActions.updateState({
-						userData: userDataObj,
-					}),
-				);
-				dispatch(authActions.setIsLoggingOut(false));
+                dispatch(
+                    authActions.updateState({
+                        userData: userDataObj
+                    }),
+                );
 
-				fetchUser(
-					{
-						url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}`,
-					},
-					(data) => {
-						// console.log(data);
-						if (!data) {
-							postUserData();
-						} else {
-							// updateUser();
-							const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+                getUserData(user);
 
-							dispatch(
-								authActions.updateState({
-									userData: {
-										...userDataObj,
-										...cloneData,
-									},
-								}),
-							);
-						}
-					},
-				);
-			} else {
-				dispatch(
-					authActions.updateState({
-						userData: null,
-					}),
-				);
-				dispatch(authActions.setToken(''));
-				Cookies.remove('csrfToken');
-			}
+                console.log(111);
+            } else {
+                dispatch(
+                    authActions.updateState({
+                        userData: null,
+                    }),
+                );
+                dispatch(authActions.setToken(''));
+                dispatch(cartActions.clearCart());
+                Cookies.remove('csrfToken');
+                Cookies.remove('__session');
+                // return fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
+                //     method: 'POST',
+                //     mode: 'cors',
+                //     credentials: 'include'
+                // })
+            }
 		});
 
 		// Cleanup subscription on unmount
@@ -185,13 +225,13 @@ function App() {
 			unregisterAuthObserver();
 			// onChangeToken();
 		};
-	}, [dispatch, fetchUser, postUserInfo]);
+	}, [dispatch]);
 
+    //dispatch, fetchUser, postUserInfo
 	// userData.displayName, userData.uuid, userData.email, userData.photoURL, userData.emailVerified
 
 	useEffect(() => {
 		if (userData) {
-			// console.log('set storage');
 			localStorage.setItem('userData', JSON.stringify(userData));
 		} else {
 			// console.log('remove storage');
@@ -301,7 +341,7 @@ function App() {
 						path='dang-nhap'
 						element={
 							userData ? (
-								<Navigate to='/tai-khoan' />
+								<Navigate to='/' />
 							) : (
 								<Root>
 									<LoginPage />
@@ -314,7 +354,7 @@ function App() {
 						path='dang-ky'
 						element={
 							userData ? (
-								<Navigate to='/tai-khoan' />
+								<Navigate to='/' />
 							) : (
 								<Root>
 									<SignUpPage />

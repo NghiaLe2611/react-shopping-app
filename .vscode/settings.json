@@ -1,5 +1,4 @@
 {
-    "gogocrow.beautify.jsbeautifyrc": "/Users/nghiale/Projects/react-shopping-app/.jsbeautifyrc",
     "prettier.jsxBracketSameLine": true,
     "prettier.jsxSingleQuote": true,
     "prettier.printWidth": 200,
@@ -9,5 +8,10 @@
     "prettier.useTabs": true,
     "files.associations": {
         "*.js": "javascriptreact"
-    }
+    },
+    "js/ts.implicitProjectConfig.checkJs": false,
+    "eslint.enable": true,
+    "eslint.validate": [
+        "javascript"
+    ]
 }

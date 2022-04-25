@@ -2,6 +2,7 @@ import axios from 'axios';
 import queryString from 'query-string';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import Cookies from 'js-cookie';
 
 const getFirebaseToken = async () => {
     const currentUser = firebase.auth().currentUser;
@@ -13,9 +14,9 @@ const getFirebaseToken = async () => {
     
     // Logged in but current user is not fetched -> wait
     return new Promise((resolve , reject) => {
-        // const waitTimer = setTimeout(() => {
-        //     reject(null);
-        // }, 10000);
+        const waitTimer = setTimeout(() => {
+            reject(null);
+        }, 10000);
 
         const unregisterAuthObserver = firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
@@ -26,7 +27,7 @@ const getFirebaseToken = async () => {
             resolve(token);
 
             unregisterAuthObserver();
-            // clearTimeout(waitTimer);
+            clearTimeout(waitTimer);
         });
     });
 };

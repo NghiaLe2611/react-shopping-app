@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { firebase } from '../firebase/config';
 import { firebaseAuth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import 'firebase/compat/auth';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import { useNavigate } from 'react-router-dom';
-import classes from '../scss/Login.module.scss';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { authActions } from '../store/auth';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import Cookies from 'js-cookie';
+import classes from '../scss/Login.module.scss';
+
+function getCookie(name) {
+	const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+	return v ? v[2] : null;
+}
 
 const formAlert = withReactContent(Swal);
 
@@ -24,6 +31,7 @@ const formErrors = {
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const [userInput, setUserInput] = useState({
         email: null,
@@ -43,6 +51,53 @@ const LoginPage = () => {
     });
     const [isSubmitted, setIsSubmitted] = useState(false);
 
+    useEffect(() => {
+        // As httpOnly cookies are to be used, do not persist any state client side.
+        // firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+    }, []);
+
+    const handleSignedInUser = (user) => {
+        return user.getIdToken().then(async (token) => {
+            // window.cookie = '__session=' + token + ';max-age=86400';
+        
+            const prevCookie = Cookies.get('idToken');
+
+            if (prevCookie === undefined || prevCookie !== token) {
+                const idToken = getCookie('idToken');
+                Cookies.set('idToken', token, {
+                    expires: 1,
+                }); // 1 day
+
+                 return fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+						method: 'POST',
+						mode: 'cors',
+						credentials: 'include',
+						headers: {
+							Accept: 'application/json',
+							'Content-Type': 'application/json',
+							idToken: idToken
+						},
+						body: JSON.stringify({
+							idToken: idToken
+						}),
+					})
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            dispatch(authActions.setToken(token));
+                            // dispatch(authActions.setIsLoggingOut(true));
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    })
+                    .finally(() => {
+                        // dispatch(authActions.setIsLoggingOut(false));
+                    });
+            }
+        });
+    }
+
     // Configure FirebaseUI.
 	const uiConfig = {
 		// Popup signin flow rather than redirect flow.
@@ -53,6 +108,14 @@ const LoginPage = () => {
 			firebase.auth.FacebookAuthProvider.PROVIDER_ID,
             firebase.auth.GoogleAuthProvider.PROVIDER_ID,
 		],
+        callbacks: {
+            signInSuccessWithAuthResult: (authResult, redirectUrl) => {
+                // Handle signed in user
+                handleSignedInUser(firebase.auth().currentUser);
+                return navigate('/');
+                // return false;
+            },
+        }
         /*
         callbacks: {
             // Avoid redirects after sign-in.

@@ -6,7 +6,7 @@ const authSlice = createSlice({
         userData: JSON.parse(localStorage.getItem('userData')) ? JSON.parse(localStorage.getItem('userData')) : null,
         shippingInfo: null,
         accessToken: localStorage.getItem('access_token') ? localStorage.getItem('access_token') : '',
-        isLoggingOut: false
+        // isLoggingOut: false
     },
     reducers: {
         updateState(state, action) {
@@ -18,9 +18,9 @@ const authSlice = createSlice({
         setToken(state, action) {
             state.accessToken = action.payload;
         },
-        setIsLoggingOut(state, action) {
-            state.isLoggingOut = action.payload;
-        }
+        // setIsLoggingOut(state, action) {
+        //     state.isLoggingOut = action.payload;
+        // }
     },
     extraReducers: {
         // add your async reducers here
