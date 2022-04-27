@@ -16,6 +16,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 
 import classes from '../../scss/Profile.module.scss';
 import noOrderImg from '../../assets/images/no-order.png';
+import Cookies from 'js-cookie';
 
 const pageSize = 5;
 const statusList = [
@@ -52,7 +53,6 @@ const ListOrder = (props) => {
 	const { fetchData: searchOrders } = useFetch();
 
     const slider = useRef({});
-	const inputSearchRef = useRef('');
 
     let prevSearchKey = usePrevious(searchKey);
 
@@ -169,7 +169,7 @@ const ListOrder = (props) => {
             <form className={classes['order-search']} onSubmit={onSearchOrder}>
                 <span className='icon-search'></span>
                 <input name='search' placeholder='Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm' type='search' autoComplete='off'
-                    onChange={(e) => { setSearchKey(e.target.value); }} ref={inputSearchRef}
+                    onChange={(e) => { setSearchKey(e.target.value); }}
                 />
                 <button className={classes.search} type='submit'>Tìm đơn hàng</button>
             </form>                        

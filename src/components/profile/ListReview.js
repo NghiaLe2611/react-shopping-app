@@ -21,8 +21,8 @@ const ListReview = (props) => {
 		if (uuid) {
             fetchReviews(
                 {
-                    url: currentPage >= 1 ? `${process.env.REACT_APP_API_URL}/api/v1/me/reviews?id=${uuid}&page=${currentPage}` : 
-						`${process.env.REACT_APP_API_URL}/api/v1/me/reviews?id=${uuid}`,
+                    url: currentPage >= 1 ? `${process.env.REACT_APP_API_URL}/api/v1/me/reviews?page=${currentPage}` : 
+						`${process.env.REACT_APP_API_URL}/api/v1/me/reviews`,
                 }, (data) => {
                     if (data) {
                         setUserReviews(data.results);

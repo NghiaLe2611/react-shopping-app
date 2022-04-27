@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axiosClient from '../api/AxiosClient';
 
 const useFetch = () => {
 	const [error, setError] = useState(null);
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const fetchData = useCallback(async ({ url, method, body = null, params = null, headers = {} }, applyData) => {
         setIsLoading(true);

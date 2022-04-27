@@ -12,11 +12,6 @@ import withReactContent from 'sweetalert2-react-content';
 import Cookies from 'js-cookie';
 import classes from '../scss/Login.module.scss';
 
-function getCookie(name) {
-	const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-	return v ? v[2] : null;
-}
-
 const formAlert = withReactContent(Swal);
 
 const errorMessages = {
@@ -56,53 +51,41 @@ const LoginPage = () => {
         // firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
     }, []);
 
-    const handleSignedInUser = (user) => {
-        return user.getIdToken().then(async (token) => {
+    // Handle signed in user
+    const handleSignedInUser = () => {
+        return firebase.auth().currentUser.getIdToken().then((token) => {
             // window.cookie = '__session=' + token + ';max-age=86400';
-        
             const prevCookie = Cookies.get('idToken');
+            const csrfToken = Cookies.get('csrfToken');
 
             if (prevCookie === undefined || prevCookie !== token) {
-                const idToken = getCookie('idToken');
                 Cookies.set('idToken', token, {
                     expires: 1,
                 }); // 1 day
-
-                 return fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
-						method: 'POST',
-						mode: 'cors',
-						credentials: 'include',
-						headers: {
-							Accept: 'application/json',
-							'Content-Type': 'application/json',
-							idToken: idToken
-						},
-						body: JSON.stringify({
-							idToken: idToken
-						}),
-					})
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.success) {
-                            dispatch(authActions.setToken(token));
-                            // dispatch(authActions.setIsLoggingOut(true));
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    })
-                    .finally(() => {
-                        // dispatch(authActions.setIsLoggingOut(false));
-                    });
+                fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    withCredentials: true,
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        idToken: token,
+                        csrfToken: csrfToken
+                    }),
+                });
             }
+
+            dispatch(authActions.setToken(token));
         });
-    }
+    };
 
     // Configure FirebaseUI.
 	const uiConfig = {
 		// Popup signin flow rather than redirect flow.
 		signInFlow: 'popup',
-		signInSuccessUrl: '/',
+		// signInSuccessUrl: '/',
 		signInOptions: [
             // firebase.auth.EmailAuthProvider.PROVIDER_ID,
 			firebase.auth.FacebookAuthProvider.PROVIDER_ID,
@@ -110,10 +93,8 @@ const LoginPage = () => {
 		],
         callbacks: {
             signInSuccessWithAuthResult: (authResult, redirectUrl) => {
-                // Handle signed in user
-                handleSignedInUser(firebase.auth().currentUser);
+                handleSignedInUser();
                 return navigate('/');
-                // return false;
             },
         }
         /*

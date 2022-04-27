@@ -3,7 +3,7 @@ import Modal from '../UI/Modal';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cartActions } from '../../store/cart';
-// import { authActions } from '../../store/auth';
+import { authActions } from '../../store/auth';
 import useCheckMobile from '../../hooks/useCheckMobile';
 import { useDelayUnmount } from '../../hooks/useDelayUnmount';
 import useFetch from '../../hooks/useFetch';
@@ -11,7 +11,6 @@ import { authService } from '../../api/auth-service';
 import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import classes from '../../scss/Header.module.scss';
 import iconCheked from '../../assets/images/icon-check.svg';
-import { authActions } from '../../store/auth';
 
 const brandList = [
     "apple",
@@ -123,15 +122,32 @@ const Header = () => {
     const logOutHandler = async (e) => {    
         e.preventDefault() ;
 
-        // dispatch(authActions.setIsLoggingOut(true));
-        authService.logout();
-        // authService.logout(() => { navigate('/') });
+        dispatch(authActions.setIsLoggingOut(true));
+
+        fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
+            method: 'POST',
+            credentials: 'include',
+            withCredentials: true,
+            // mode: 'no-cors',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                authService.logout();
+                document.location.href = '/';
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
 
         // authService.logout(() => {
-        //     setTimeout(() => {
-        //         // console.log('Log out');
-        //         navigate('/');
-        //     }, 500);
+        //     fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
+		// 		method: 'POST',
+		// 		credentials: 'include',
+		// 		withCredentials: true,
+		// 		// mode: 'no-cors',
+		// 	});
         // });
 
         // try {
@@ -209,8 +225,9 @@ const Header = () => {
                         </ul>
                     </div>
                 </li>
-                <li><Link to="/phu-kien">Phụ kiện</Link></li>
-                <li><Link to="/tin-tuc">Tin tức</Link></li>
+                <li><Link to="/tracking">Tra cứu đơn hàng</Link></li>
+                {/* <li><Link to="/phu-kien">Phụ kiện</Link></li>
+                <li><Link to="/tin-tuc">Tin tức</Link></li> */}
             </ul>
             <div className={classes['wrap-search']}>
                 <input type='text' placeholder='Nhập tên sản phẩm cần tìm' onChange={onSearchProduct} 

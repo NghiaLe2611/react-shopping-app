@@ -160,7 +160,7 @@ const EditAddress = (props) => {
 				{
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
-					url: `${process.env.REACT_APP_API_URL}/updateUserAddress/${userData.uuid}/${newAddress._id}`,
+					url: `${process.env.REACT_APP_API_URL}/api/v1/me/address/${newAddress._id}`,
 					body: { updatedAddress },
 				}, (data) => {
                     if (data && data.message) {
@@ -175,7 +175,7 @@ const EditAddress = (props) => {
                         };
             
                         fetchUser({
-                            url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}` 
+                            url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
                         }, data => {
                             if (data) {
                                 const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);

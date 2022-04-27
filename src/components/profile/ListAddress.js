@@ -97,7 +97,7 @@ const ListAddress = (props) => {
 				{
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
-					url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+					url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
 					body: { newAddress },
 				}, (data) => {
 					console.log('add address', data);
@@ -110,7 +110,6 @@ const ListAddress = (props) => {
 						dispatch(authActions.updateState({
 							userData: updatedDataStorage
 						}));
-
 
 						Swal.fire({
 							icon: 'success',
@@ -213,7 +212,7 @@ const ListAddress = (props) => {
 					{
 						method: 'PUT',
 						headers: { 'Content-Type': 'application/json' },
-						url: `${process.env.REACT_APP_API_URL}/updateUserAddress/${userData.uuid}/${id}`,
+						url: `${process.env.REACT_APP_API_URL}/api/v1/me/address/${userData.uuid}/${id}`,
 						body: { removeAddressId: id },
 					},
 					(data) => {
@@ -230,7 +229,7 @@ const ListAddress = (props) => {
 
 							fetchUser(
 								{
-									url: `${process.env.REACT_APP_API_URL}/getUserData/${userData.uuid}`,
+									url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
 								},
 								(data) => {
 									if (data) {

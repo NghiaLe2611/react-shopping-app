@@ -142,7 +142,7 @@ const DetailPage = () => {
             updateViewedProduct({
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
                 body: {
                     recentlyProduct: product
                 }
@@ -150,7 +150,7 @@ const DetailPage = () => {
                 if (data.message) {
                     fetchUser(
                         {
-                            url: `${process.env.REACT_APP_API_URL}/getUserData/${uuid}`,
+                            url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
                         },(data) => {
                             if (data) {
                                 dispatch(
@@ -521,7 +521,7 @@ const DetailPage = () => {
             addToFav({
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/${id}`,
                 body: type === 1 ? { type: 1 } : { type: 0 } // 1 like, 0 unlike
             }, data => {
                 setTimeout(() => {
@@ -545,7 +545,7 @@ const DetailPage = () => {
 
                         fetchUser(
                             {
-                                url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}`,
+                                url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
                             },
                             (data) => {
                                 if (data) {

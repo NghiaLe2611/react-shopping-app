@@ -20,7 +20,7 @@ const ListFavourite = (props) => {
             removeFav({
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/addToWishlist/${uuid}/${id}`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/${id}`,
                 body: { type: 0 }
             }, data => {
                 if(data.message) {
@@ -34,7 +34,7 @@ const ListFavourite = (props) => {
                     };
         
                     fetchUser({
-                        url: `${process.env.REACT_APP_API_URL}/getUserData/${userDataObj.uuid}` 
+                        url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
                     }, data => {
                         if (data) {
                             const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);

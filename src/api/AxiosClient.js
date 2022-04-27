@@ -2,7 +2,8 @@ import axios from 'axios';
 import queryString from 'query-string';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import Cookies from 'js-cookie';
+
+axios.defaults.withCredentials = true; 
 
 const getFirebaseToken = async () => {
     const currentUser = firebase.auth().currentUser;

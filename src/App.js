@@ -7,7 +7,6 @@ import { authActions } from './store/auth';
 import { cartActions } from './store/cart';
 import { authApp } from './firebase/config';
 import useFetch from './hooks/useFetch';
-import Cookies from 'js-cookie';
 
 const Root = React.lazy(() => import('./components/UI/Root'));
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -21,6 +20,7 @@ const ComparePage = React.lazy(() => import('./pages/ComparePage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const SignUpPage = React.lazy(() => import('./pages/SignUpPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
+const TrackingPage = React.lazy(() => import('./pages/TrackingPage'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 // import Root from './components/UI/Root';
@@ -41,49 +41,11 @@ function App() {
 	const dispatch = useDispatch();
 	const userData = useSelector((state) => state.auth.userData);
 	const accessToken = useSelector((state) => state.auth.accessToken);
+	const isLoggingOut = useSelector((state) => state.auth.isLoggingOut);
 
 	const { fetchData: fetchUser } = useFetch();
 	const { fetchData: postUserInfo } = useFetch();
 	// const { fetchData: updateUserInfo } = useFetch();
-
-    const handleSignedInUser = (user) => {
-        return user.getIdToken().then(async (token) => {
-            // window.cookie = '__session=' + token + ';max-age=86400';
-        
-            const csrfToken = Cookies.get('XSRF-TOKEN');
-
-            return fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
-                method: 'POST',
-                mode: 'cors',
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'CSRF-Token': csrfToken,
-                    'Origin': 'http://localhost:3000'
-                },
-                body: JSON.stringify({
-                    idToken: token,
-                    csrfToken: csrfToken
-                }),
-            })
-            .then(response => {
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    dispatch(authActions.setToken(token));
-                    // dispatch(authActions.setIsLoggingOut(true));
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                // dispatch(authActions.setIsLoggingOut(false));
-            });
-        });
-    }
 
 	useEffect(() => {
 		// Create user data
@@ -103,22 +65,22 @@ function App() {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				url: `${process.env.REACT_APP_API_URL}/submitUserData`,
+				url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
 				body: data,
 			});
 		};
 
-        const getUserData = (user) => {
-            const userDataObj = {
-                uuid: user.uid,
-                displayName: user.displayName,
-                email: user.email,
-                photoURL: user.photoURL,
-                emailVerified: user.emailVerified,
-            };
+        const getUserData = (user, userDataObj) => {
+            // const userDataObj = {
+            //     uuid: user.uid,
+            //     displayName: user.displayName,
+            //     email: user.email,
+            //     photoURL: user.photoURL,
+            //     emailVerified: user.emailVerified,
+            // };
 
             fetchUser({
-                url: `${process.env.REACT_APP_API_URL}/getUserData/${user.uid}`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
             }, (data) => {
                     // console.log('fetchUser', data);
                     if (!data) {
@@ -153,7 +115,7 @@ function App() {
 		//     updateUserInfo({
 		//         method: 'PUT',
 		//         headers: { 'Content-Type': 'application/json' },
-		//         url: `${process.env.REACT_APP_API_URL}/updateUserData/${userData.uuid}`,
+		//         url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
 		//         body: data
 		//     });
 		// };
@@ -167,31 +129,25 @@ function App() {
 		// 			console.log(error);
 		// 		});
 		// });
-
-        // Get user data
         
 		const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
                 const lastTimeLogin = user.metadata.lastLoginAt;
-                const currentTime = new Date().getTime();
+				const currentTime = new Date().getTime();
+				// Log out user if more than 1 day
+				if (currentTime - lastTimeLogin >= 86400000) { // 86400000: 1 day
+                    console.log('Log out due to expired time');
+					await authApp.signOut();
+					return;
+				}
 
-                // Log out user if more than 1 day
-                if (currentTime - lastTimeLogin >= 86400000) { // 86400000: 1 day
-                    await authApp.signOut();
-                    return;
-                }
-
-                // handleSignedInUser(user).then(() => {
-                //     console.log('handleSignedInUser');
-                // });
-
-				const userDataObj = {
-					uuid: user.uid,
-					displayName: user.displayName,
-					email: user.email,
-					photoURL: user.photoURL,
-					emailVerified: user.emailVerified,
-				};
+                const userDataObj = {
+                    uuid: user.uid,
+                    displayName: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL,
+                    emailVerified: user.emailVerified,
+                };
 
                 dispatch(
                     authActions.updateState({
@@ -199,9 +155,7 @@ function App() {
                     }),
                 );
 
-                getUserData(user);
-
-                console.log(111);
+                getUserData(user, userDataObj);
             } else {
                 dispatch(
                     authActions.updateState({
@@ -210,13 +164,14 @@ function App() {
                 );
                 dispatch(authActions.setToken(''));
                 dispatch(cartActions.clearCart());
-                Cookies.remove('csrfToken');
-                Cookies.remove('__session');
-                // return fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
-                //     method: 'POST',
-                //     mode: 'cors',
-                //     credentials: 'include'
-                // })
+                if (isLoggingOut) {
+                    console.log('APP log out');
+                    dispatch(authActions.setIsLoggingOut(false));
+                }
+
+                // Cookies.remove('csrfToken');
+                // Cookies.remove('session');
+                // Cookies.remove('idToken');
             }
 		});
 
@@ -251,94 +206,77 @@ function App() {
 		<Fragment>
 			<Suspense fallback={<LoadingIndicator type='fixed' />}>
 				<Routes>
-					<Route
-						exact
-						path='/'
+					<Route exact path='/'
 						element={
 							<Root>
 								<HomePage />
 							</Root>
 						}
 					/>
-					<Route
-						path='dien-thoai/:productId'
+					<Route path='dien-thoai/:productId'
 						element={
 							<Root>
 								<DetailPage />
 							</Root>
 						}
 					/>
-					<Route
-						path='may-tinh-bang/:productId'
+					<Route path='may-tinh-bang/:productId'
 						element={
 							<Root>
 								<DetailPage />
 							</Root>
 						}
 					/>
-					<Route
-						path='dien-thoai/hang/:brand'
+					<Route path='dien-thoai/hang/:brand'
 						element={
 							<Root>
 								<BrandPage />
 							</Root>
 						}
 					/>
-					<Route
-						path='may-tinh-bang/hang/:brand'
+					<Route path='may-tinh-bang/hang/:brand'
 						element={
 							<Root>
 								<BrandPage />
 							</Root>
 						}
 					/>
-					<Route
-						exact
-						path=':category'
+					<Route exact path=':category'
 						element={
 							<Root>
 								<CategoryPage />
 							</Root>
 						}
 					/>
-					<Route
-						path='so-sanh/:category'
+					<Route path='so-sanh/:category'
 						element={
 							<Root>
 								<ComparePage />
 							</Root>
 						}
 					/>
-					<Route
-						exact
-						path='cart'
+					<Route exact path='cart'
 						element={
 							<Root>
 								<CartPage />
 							</Root>
 						}
 					/>
-					<Route
-						exact
-						path='cartConfirm'
+					<Route exact path='cartConfirm'
 						element={
 							<Root>
 								<CartConfirmPage />
 							</Root>
 						}
 					/>
-					<Route
-						exact
-						path='orderDetail/:orderId'
+					<Route exact path='orderDetail/:orderId'
 						element={
 							<Root>
 								<ConfirmOrderPage />
 							</Root>
 						}
 					/>
-					<Route
-						exact
-						path='dang-nhap'
+					<Route exact path='dang-nhap'
 						element={
 							userData ? (
 								<Navigate to='/' />
@@ -349,9 +287,7 @@ function App() {
 							)
 						}
 					/>
-					<Route
-						exact
-						path='dang-ky'
+					<Route exact path='dang-ky'
 						element={
 							userData ? (
 								<Navigate to='/' />
@@ -362,8 +298,7 @@ function App() {
 							)
 						}
 					/>
-					<Route
-						path='tai-khoan/*'
+					<Route path='tai-khoan/*'
 						element={
 							<PrivateRoute>
 								<Root>
@@ -372,14 +307,20 @@ function App() {
 							</PrivateRoute>
 						}
 					/>
-					<Route
-						path='order/:orderId'
+					<Route path='order/:orderId'
 						element={
 							<PrivateRoute>
 								<Root>
 									<ProfilePage />
 								</Root>
 							</PrivateRoute>
+						}
+					/>
+                    <Route path='tracking'
+						element={
+							<Root>
+                                <TrackingPage />
+                            </Root>
 						}
 					/>
 					{/* <Route path='tai-khoan' element={<Root><ProfilePage/></Root>} /> */}

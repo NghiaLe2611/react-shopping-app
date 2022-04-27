@@ -172,7 +172,7 @@ const CustomerInfo = (props) => {
 					{
 						method: 'PUT',
 						headers: { 'Content-Type': 'application/json' },
-						url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+						url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
 						body: updatedData,
 					},
 					(data) => {
@@ -298,7 +298,7 @@ const CustomerInfo = (props) => {
 						{
 							method: 'PUT',
 							headers: { 'Content-Type': 'application/json' },
-							url: `${process.env.REACT_APP_API_URL}/updateUserData/${uuid}`,
+							url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
 							body: { photoURL: null },
 						},
 						(data) => {
