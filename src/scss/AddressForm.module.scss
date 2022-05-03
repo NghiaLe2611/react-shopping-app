@@ -1,0 +1,79 @@
+.form-address {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 20px;
+    .wrap-ip {
+        flex: none;
+        width: 50%;
+        input,
+        select,
+        textarea {
+            width: 100%;
+        }
+        textarea {
+            resize: none;
+            border: 1px solid #c4c4cf;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 15px;
+        }
+    }
+    .btn {
+        border-radius: 4px;
+        font-size: 15px;
+        padding: 8px 30px;
+        cursor: pointer;
+    }
+    .back {
+        background-color: #ccc;
+        margin-right: 10px;
+    }
+    .update {
+        background-color: #fdd835;
+    }
+    .cancel {
+        background-color: #ccc;
+        margin-left: 10px;
+    }
+}
+
+.input-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    label {
+        font-size: 15px;
+        min-width: 110px;
+        margin-right: 20px;
+    }
+}
+
+.wrap-ip {
+    flex: 1;
+    input {
+        width: 300px;
+        &:disabled {
+            background-color: #ccc;
+            cursor: no-drop;
+        }
+    }
+    input,
+    select,
+    textarea {
+        border: 1px solid #c4c4cf;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 15px;
+        &:focus {
+            box-shadow: 0px 0px 5px 1px rgba(71, 71, 71, 0.2)
+        }
+        &.invalid {
+            border-color: red;
+        }
+    }
+    select:not(:last-child) {
+        margin-right: 10px;
+    }
+}

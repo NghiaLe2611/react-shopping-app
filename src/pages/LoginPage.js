@@ -54,7 +54,6 @@ const LoginPage = () => {
     // Handle signed in user
     const handleSignedInUser = () => {
         return firebase.auth().currentUser.getIdToken().then((token) => {
-            // window.cookie = '__session=' + token + ';max-age=86400';
             const prevCookie = Cookies.get('idToken');
             const csrfToken = Cookies.get('csrfToken');
 
@@ -93,7 +92,7 @@ const LoginPage = () => {
 		],
         callbacks: {
             signInSuccessWithAuthResult: (authResult, redirectUrl) => {
-                handleSignedInUser();
+                // handleSignedInUser();
                 return navigate('/');
             },
         }
@@ -188,15 +187,6 @@ const LoginPage = () => {
 
         if (isValid.email.status && isValid.password.status) {
             // Login success
-
-
-            // try {
-            //     const userCredential = await authService.login(userInput.email, userInput.password);
-            //     console.log(userCredential);
-            // } catch(err) {
-            //     console.log(err);
-            // }
-
             try {
                 const userCredential = await signInWithEmailAndPassword(
                     firebaseAuth, 
@@ -205,30 +195,31 @@ const LoginPage = () => {
                 );
 
                 if (userCredential.user.accessToken) {
-                    let timerInterval;
+                    // handleSignedInUser();
+                    // let timerInterval;
 
-                    const Toast = formAlert.mixin({
-                        toast: true,
-                        confirmButtonText: 'Chuyển trang ngay',
-                        confirmButtonColor: '#2f80ed',
-                        timer: 5000,
-                        didOpen: () => {
-                            timerInterval = setInterval(() => {
-                                Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0)
-                            }, 100);
-                        },
-                        willClose: () => {
-                            clearInterval(timerInterval);
-                        }
-                    });
-                    Toast.fire({
-                        icon: 'success',
-                        html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
-                    }).then(isConfirm => {
-                        if (isConfirm) {
-                            navigate('/');
-                        }
-                    });
+                    // const Toast = formAlert.mixin({
+                    //     toast: true,
+                    //     confirmButtonText: 'Chuyển trang ngay',
+                    //     confirmButtonColor: '#2f80ed',
+                    //     timer: 5000,
+                    //     didOpen: () => {
+                    //         timerInterval = setInterval(() => {
+                    //             Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0)
+                    //         }, 100);
+                    //     },
+                    //     willClose: () => {
+                    //         clearInterval(timerInterval);
+                    //     }
+                    // });
+                    // Toast.fire({
+                    //     icon: 'success',
+                    //     html: `<p>Đăng nhập thành công.<br/>Hệ thống sẽ tự động chuyển trang sau <strong></strong> giây.</p>`
+                    // }).then(isConfirm => {
+                    //     if (isConfirm) {
+                    //         navigate('/');
+                    //     }
+                    // });
                 }
             } catch (err) {
                 formAlert.fire({

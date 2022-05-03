@@ -4,9 +4,11 @@ import classes from '../scss/ConfirmOrder.module.scss';
 import { Link } from 'react-router-dom';
 import { convertDateTime, formatCurrency, convertProductLink, 
     shippingFee, fastShippingFee, getPaymentMethod } from '../helpers/helpers';
+import { useSelector } from 'react-redux';
 
 const ConfirmOrderPage = () => {
     const location = useLocation();
+    const userData = useSelector((state) => state.auth.userData);
 
     if (location.state) {
         const { orderId, customerInfo, shippingMethod, paymentMethod, orderDate, products,
@@ -22,7 +24,9 @@ const ConfirmOrderPage = () => {
                         <div className={classes.txt}>
                             <p>Mã đơn hàng: <span style={{fontWeight: '500'}}>#{orderId}</span></p>
                             <p>Thông tin xác nhận đơn hàng với chi tiết và theo dõi tình trạng đơn hàng đã được gửi về email của bạn.</p>
-                            <p>Bạn cũng có thể kiểm tra tình trạng đơn hàng tại <Link to='/tai-khoan/don-hang'>đây</Link>.</p>
+                            {
+                                userData && <p>Bạn cũng có thể kiểm tra tình trạng đơn hàng tại <Link to='/tai-khoan/don-hang'>đây</Link>.</p>
+                            }
                             <p>
                                 <Link to='/' className={classes.shopping}>Tiếp tục mua hàng</Link>
                             </p>
@@ -94,7 +98,10 @@ const ConfirmOrderPage = () => {
                                                     <div className={classes.product}>
                                                         <img src={item.img} alt={item.name} />
                                                         <div className={classes['product-info']}>
-                                                            <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>{item.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {item.name}</Link>
+                                                            <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>
+                                                                {item.category === 'smartphone' ? 'Điện thoại ' : 'Máy tính bảng '} 
+                                                                {item.name}{item.color && ` - Màu ${item.color}`}
+                                                            </Link>
                                                             <span className={classes.review}>Viết nhận xét</span>
                                                         </div>
                                                     </div>

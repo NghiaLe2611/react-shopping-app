@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, useRef } from 'react';
+import { Fragment, useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import useFetch from '../../hooks/useFetch';
@@ -11,10 +11,11 @@ const ListAddress = (props) => {
 	const dispatch = useDispatch();
 
 	const { userData, cities } = props;
-	const { uuid, listAddress } = userData ? userData : {};
-
     const [isAddAddress, setIsAddAddress] = useState(false);
-
+	const [addresses, setAddresses] = useState(() => {
+        if (userData?.addresses) return userData.addresses;
+        return [];
+    });
 	const [districts, setDistricts] = useState([]);
 	const [wards, setWards] = useState([]);
 	const [addressInfo, setAddressInfo] = useState({
@@ -29,6 +30,7 @@ const ListAddress = (props) => {
 	const [formIsValid, setFormIsValid] = useState({});
 
     const { fetchData: fetchUser } = useFetch();
+    const { fetchData: getAddresses } = useFetch();
     const { fetchData: updateUser } = useFetch();
 	const { fetchData: fetchDistricts } = useFetch();
 	const { fetchData: fetchWards } = useFetch();
@@ -40,12 +42,37 @@ const ListAddress = (props) => {
 	
 	const slug = useLocation().pathname;
 
+    const fetchAddresses = useCallback(() => {
+        getAddresses(
+            {
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/addresses`,
+            }, (data) => {
+                if (data) {
+                    setAddresses(data);
+                }
+            }
+        );        
+    }, [getAddresses]);
+
 	useEffect(() => {
 		setIsAddAddress(false);
 	}, [slug]);
 
+    useEffect(() => {
+        if (!userData?.addresses) {
+            fetchAddresses();
+        }
+    }, [fetchAddresses]);
+
+    useEffect(() => {
+        const newUserData = {...userData, addresses};
+        dispatch(authActions.updateState({
+            userData: newUserData
+        }));
+    }, [addresses]);
+
     const onAddNewAddress = () => {
-        if (listAddress && listAddress.length < 5) {
+        if (addresses && addresses.length < 5) {
             setIsAddAddress(true);
         } else {
             Swal.fire({
@@ -100,16 +127,15 @@ const ListAddress = (props) => {
 					url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
 					body: { newAddress },
 				}, (data) => {
-					console.log('add address', data);
 					if (data && data.message) {
-						const userDataStorage = JSON.parse(localStorage.getItem('userData'));
-						let updatedDataStorage = {...userDataStorage};
+						// const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+						// let updatedDataStorage = {...userDataStorage};
 
-						updatedDataStorage = {...updatedDataStorage, listAddress: [...updatedDataStorage.listAddress, newAddress]};
+						// updatedDataStorage = {...updatedDataStorage, listAddress: [...updatedDataStorage.listAddress, newAddress]};
 	
-						dispatch(authActions.updateState({
-							userData: updatedDataStorage
-						}));
+						// dispatch(authActions.updateState({
+						// 	userData: updatedDataStorage
+						// }));
 
 						Swal.fire({
 							icon: 'success',
@@ -117,6 +143,8 @@ const ListAddress = (props) => {
 							confirmButtonText: 'OK',
 							confirmButtonColor: '#2f80ed'
 						});
+
+                        fetchAddresses();
 
 						setIsAddAddress(false);
 					} else {
@@ -186,11 +214,10 @@ const ListAddress = (props) => {
 
 	const onChangeAddressInput = (e) => {
 		const { name, value } = e.target;
-		setAddressInfo({...addressInfo, [name]: value})
+		setAddressInfo({...addressInfo, [name]: value});
 	};
 
     const editAddress = (item) => {
-		// /${item._id}
         navigate(`dia-chi/cap-nhat`, {
 			state: { addressId: item._id }
 		});
@@ -212,36 +239,38 @@ const ListAddress = (props) => {
 					{
 						method: 'PUT',
 						headers: { 'Content-Type': 'application/json' },
-						url: `${process.env.REACT_APP_API_URL}/api/v1/me/address/${userData.uuid}/${id}`,
-						body: { removeAddressId: id },
+						url: `${process.env.REACT_APP_API_URL}/api/v1/me/address/${id}`,
+						body: { address_id: id },
 					},
 					(data) => {
-						if (data && data.message) {
-							const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+						if (data && data.success) {
+                            fetchAddresses();
 
-							const userDataObj = {
-								uuid: userDataStorage.uuid,
-								displayName: userDataStorage.displayName,
-								email: userDataStorage.email,
-								photoURL: userDataStorage.photoURL,
-								emailVerified: userDataStorage.emailVerified,
-							};
+							// const userDataStorage = JSON.parse(localStorage.getItem('userData'));
 
-							fetchUser(
-								{
-									url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
-								},
-								(data) => {
-									if (data) {
-										const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-										dispatch(
-											authActions.updateState({
-												userData: { ...userDataObj, ...cloneData },
-											})
-										);
-									}
-								}
-							);
+							// const userDataObj = {
+							// 	uuid: userDataStorage.uuid,
+							// 	displayName: userDataStorage.displayName,
+							// 	email: userDataStorage.email,
+							// 	photoURL: userDataStorage.photoURL,
+							// 	emailVerified: userDataStorage.emailVerified,
+							// };
+
+							// fetchUser(
+							// 	{
+							// 		url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
+							// 	},
+							// 	(data) => {
+							// 		if (data) {
+							// 			const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+							// 			dispatch(
+							// 				authActions.updateState({
+							// 					userData: { ...userDataObj, ...cloneData },
+							// 				})
+							// 			);
+							// 		}
+							// 	}
+							// );
 						}
 					}
 				);
@@ -355,9 +384,9 @@ const ListAddress = (props) => {
                     </div>
                 </div>
             </form>
-            {listAddress && listAddress.length > 0 ? (
-                <ul className={classes['list-address']}>
-                    {listAddress.map((item) => (
+            {addresses && addresses.length > 0 ? (
+                <ul className={classes['list-address']} style={{ display: isAddAddress ? 'none' : 'block' }}>
+                    {addresses.map((item) => (
                         <li key={item._id}>
                             <div className={classes['wrap-address']}>
                                 <div className={classes.info}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment, useRef } from 'react'
+import { useState, useEffect, Fragment, useRef, useCallback } from 'react'
 import Modal from '../UI/Modal';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -37,6 +37,8 @@ const Header = () => {
 
     const shouldRenderModal = useDelayUnmount(showCart, 350);
     const { fetchData: fetchSuggestProducts } = useFetch();
+    const { fetchData: getIntendedCart } = useFetch();
+    const { fetchData: updateCart } = useFetch();
     const { isMobile } = useCheckMobile();
 
     const componentRef = useRef();
@@ -95,6 +97,59 @@ const Header = () => {
         }
     }, [fetchSuggestProducts, searchKey]);
 
+
+    const fetchCartData = useCallback(() => {
+        getIntendedCart({
+            url: `${process.env.REACT_APP_API_URL}/api/v1/me/intended_cart` 
+        }, data => {
+            if (data) {
+                dispatch(
+                    cartActions.setCartInfo({
+                        items: data,
+                        totalQuantity: data.length
+                    })
+                );
+            }
+        });
+    }, [getIntendedCart])
+
+    useEffect(() => {
+        if (userData) {
+            fetchCartData();
+        }
+    }, [fetchCartData]);
+
+    let isInitial = true;
+
+    useEffect(() => {
+        // if (cart.items.length) {
+        //     localStorage.setItem('cartItems', JSON.stringify(cart.items));
+        // }
+        console.log(cart.changed);
+        // if (isInitial) {
+        //     isInitial = false;
+        //     return;
+        // }
+
+        if (userData) {
+            if(cart.changed) {
+                updateCart({
+                    method: 'PUT',
+                    url: `${process.env.REACT_APP_API_URL}/api/v1/me/intended_cart`,
+                    headers: { 
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: { intended_cart: cart.items },
+                }, data => {
+                    if(data.success) {
+                        fetchCartData();
+                    }
+                });
+            }
+        }
+    }, [cart.changed, updateCart]);
+
     const showCartHandler = () => {
         if (cart.items.length > 0) {
             // dispatch(cartActions.showCartPopup(true));
@@ -123,7 +178,8 @@ const Header = () => {
         e.preventDefault() ;
 
         dispatch(authActions.setIsLoggingOut(true));
-
+        // authService.logout();
+        
         fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
             method: 'POST',
             credentials: 'include',
@@ -140,31 +196,6 @@ const Header = () => {
         .catch((error) => {
             console.error(error);
         });
-
-        // authService.logout(() => {
-        //     fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
-		// 		method: 'POST',
-		// 		credentials: 'include',
-		// 		withCredentials: true,
-		// 		// mode: 'no-cors',
-		// 	});
-        // });
-
-        // try {
-        //     await authService.logout().then(() => {
-        //         setTimeout(() => {
-        //             dispatch(authActions.updateState({
-        //                 userData: null
-        //             }));
-        //             navigate('/');
-        //         }, 1000);
-        //     });
-        // } catch(err) {
-        //     console.log(err);
-        // }
-
-        // authApp.signOut()
-        // firebase.auth().signOut()
     };
 
     const cartModal = (

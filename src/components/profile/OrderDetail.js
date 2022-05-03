@@ -89,7 +89,10 @@ const OrderDetail = () => {
                                                 <div className={classes.product}>
                                                     <img src={item.img} alt={item.name} />
                                                     <div className={classes['product-info']}>
-                                                        <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>{item.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {item.name}</Link>
+                                                        <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`}>
+                                                            {item.category === 'smartphone' ? 'Điện thoại ' : 'Máy tính bảng '} 
+                                                            {item.name}{item.color && ` - Màu ${item.color}`}
+                                                        </Link>
                                                         <span className={classes.review}>Viết nhận xét</span>
                                                     </div>
                                                 </div>

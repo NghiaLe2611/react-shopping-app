@@ -22,7 +22,6 @@ import NotFound from './NotFound';
 import RecentlyViewedProducts from '../components/detail/RecentlyViewedProducts';
 import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
-import { findAllByDisplayValue } from '@testing-library/react';
 
 function BoxThumbnail({ children }) {
     return (
@@ -48,12 +47,12 @@ const DetailPage = () => {
     const dispatch = useDispatch();
     
     const cart = useSelector((state) => state.cart);
-    // const showCart = useSelector(state => state.cart.isShowCart);
     const userData = useSelector(state => state.auth.userData);
 
-    const { displayName, uuid, email, favorite } = userData ? userData : {};
+    const { displayName, uuid, email } = userData ? userData : {};
 
     const [product, setProduct] = useState(null);
+    const [isLiked, setIsLiked] = useState(false);
     const [selectedColor, setSelectedColor] = useState(0);
     const [activeTab, setActiveTab] = useState(0);
     const [tabContent, setTabContent] = useState([]);
@@ -61,9 +60,9 @@ const DetailPage = () => {
     const [listCompare, setListCompare] = useState([{}, {}, {}]);
     const [showInfoModal, setshowInfoModal] = useState(false);
     const [activeModalTab, setActiveModalTab] = useState('');
-    const [reviewsCount, setReviewsCount] = useState(0);
     const [reviews, setReviews] = useState([]);
     const [allReviews, setAllReviews] = useState([]);
+    const [reviewsCount, setReviewsCount] = useState(0);
     const [averagePoint, setAveragePoint] = useState(0);
     const [arrayPercent, setArrayPercent] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -73,14 +72,19 @@ const DetailPage = () => {
     const [comment, setComment] = useState('');
     const [reviewImgs, setReviewImgs] = useState([]);
     const [submitReviewForm, setSubmitReviewForm] = useState(false);
+    const [recentlyViewedProducts, setRecentlyViewedProducts] = useState([]);
 
+    
     const { isLoading, error, fetchData: fetchProducts } = useFetch();
-    const { loadingReview, reviewError, fetchData: fetchReviews } = useFetch();
+    const { fetchData: fetchReviews } = useFetch();
 
     const { fetchData: postReview } = useFetch();
     const { fetchData: addToFav } = useFetch();
-    const { fetchData: fetchUser } = useFetch();
+    const { fetchData: removeFav } = useFetch();
+    const { fetchData: checkProductIsLiked } = useFetch();
     const { fetchData: updateViewedProduct } = useFetch();
+    const { fetchData: fetchRecentlyProducts } = useFetch();
+    const { fetchData: updateCart } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
@@ -103,68 +107,40 @@ const DetailPage = () => {
         convertedProductId = productId.replace(/ *\([^)]*\) */g, strHasParentheses[0].replace('-', '%2F'));
     };
 
-    let { recentlyViewedProducts } = userData;
-
-    // const recentlyProductsStorage = JSON.parse(localStorage.getItem('recently_products'));
-
-    // useEffect(() => {
-    //     let recentlyProducts = recentlyProductsStorage ? recentlyProductsStorage : [];
-
-    //     if (product) {
-    //         const existingProductId = recentlyProducts?.findIndex(item => {
-    //             return item._id === product._id;
-    //         });
-
-    //         if (existingProductId < 0) {
-    //             // If length < 10 add to first place if not remove last place and and to first place
-    //             if (recentlyProducts?.length < 10) {
-    //                 recentlyProducts.unshift(product);
-    //             } else {
-    //                 recentlyProducts.splice(-1);
-    //                 recentlyProducts.unshift(product);
-    //             }
-    //         } else {
-    //             // If length = 1 and product existed do nothing else move to first place (remove and add to first place)
-    //             if (recentlyProducts?.length === 1) {
-    //                 return;
-    //             } else {
-    //                 recentlyProducts.splice(existingProductId, 1);
-    //                 recentlyProducts.unshift(product);
-    //             }
-    //         }
-
-    //         localStorage.setItem('recently_products', JSON.stringify(recentlyProducts));
-    //     }
-    // }, [product]);
-
     useEffect(() => {
-        if (product) {
+        if (product && userData) {
             updateViewedProduct({
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/recently`,
                 body: {
-                    recentlyProduct: product
+                    product_id: product._id
                 }
             }, data => {
-                if (data.message) {
-                    fetchUser(
-                        {
-                            url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
-                        },(data) => {
-                            if (data) {
-                                dispatch(
-                                    authActions.updateState({
-                                        userData: {...userData, recentlyViewedProducts: data.recentlyViewedProducts}
-                                    })
-                                );
-                            }
-                        }
-                    );
+                if (data.success) {
+                    fetchRecentlyProducts({
+                        url: `${process.env.REACT_APP_API_URL}/api/v1/me/recently`,
+                    }, res => {
+                        setRecentlyViewedProducts(res);
+                    });
                 }
             });
         }
-    }, [product]);
+    }, [product, updateViewedProduct, fetchRecentlyProducts]);
+
+    useEffect(() => {
+        if (product) {
+            if (userData) {
+                checkProductIsLiked({
+                    url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/${product._id}/liked` 
+                }, data => {
+                    if (data.liked) {
+                        setIsLiked(true);
+                    }
+                });
+            }
+        }
+    }, [checkProductIsLiked, product]);
 
     useEffect(() => {
         fetchProducts({
@@ -184,9 +160,9 @@ const DetailPage = () => {
             }, data => {
                 if (data) {
                     setReviews(data.reviews);
-                    setAveragePoint(data.rating_average);
-                    setReviewsCount(data.reviews_count);
                     setArrayPercent(data.pointPercent);
+                    // setAveragePoint(data.rating_average);
+                    // setReviewsCount(data.reviews_count);
                 }
             });
         }
@@ -200,7 +176,6 @@ const DetailPage = () => {
             document.querySelector('html').classList.remove('modal-open');
             document.body.classList.remove('modal-open');
         }
-
     }, [showInfoModal]);
 
     useEffect(() => {
@@ -211,7 +186,6 @@ const DetailPage = () => {
             document.querySelector('html').classList.remove('modal-open');
             document.body.classList.remove('modal-open');
         }
-
     }, [isWriteReview]);
 
     useEffect(() => {
@@ -249,12 +223,6 @@ const DetailPage = () => {
             }
         }
     }, [fetchReviews, reviews, product, currentPage, isShowAllReviews]);
-
-    useEffect(() => {
-        if (cart.items.length) {
-            localStorage.setItem('cartItems', JSON.stringify(cart.items));
-        }
-    }, [cart.items]);
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;
@@ -325,7 +293,8 @@ const DetailPage = () => {
         }
    
         dispatch(cartActions.addItemToCart({
-            _id: color ? product._id + '-00' + (parseInt(colorCodeList.indexOf(color)) + 1) : product._id,
+            _id: product._id,
+            product_id: color ? product._id + '-00' + (parseInt(colorCodeList.indexOf(color)) + 1) : product._id,
             category: product.category,
             quantity: 1, 
             img: img, 
@@ -516,56 +485,58 @@ const DetailPage = () => {
         }
     };
 
-    const addToWishlist = (type, id) => {
+    const addToWishlist = (id) => {
         if (userData) {
             addToFav({
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/${id}`,
-                body: type === 1 ? { type: 1 } : { type: 0 } // 1 like, 0 unlike
+                url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/${id}`
             }, data => {
-                setTimeout(() => {
-                    if (data.message) {
-                        reviewSwal.fire({
-                            icon: 'success',
-                            html: type === 1 ? '<p>Đã thích<p>' : '<p>Đã bỏ thích<p>',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#2f80ed'
-                        });
+                if (data.success) {
+                    data.status === 1 ? setIsLiked(true) : setIsLiked(false);
+                }
 
-                        const userDataStorage = JSON.parse(localStorage.getItem('userData'));
+                // setTimeout(() => {
+                //     if (data.message) {
+                //         reviewSwal.fire({
+                //             icon: 'success',
+                //             html: type === 1 ? '<p>Đã thích<p>' : '<p>Đã bỏ thích<p>',
+                //             confirmButtonText: 'OK',
+                //             confirmButtonColor: '#2f80ed'
+                //         });
 
-                        const userDataObj = {
-                            uuid: userDataStorage.uuid,
-                            displayName: userDataStorage.displayName,
-                            email: userDataStorage.email,
-                            photoURL: userDataStorage.photoURL,
-                            emailVerified: userDataStorage.emailVerified,
-                        };
+                //         const userDataStorage = JSON.parse(localStorage.getItem('userData'));
 
-                        fetchUser(
-                            {
-                                url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
-                            },
-                            (data) => {
-                                if (data) {
-                                    const cloneData = (({uuid, displayName, email, photoURL, emailVerified, ...val}) => val)(data);
-                                    dispatch(
-                                        authActions.updateState({
-                                            userData: {...userDataObj, ...cloneData},
-                                        })
-                                    );
-                                }
-                            }
-                        );
-                    } else {
-                        reviewSwal.fire({
-                            icon: 'error',
-                            html: '<p style="font-size: 14px;">Đã có lỗi xảy ra. Vui lòng thử lại.</p>',
-                            confirmButtonColor: '#2f80ed'
-                        })
-                    }
-                }, 500);
+                //         const userDataObj = {
+                //             uuid: userDataStorage.uuid,
+                //             displayName: userDataStorage.displayName,
+                //             email: userDataStorage.email,
+                //             photoURL: userDataStorage.photoURL,
+                //             emailVerified: userDataStorage.emailVerified,
+                //         };
+
+                //         fetchUser(
+                //             {
+                //                 url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
+                //             },
+                //             (data) => {
+                //                 if (data) {
+                //                     const cloneData = (({uuid, displayName, email, photoURL, emailVerified, ...val}) => val)(data);
+                //                     dispatch(
+                //                         authActions.updateState({
+                //                             userData: {...userDataObj, ...cloneData},
+                //                         })
+                //                     );
+                //                 }
+                //             }
+                //         );
+                //     } else {
+                //         reviewSwal.fire({
+                //             icon: 'error',
+                //             html: '<p style="font-size: 14px;">Đã có lỗi xảy ra. Vui lòng thử lại.</p>',
+                //             confirmButtonColor: '#2f80ed'
+                //         })
+                //     }
+                // }, 500);
             });
         } else {
             Swal.fire({
@@ -578,6 +549,18 @@ const DetailPage = () => {
             });
             
         }
+    };
+
+    const removeFromWishlist = (id) => {
+        removeFav({
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/delete/${id}`
+        }, data => {
+            if (data) {
+                console.log('removeFromWishlist', data);
+            }
+        });
     };
 
     let reviewsContent = (
@@ -679,7 +662,7 @@ const DetailPage = () => {
                                     <div className={classes['rating-overview']}>
                                         <div className={classes['rating-top']}>
                                             <span className={classes.point}>
-                                                {Number(averagePoint)}
+                                                {product.rating_average}
                                             </span>
                                             <div className={classes['list-star']}>                                                
                                                 {
@@ -687,12 +670,12 @@ const DetailPage = () => {
                                                         // <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
                                                         //     <i className={`icon-star ${classes.border}`}></i>
                                                         // </span>
-                                                        (averagePoint - Math.floor(averagePoint)).toFixed(1) === 0.5 ? (
-                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(averagePoint) ? 'icon-star-half' : index + 1 < Math.round(averagePoint) ? classes.selected : ''}`}>
-                                                                {index + 1 !== Math.round(averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
+                                                        (product.rating_average - Math.floor(product.rating_average)).toFixed(1) === 0.5 ? (
+                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(product.rating_average) ? 'icon-star-half' : index + 1 < Math.round(product.rating_average) ? classes.selected : ''}`}>
+                                                                {index + 1 !== Math.round(product.rating_average) && <i className={`icon-star ${classes.border}`}></i>}
                                                             </span>
                                                         ) : (
-                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
+                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(product.rating_average) ? classes.selected : ''}`}>
                                                                 <i className={`icon-star ${classes.border}`}></i>
                                                             </span>
                                                         )
@@ -700,7 +683,7 @@ const DetailPage = () => {
                                                     ))
                                                 }
                                             </div>
-                                            <span className={classes.txt}>{reviewsCount} đánh giá</span>
+                                            <span className={classes.txt}>{product.review_count} đánh giá</span>
                                         </div>
                                         <ul className={classes['rating-list']}>
                                             {
@@ -710,9 +693,9 @@ const DetailPage = () => {
                                                             {item}<i className='icon-star'></i>
                                                         </span>
                                                         <div className={classes['timeline-star']}>
-                                                            <p style={{width: arrayPercent[index]}}></p>
+                                                            <p style={{width: arrayPercent && arrayPercent[index]}}></p>
                                                         </div>
-                                                        <span className={classes.percent}>{arrayPercent[index]}%</span>
+                                                        <span className={classes.percent}>{arrayPercent && arrayPercent[index]}%</span>
                                                     </li>
                                                 ))
                                             }  
@@ -745,7 +728,7 @@ const DetailPage = () => {
                                     </ul>
                                     <div className={classes['wrap-btn']}>
                                         <a href="/#" className={classes['write-review']} onClick={writeReviewHandler}>Viết đánh giá</a>
-                                        <a href="/#" className={classes['show-reviews']} onClick={showAllReviews}>Xem tất cả đánh giá ({reviewsCount})</a>
+                                        <a href="/#" className={classes['show-reviews']} onClick={showAllReviews}>Xem tất cả đánh giá ({product.review_count})</a>
                                     </div>
                                 </Fragment>
                             ) : (
@@ -872,7 +855,7 @@ const DetailPage = () => {
                         shouldRenderReviewsModal && (
                             <Modal isShowModal={isShowAllReviews} closeModal={() => setIsShowAllReviews(false)} animation='none' contentClass={classes.reviewModal}>
                                 <div className={classes['wrap-review-modal']}>
-                                    <h5>{reviewsCount} đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
+                                    <h5>{product.review_count} đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : 
                                         product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
                                     </h5>
                                     <div className={classes['wrap-reviews']}>
@@ -915,7 +898,7 @@ const DetailPage = () => {
                                             )
                                         }
                                         {
-                                            reviewsCount > reviewPageSize ? (
+                                            product.review_count > reviewPageSize ? (
                                                 <Pagination style={{marginTop: 30}}
                                                     pageSize={reviewPageSize} currentPage={currentPage}
                                                     totalCount={reviewsCount}
@@ -999,14 +982,15 @@ const DetailPage = () => {
                         </ul>
                     </div>
                     {
-                        favorite && favorite.some(item => item._id === product._id) ? (
-                            <button className={`${classes['fav-btn']} ${classes.liked}`} onClick={() => addToWishlist(0, product._id)}>
+                        // favorite && favorite.some(item => item._id === product._id)
+                        isLiked ? (
+                            <button className={`${classes['fav-btn']} ${classes.liked}`} onClick={() => removeFromWishlist(product._id)}>
                                 <i className='icon-heart'></i>Đã thích
                             </button>
                         ) : (
-                            <button className={classes['fav-btn']} onClick={() => addToWishlist(1, product._id)}>
-                                <i className='icon-heart-o'></i>Thích
-                            </button>
+                            <button className={classes['fav-btn']} onClick={() => addToWishlist(product._id)}>
+                            <i className='icon-heart-o'></i>Thích
+                        </button>
                         )
                     }
                 </div>
@@ -1407,7 +1391,9 @@ const DetailPage = () => {
                     </div>
 				</div>
                 {
-                    recentlyViewedProducts?.length && <div className={`card ${classes.mb}`}><RecentlyViewedProducts data={recentlyViewedProducts}/></div>
+                    recentlyViewedProducts.length > 0 ? (
+                        <div className={`card ${classes.mb}`}><RecentlyViewedProducts data={recentlyViewedProducts}/></div>
+                    ) : null
                 }
 			</div>
 

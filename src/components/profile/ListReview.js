@@ -113,7 +113,8 @@ const ListReview = (props) => {
     return (
         <Fragment>
             <h3>Nhận xét của tôi</h3>
-            <div className={classes.content}>{reviewsContent}</div>
+            {/* <div className={classes.content}></div> */}
+            {reviewsContent}
         </Fragment>
     )
 };

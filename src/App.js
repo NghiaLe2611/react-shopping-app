@@ -7,6 +7,7 @@ import { authActions } from './store/auth';
 import { cartActions } from './store/cart';
 import { authApp } from './firebase/config';
 import useFetch from './hooks/useFetch';
+import Cookies from 'js-cookie';
 
 const Root = React.lazy(() => import('./components/UI/Root'));
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -88,7 +89,6 @@ function App() {
                     } else {
                         // updateUser();
                         const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-
                         dispatch(
                             authActions.updateState({
                                 userData: {
@@ -149,13 +149,43 @@ function App() {
                     emailVerified: user.emailVerified,
                 };
 
-                dispatch(
-                    authActions.updateState({
-                        userData: userDataObj
-                    }),
-                );
+                // dispatch(
+                //     authActions.updateState({
+                //         userData: userDataObj
+                //     }),
+                // );
 
-                getUserData(user, userDataObj);
+                // Post session to server when login by firebase
+                return authApp.currentUser.getIdToken().then((token) => {
+                   const prevCookie = Cookies.get('idToken');
+                   const csrfToken = Cookies.get('csrfToken');
+       
+                    if (prevCookie === undefined || prevCookie !== token) {
+						Cookies.set('idToken', token, {
+							expires: 1,
+						}); // 1 day
+						fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+							method: 'POST',
+							credentials: 'include',
+							withCredentials: true,
+							headers: {
+								Accept: 'application/json',
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({
+								idToken: token,
+								csrfToken: csrfToken,
+							}),
+						});
+					}
+       
+                    if (!accessToken) {
+                        dispatch(authActions.setToken(token));
+                    }
+                    if (!userData) {
+                        getUserData(user, userDataObj);
+                    }
+                });
             } else {
                 dispatch(
                     authActions.updateState({
@@ -165,7 +195,6 @@ function App() {
                 dispatch(authActions.setToken(''));
                 dispatch(cartActions.clearCart());
                 if (isLoggingOut) {
-                    console.log('APP log out');
                     dispatch(authActions.setIsLoggingOut(false));
                 }
 

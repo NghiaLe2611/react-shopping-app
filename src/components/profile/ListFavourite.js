@@ -1,64 +1,52 @@
-import { Fragment } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import useFetch from '../../hooks/useFetch';
 import { authActions } from '../../store/auth';
 import { formatCurrency, convertProductLink } from '../../helpers/helpers';
 import Swal from 'sweetalert2';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import classes from '../../scss/Profile.module.scss';
 
 const ListFavourite = (props) => {
     const dispatch = useDispatch;
     const { userData } = props;
-    const { favorite, uuid } = userData ? userData : {};
+    const [favorite, setFavorite] = useState([]);
+    // const { favorite, uuid } = userData ? userData : {};
 
+    const { isLoading, error, fetchData: fetchFavList } = useFetch();
     const { fetchData: removeFav } = useFetch();
     const { fetchData: fetchUser } = useFetch();
 
-    const removeFromWishlist = (id) => {
-        if (favorite && favorite.length < 10) {
-            removeFav({
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/${id}`,
-                body: { type: 0 }
-            }, data => {
-                if(data.message) {
-                    const userDataStorage = JSON.parse(localStorage.getItem('userData'));
-                    const userDataObj = {
-                        uuid: userDataStorage.uuid,
-                        displayName: userDataStorage.displayName,
-                        email: userDataStorage.email,
-                        photoURL: userDataStorage.photoURL,
-                        emailVerified: userDataStorage.emailVerified
-                    };
-        
-                    fetchUser({
-                        url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
-                    }, data => {
-                        if (data) {
-                            const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
-                            dispatch(authActions.updateState({
-                                userData: {...userDataObj, ...cloneData}
-                            }));
-                        }
-                    });
-                }
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                html: `<p>Bạn chỉ có thể có tối đa 10 yêu thích !</p>`,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#dc3741'
-            });
-        }
-	};
+    const getFavoriteList = useCallback(() => {
+        fetchFavList({
+            url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist`,
+        }, data => {
+            setFavorite(data);
+        });
+    }, [fetchFavList]);
 
-    return (
-        <Fragment>
-            <h3>Danh sách yêu thích</h3>
-            <ul className={classes['list-fav']}>
+    useEffect(() => {
+        getFavoriteList();
+    }, [getFavoriteList]);
+
+    const removeFromWishlist = (id) => {
+        removeFav({
+            method: 'PUT',
+            url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/delete/${id}`
+        }, data => {
+            if (data) {
+                getFavoriteList();
+            }
+        });
+    };
+
+    let favoriteContent;
+
+    if (favorite.length > 0) {
+		favoriteContent = (
+			<ul className={classes['list-fav']}>
                 {
                     (favorite && favorite.length > 0) && (
                         favorite.map(item => (
@@ -75,13 +63,13 @@ const ListFavourite = (props) => {
                                         <div className={classes['list-star']}> 
                                             {
                                                 Array(5).fill().map((val, index) => (
-                                                    item.averagePoint ? (
-                                                        (item.averagePoint - Math.floor(item.averagePoint)).toFixed(1) === 0.5 ? (
-                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(item.averagePoint) ? 'icon-star-half' : index + 1 < Math.round(item.averagePoint) ? classes.selected : ''}`}>
-                                                                {index + 1 !== Math.round(item.averagePoint) && <i className={`icon-star ${classes.border}`}></i>}
+                                                    item.rating_average ? (
+                                                        (item.rating_average - Math.floor(item.rating_average)).toFixed(1) === 0.5 ? (
+                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 === Math.round(item.rating_average) ? 'icon-star-half' : index + 1 < Math.round(item.rating_average) ? classes.selected : ''}`}>
+                                                                {index + 1 !== Math.round(item.rating_average) && <i className={`icon-star ${classes.border}`}></i>}
                                                             </span>
                                                         ) : (
-                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(item.averagePoint) ? classes.selected : ''}`}>
+                                                            <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(item.rating_average) ? classes.selected : ''}`}>
                                                                 <i className={`icon-star ${classes.border}`}></i>
                                                             </span>
                                                         )
@@ -89,7 +77,7 @@ const ListFavourite = (props) => {
                                                 ))
                                             }
                                         </div>
-                                        <p className={classes.txt}>({item.totalReviews} nhận xét)</p>
+                                        <p className={classes.txt}>({item.review_count} nhận xét)</p>
                                     </div>
                                 </div>
                                 {
@@ -105,12 +93,37 @@ const ListFavourite = (props) => {
                                         <div className={classes.price}>{formatCurrency(item.price)}đ</div>
                                     )
                                 }
-                                <span className={classes['remove-fav']} onClick={() => removeFromWishlist(item._id)}>×</span>
+                                <span className={classes['remove-fav']} onClick={() => removeFromWishlist(item.product_id)}>×</span>
                             </li>
                         ))
                     )
                 }
             </ul>
+		);
+	} else {
+		if (isLoading) {
+			favoriteContent = (
+				Array(3).fill().map((item ,index) => (
+					<div className={classes['wrap-item-loading']} key={index}>
+						<div className={classes['item-loading']}>
+							<Skeleton width={80} height={80} style={{ marginRight: 5 }}/>
+							<div style={{flex: 1}}>
+								<Skeleton width={'60%'} height={20} style={{ margin: '6px 0' }}/>
+								<Skeleton height={20}/>
+							</div>
+						</div>
+					</div>
+				))
+			)
+		} else {
+			favoriteContent = <p>Bạn chưa có nhận xét nào</p>;
+		}
+	}
+
+    return (
+        <Fragment>
+            <h3>Danh sách yêu thích</h3>
+            {favoriteContent}
         </Fragment>
     )
 };

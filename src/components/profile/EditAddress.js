@@ -9,7 +9,7 @@ const EditAddress = (props) => {
 	const { classes, cities } = props;
     const dispatch = useDispatch();
     const userData = useSelector((state) => state.auth.userData);
-	const { listAddress } = userData;
+	const { addresses } = userData;
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -28,9 +28,9 @@ const EditAddress = (props) => {
     useEffect(() => {
         // const addressId = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
         
-        if (listAddress) {
+        if (addresses) {
             if (location.state && location.state.addressId) {
-                const currentAdd = listAddress.find(item => {
+                const currentAdd = addresses.find(item => {
                     return item._id === location.state.addressId;
                 });
                 setCurrentAddress(currentAdd);
@@ -38,7 +38,7 @@ const EditAddress = (props) => {
             } 
         }
 
-    }, [listAddress, location]);
+    }, [addresses, location]);
 
     useEffect(() => {
         if (currentAddress) {

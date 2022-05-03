@@ -120,9 +120,9 @@ const CartConfirmPage = () => {
                 setCustomerInfo(shippingInfo);
                 return;
             }
-            if (userData && userData.listAddress && userData.listAddress.length) {
-                const index = userData.listAddress.findIndex(val => val.default === true);
-                setCustomerInfo(userData.listAddress[index]);
+            if (userData && userData.addresses && userData.addresses.length) {
+                const index = userData.addresses.findIndex(val => val.default === true);
+                setCustomerInfo(userData.addresses[index]);
             }
         }, [userData, shippingInfo]);
 
@@ -352,114 +352,124 @@ const CartConfirmPage = () => {
         };
 
         const confirmBooking = () => {
-                setIsLoading(true);
-                const address = `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`;
-        const submitOrderHandler = (orderData) => {
-            submitOrder({
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                url: `${process.env.REACT_APP_API_URL}/api/v1/orders`,
-                body: orderData
-            }, data => {
-                const payment = paymentMethod === 'p3' ? {
-                    id: paymentMethod,
-                    card: `**********${cardInfo['card_number'].slice(-4)}`
-                } : {
-                    id: paymentMethod
-                };
-                
-                if (data && data.message) {
-                    setIsLoading(false);
-                    dispatch(cartActions.updateCartItems({
-                        type: 'booking',
-                        items: cart.finalItems
-                    }));
-                    navigate('/orderDetail/' + data.orderId, {
-                        state: {
-                            orderId: data.orderId,
-                            products: cart.finalItems,
-                            customerInfo: {
-                                name: customerInfo.name,
-                                phone: customerInfo.phone,
-                                address: address
-                            },
-                            orderDate: new Date().getTime(),
-                            shippingMethod: shippingMethod,
-                            paymentMethod: payment,
-                            discount: cart.discount,
-                            totalPrice: cart.totalPrice,
-                            finalPrice: cart.finalPrice
-                        }
-                    });
-                }
-            });
-        };
+			setIsLoading(true);
+			const address = customerInfo ? `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${
+				customerInfo.city && `, ${customerInfo.city.name}`
+			}` : null;
+			const submitOrderHandler = (orderData) => {
+				submitOrder(
+					{
+						method: 'POST',
+						headers: {'Content-Type': 'application/json'},
+						url: `${process.env.REACT_APP_API_URL}/api/v1/orders`,
+						body: orderData,
+					},
+					(data) => {
+						const payment =
+							paymentMethod === 'p3'
+								? {
+										id: paymentMethod,
+										card: `**********${cardInfo['card_number'].slice(-4)}`,
+								  }
+								: {
+										id: paymentMethod,
+								  };
 
-        let products = [];
+						if (data && data.message) {
+							setIsLoading(false);
+							dispatch(
+								cartActions.updateCartItems({
+									type: 'booking',
+									items: cart.finalItems,
+								})
+							);
+							navigate('/orderDetail/' + data.orderId, {
+								state: {
+									orderId: data.orderId,
+									products: cart.finalItems,
+									customerInfo: {
+										name: customerInfo.name,
+										phone: customerInfo.phone,
+										address: address,
+									},
+									orderDate: new Date().getTime(),
+									shippingMethod: shippingMethod,
+									paymentMethod: payment,
+									discount: cart.discount,
+									totalPrice: cart.totalPrice,
+									finalPrice: cart.finalPrice,
+								},
+							});
+						}
+					}
+				);
+			};
 
-        if (cart.finalItems.length > 0) {
-            products = cart.finalItems;
-        }
+			let products = [];
 
-        if (shippingMethod && paymentMethod) {
-            if (paymentMethod === 'p3') {
-                if (cardIsValid) {
-                    const orderData = {
-                        products: products,
-                        customerId: userData.uuid ? userData.uuid : '',
-                        customerName: customerInfo ? customerInfo.name : '',
-                        address: customerInfo ? address : '',
-                        phone: customerInfo ? customerInfo.phone : '',
-                        orderDate: new Date(),
-                        shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
-                        shippingMethod: shippingMethod,
-                        paymentMethod: {
-                            id: paymentMethod,
-                            card: `**********${cardInfo['card_number'].slice(-4)}`
-                        },
-                        discount: cart.discount,
-                        totalPrice: cart.totalPrice,
-                        finalPrice: cart.finalPrice
-                    };
+			if (cart.finalItems.length > 0) {
+				products = cart.finalItems;
+			}
 
-                    submitOrderHandler(orderData);
-                } else {
-                    setIsLoading(false);
-                    Swal.fire({
-                        icon: 'warning',
-                        html: '<p style="font-size: 16px;font-weight:500;">Bạn cần nhập thông tin thẻ tính dụng.</p>',
-                        confirmButtonColor: '#2f80ed',
-                        confirmButtonText: 'Đã hiểu'
-                    });
-                }
-            } else {
-                const orderData = {
-                    products: products,
-                    customerId: userData.uuid ? userData.uuid : '',
-                    customerName: customerInfo ? customerInfo.name : '',
-                    address: customerInfo ? address : '',
-                    phone: customerInfo ? customerInfo.phone : '',
-                    orderDate: new Date(),
-                    shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
-                    shippingMethod: shippingMethod,
-                    paymentMethod: paymentMethod,
-                    discount: cart.discount,
-                    totalPrice: cart.totalPrice,
-                    finalPrice: cart.finalPrice
-                };
+			if (shippingMethod && paymentMethod) {
+				if (paymentMethod === 'p3') {
+					if (cardIsValid) {
+						const orderData = {
+							products: products,
+							customerId: userData.uuid ? userData.uuid : '',
+							customerName: customerInfo ? customerInfo.name : '',
+							address: customerInfo ? address : '',
+							phone: customerInfo ? customerInfo.phone : '',
+							orderDate: new Date(),
+							shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
+							shippingMethod: shippingMethod,
+							paymentMethod: {
+								id: paymentMethod,
+								card: `**********${cardInfo['card_number'].slice(-4)}`,
+							},
+							discount: cart.discount,
+							totalPrice: cart.totalPrice,
+							finalPrice: cart.finalPrice,
+						};
 
-                submitOrderHandler(orderData);
-            }
-        } else {
-            setIsLoading(false);
-            Swal.fire({
-                icon: 'warning',
-                html: '<p style="font-size: 16px;font-weight:500;">Bạn cần kiểm tra lại phương thức giao hàng và thanh toán !</p>',
-                confirmButtonColor: '#2f80ed',
-                confirmButtonText: 'Đã hiểu'
-            });
-        }
-    };
+						submitOrderHandler(orderData);
+					} else {
+						setIsLoading(false);
+						Swal.fire({
+							icon: 'warning',
+							html: '<p style="font-size: 16px;font-weight:500;">Bạn cần nhập thông tin thẻ tính dụng.</p>',
+							confirmButtonColor: '#2f80ed',
+							confirmButtonText: 'Đã hiểu',
+						});
+					}
+				} else {
+					const orderData = {
+						products: products,
+						customerId: userData?.uuid ? userData.uuid : null,
+						customerName: customerInfo ? customerInfo.name : '',
+						address: customerInfo ? address : '',
+						phone: customerInfo ? customerInfo.phone : '',
+						orderDate: new Date(),
+						shippingFee: shippingMethod === 1 ? fastShippingFee : shippingFee,
+						shippingMethod: shippingMethod,
+						paymentMethod: paymentMethod,
+						discount: cart.discount,
+						totalPrice: cart.totalPrice,
+						finalPrice: cart.finalPrice,
+					};
+
+					submitOrderHandler(orderData);
+				}
+			} else {
+				setIsLoading(false);
+				Swal.fire({
+					icon: 'warning',
+					html: '<p style="font-size: 16px;font-weight:500;">Bạn cần kiểm tra lại phương thức giao hàng và thanh toán !</p>',
+					confirmButtonColor: '#2f80ed',
+					confirmButtonText: 'Đã hiểu',
+				});
+			}
+		};
 
     const showAddressModalHandler = (e) =>{
         e.preventDefault();
@@ -661,7 +671,9 @@ const CartConfirmPage = () => {
                                     <div className={classes['wrap-ctm-info']}>
                                         <div className={classes.head}>
                                             <span>Địa chỉ giao hàng</span>
-                                            <a href="/#" onClick={showAddressModalHandler}>Sửa</a>
+                                            <a href="/#" onClick={showAddressModalHandler}>
+                                                {userData ? 'Sửa' : 'Thêm'}
+                                            </a>
                                         </div>
                                        {
                                             customerInfo ? (
@@ -674,7 +686,7 @@ const CartConfirmPage = () => {
                                                         <p className={classes.phone}>Điện thoại: {customerInfo.phone}</p>
                                                     </div>   
                                                 </Fragment>
-                                            ) : null
+                                            ) : <p style={{fontSize: 13}}>Bạn cần nhập địa chỉ giao hàng</p>
                                         }
                                     </div>
                                 </div>

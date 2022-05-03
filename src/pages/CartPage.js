@@ -70,9 +70,9 @@ const CartPage = () => {
 			setCustomerInfo(shippingInfo);
 			return;
 		}
-		if (userData && userData.listAddress && userData.listAddress.length) {
-			const index = userData.listAddress.findIndex((val) => val.default === true);
-			setCustomerInfo(userData.listAddress[index]);
+		if (userData && userData.addresses && userData.addresses.length) {
+			const index = userData.addresses.findIndex((val) => val.default === true);
+			setCustomerInfo(userData.addresses[index]);
 		}
 	}, [userData, shippingInfo]);
 
@@ -85,12 +85,12 @@ const CartPage = () => {
 			);
 		}
 
-		if (cart.items.length > 0) {
-			localStorage.setItem('cartItems', JSON.stringify(cart.items));
-		} else {
-			setIsSelectAll(false);
-			localStorage.removeItem('cartItems');
-		}
+		// if (cart.items.length > 0) {
+		// 	localStorage.setItem('cartItems', JSON.stringify(cart.items));
+		// } else {
+		// 	setIsSelectAll(false);
+		// 	localStorage.removeItem('cartItems');
+		// }
 	}, [cart.items, isSelectAll]);
 
 	const checkInputSelectHandler = () => {
@@ -106,13 +106,7 @@ const CartPage = () => {
 			setIsSelectAll(true);
 			for (let i = 0; i < cart.items.length; i++) {
 				const item = cart.items[i];
-				let isExist = cart.finalItems.filter((val) => val._id === item._id).length > 0;
-
-				// if (item.color) {
-				//     isExist = cart.finalItems.filter(val => (val.color === item.color && val._id === item._id)).length > 0;
-				// } else {
-				//     isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;
-				// }
+				let isExist = cart.finalItems.filter((val) => val.product_id === item.product_id).length > 0;
 
 				if (isExist) {
 					continue;
@@ -150,10 +144,7 @@ const CartPage = () => {
 			}).then((result) => {
 				if (result.isConfirmed) {
 					cart.finalItems.forEach((item) => {
-						// dispatch(cartActions.removeCartItem({
-						//     type: 'REMOVE', item
-						// }));
-						dispatch(cartActions.removeCartItem(item._id));
+						dispatch(cartActions.removeCartItem(item.product_id));
 					});
 				}
 				return;
@@ -235,8 +226,7 @@ const CartPage = () => {
 											<input type='checkbox' onChange={(e) => selectAllHandler(e)} ref={selectAlInput} /> <span className={classes.checkmark}> </span>{' '}
 											<span className='txt'>
 												{' '}
-												Tất cả({cart.items.length}
-												sản phẩm){' '}
+												Tất cả ({cart.items.length} sản phẩm){' '}
 											</span>{' '}
 										</label>{' '}
 									</p>{' '}
@@ -250,36 +240,40 @@ const CartPage = () => {
 								<ul className={`${classes['cart-list']} ${classes.box}`}>
 									{' '}
 									{cart.items.length > 0 &&
-										cart.items.map((item) => <CartItem key={item._id} isSelectAll={isSelectAll} item={item} checkInputSelect={checkInputSelectHandler} />)}{' '}
+										cart.items.map((item) => <CartItem key={item.product_id} isSelectAll={isSelectAll} item={item} checkInputSelect={checkInputSelectHandler} />)}{' '}
 								</ul>{' '}
 							</div>{' '}
 							<div className={classes.right}>
-								<div className={classes.block}>
-									<div className={`${classes['wrap-ctm-info']} ${classes['block-inner']}`}>
-										<div className={classes.head}>
-											<span> Giao tới </span>{' '}
-											<a href='/#' onClick={showAddressModalHandler}>
-												{' '}
-												Thay đổi{' '}
-											</a>{' '}
-										</div>{' '}
-										{customerInfo ? (
-											<Fragment>
-												<div className={classes['ctm-info']}>
-													{' '}
-													{customerInfo.name} <var> | </var>
-													{customerInfo.phone}{' '}
-												</div>{' '}
-												<div className={classes.address}>
-													{' '}
-													{`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${
-														customerInfo.city && `, ${customerInfo.city.name}`
-													}`}
-												</div>
-											</Fragment>
-										) : null}
-									</div>
-								</div>
+								{
+                                    userData && (
+                                        <div className={classes.block}>
+                                            <div className={`${classes['wrap-ctm-info']} ${classes['block-inner']}`}>
+                                                <div className={classes.head}>
+                                                    <span> Giao tới </span>{' '}
+                                                    <a href='/#' onClick={showAddressModalHandler}>
+                                                        {' '}
+                                                        Thay đổi{' '}
+                                                    </a>{' '}
+                                                </div>{' '}
+                                                {customerInfo ? (
+                                                    <Fragment>
+                                                        <div className={classes['ctm-info']}>
+                                                            {' '}
+                                                            {customerInfo.name} <var> | </var>
+                                                            {customerInfo.phone}{' '}
+                                                        </div>{' '}
+                                                        <div className={classes.address}>
+                                                            {' '}
+                                                            {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${
+                                                                customerInfo.city && `, ${customerInfo.city.name}`
+                                                            }`}
+                                                        </div>
+                                                    </Fragment>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    )
+                                }
 								<div className={classes.block}>
 									<div className={classes['block-inner']}>
 										<div className={classes.head}>

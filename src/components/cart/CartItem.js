@@ -8,30 +8,15 @@ import Swal from 'sweetalert2';
 const CartItem = (props) => {
     const dispatch = useDispatch();
     const cart = useSelector((state) => state.cart);
-
     const { item } = props;
-    const [isAddToCart, setIsAddToCart] = useState(false);
-
     const inputRef = useRef();
 
     useEffect(() => {
         props.checkInputSelect();
     }, [cart.finalItems]);
 
-    // useEffect(() => {
-    //     if (isAddToCart) {
-    //         dispatch(cartActions.confirmChooseCart({
-    //             type: 'ADD', item
-    //         }));  
-    //     } else {
-    //         dispatch(cartActions.confirmChooseCart({
-    //             type: 'REMOVE', item
-    //         })); 
-    //     }
-    // }, [isAddToCart]);
-
     useEffect(() => {
-        let isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;;
+        let isExist = cart.finalItems.filter(val => val.product_id === item.product_id).length > 0;;
 
         if (isExist) {
             inputRef.current.checked = true;
@@ -43,7 +28,7 @@ const CartItem = (props) => {
     const increaseQuantityHandler = () => {
         if (item.quantity < 5) {
             dispatch(cartActions.addItemToCart({
-                _id: item._id,
+                product_id: item.product_id,
                 price: item.price
             }));  
             if (inputRef.current.checked) {
@@ -53,7 +38,7 @@ const CartItem = (props) => {
             }
         } else {
             Swal.fire({
-                icon: 'warning',
+            icon: 'warning',
                 html: `<p>Bạn chỉ có thể chọn tối đa 5 sản phẩm !</p>`,
                 confirmButtonColor: '#2f80ed',
             });
@@ -62,7 +47,7 @@ const CartItem = (props) => {
 
     const decreaseQuantityHandler = () => {
         if (item.quantity !== 1) {
-            dispatch(cartActions.decreaseCartQuantity(item._id));
+            dispatch(cartActions.decreaseCartQuantity(item.product_id));
             if (inputRef.current.checked) {
                 dispatch(cartActions.confirmChooseCart({
                     type: 'DECREASE', item
@@ -71,7 +56,7 @@ const CartItem = (props) => {
         } else {
             let confirm = window.confirm("Bạn có chắc muốn xóa sản phẩm này ?");
             if (confirm) {
-                dispatch(cartActions.decreaseCartQuantity(item._id));
+                dispatch(cartActions.decreaseCartQuantity(item.product_id));
                 dispatch(cartActions.confirmChooseCart({
                     type: 'REMOVE', item
                 }));  
@@ -88,7 +73,7 @@ const CartItem = (props) => {
         if (parseInt(value) <= 5) {
             if (value.length !== 0 && parseInt(value) !== 0) {
                 dispatch(cartActions.changeQuantity({
-                    _id: item._id, quantity: parseInt(value)
+                    product_id: item.product_id, quantity: parseInt(value)
                 }));
                 if (inputRef.current.checked) {
                     dispatch(cartActions.confirmChooseCart({
@@ -116,7 +101,7 @@ const CartItem = (props) => {
             cancelButtonColor: '#dc3741'
         }).then(result => {
             if (result.isConfirmed) {
-                dispatch(cartActions.removeCartItem(item._id));
+                dispatch(cartActions.removeCartItem(item.product_id));
                 dispatch(cartActions.confirmChooseCart({
                     type: 'REMOVE', item
                 }));  
@@ -126,12 +111,10 @@ const CartItem = (props) => {
 
     const checkCartHandler = (e) => {
         if (e.target.checked) {
-            // setIsAddToCart(true);
             dispatch(cartActions.confirmChooseCart({
                 type: 'ADD', item
             }));  
         } else {
-            // setIsAddToCart(false);
             dispatch(cartActions.confirmChooseCart({
                 type: 'REMOVE', item
             }));
@@ -142,9 +125,9 @@ const CartItem = (props) => {
         let isExist = false;
 
         if (item.color) {
-            isExist = cart.finalItems.filter(val => (val.color === item.color && val._id === item._id)).length > 0;
+            isExist = cart.finalItems.filter(val => (val.color === item.color && val.product_id === item.product_id)).length > 0;
         } else {
-            isExist = cart.finalItems.filter(val => val._id === item._id).length > 0;
+            isExist = cart.finalItems.filter(val => val.product_id === item.product_id).length > 0;
         }
 
         if (isExist) {
@@ -161,7 +144,6 @@ const CartItem = (props) => {
             <div className={classes['col-1']}>
                 <label className={classes.checkbox}>
                     <input type="checkbox" onChange={(e) => checkCartHandler(e)} ref={inputRef} />
-                    {/* checked={cartItemChecked} */}
                     <span className={classes.checkmark}></span>&nbsp;
                 </label>
                 <span className={classes.img}><img src={item.img} alt={item.name} /></span>

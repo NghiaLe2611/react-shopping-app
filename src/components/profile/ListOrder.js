@@ -190,7 +190,8 @@ const ListOrder = (props) => {
                                                             <span className={classes.quantity}>x{prod.quantity}</span>
                                                         </div>
                                                         <h4 className={classes.name}>
-                                                            {prod.category === 'smartphone' ? 'Điện thoại' : 'Máy tính bảng'} {prod.name}
+                                                            {prod.category === 'smartphone' ? 'Điện thoại ' : 'Máy tính bảng '} 
+                                                            {prod.name}{prod.color && ` - Màu ${prod.color}`}
                                                         </h4>
                                                     </div>
                                                     <div className={classes.price}>{formatCurrency(prod.price)} ₫</div>

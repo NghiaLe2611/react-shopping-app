@@ -5,7 +5,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { emailIsValid, passwordIsValid } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { useDispatch } from 'react-redux';
+import { authActions } from '../store/auth';
 import classes from '../scss/Login.module.scss';
+import Cookies from 'js-cookie';
 
 const errorMessages = {
     email: 'Email không hợp lệ.',
@@ -18,6 +21,7 @@ const formAlert = withReactContent(Swal);
 
 const SignUpPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const [userInput, setUserInput] = useState({
         email: null,
@@ -141,32 +145,59 @@ const SignUpPage = () => {
                     );
 
                     if (userCredential.user.accessToken) {
-                        let timerInterval;
+                        console.log('register', userCredential.user);
 
-                        const Toast = formAlert.mixin({
-                            toast: true,
-                            confirmButtonText: 'Chuyển trang ngay',
-                            confirmButtonColor: '#2f80ed',
-                            timer: 5000,
-                            didOpen: () => {
-                                timerInterval = setInterval(() => {
-                                Swal.getHtmlContainer().querySelector('strong')
-                                    .textContent = (Swal.getTimerLeft() / 1000)
-                                    .toFixed(0)
-                                }, 100);
-                            },
-                            willClose: () => {
-                                clearInterval(timerInterval);
+                        return firebaseAuth.currentUser.getIdToken().then((token) => {
+                            const prevCookie = Cookies.get('idToken');
+                            const csrfToken = Cookies.get('csrfToken');
+                
+                            if (prevCookie === undefined || prevCookie !== token) {
+                                Cookies.set('idToken', token, {
+                                    expires: 1,
+                                }); // 1 day
+                                fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+                                    method: 'POST',
+                                    credentials: 'include',
+                                    withCredentials: true,
+                                    headers: {
+                                        Accept: 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        idToken: token,
+                                        csrfToken: csrfToken
+                                    }),
+                                });
                             }
-                        });      
-						Toast.fire({
-							icon: 'success',
-							html: '<p>Đăng nhập thành công.<br/>Hệ thống đang tự động chuyển trang.</p>'
-						}).then(isConfirm => {
-                            if (isConfirm) {
-                                navigate('/');
-                            }
+                
+                            dispatch(authActions.setToken(token));
                         });
+                        
+                        // let timerInterval;
+
+                        // const Toast = formAlert.mixin({
+                        //     toast: true,
+                        //     confirmButtonText: 'Chuyển trang ngay',
+                        //     confirmButtonColor: '#2f80ed',
+                        //     timer: 5000,
+                        //     didOpen: (res) => {
+                        //         console.log(res);
+                        //         timerInterval = setInterval(() => {
+						// 			Swal.getHtmlContainer().querySelector('strong').textContent = (Swal.getTimerLeft() / 1000).toFixed(0);
+						// 		}, 100);
+                        //     },
+                        //     willClose: () => {
+                        //         clearInterval(timerInterval);
+                        //     }
+                        // });      
+						// Toast.fire({
+						// 	icon: 'success',
+						// 	html: '<p>Đăng nhập thành công.<br/>Hệ thống đang tự động chuyển trang.</p>'
+						// }).then(isConfirm => {
+                        //     if (isConfirm) {
+                        //         navigate('/');
+                        //     }
+                        // });
                     }
                 } catch (err) {
                     const errorObj = JSON.parse(JSON.stringify(err));

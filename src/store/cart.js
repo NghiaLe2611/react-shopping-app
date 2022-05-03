@@ -15,19 +15,24 @@ try {
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
-        items: initialItems,
+        items: [],
         finalItems: [],
-        totalQuantity: initialTotalQuantity,
+        totalQuantity: 0,
         totalPrice: 0,
         finalPrice: 0,
         discount: 0,
         appliedCoupons: [],
-        isShowCart: false
+        isShowCart: false,
+        changed: false
     },
 
     reducers: {
+        setCartInfo(state, action) {
+            state.items = action.payload.items;
+            state.totalQuantity = action.payload.totalQuantity;
+        },
         clearCart(state) {
-            localStorage.removeItem('cartItems');
+            // localStorage.removeItem('cartItems');
             state.cartItems = [];
             state.totalQuantity = 0;
         },
@@ -44,7 +49,7 @@ const cartSlice = createSlice({
                 state.discount = 0;
                 state.appliedCoupons = [];
                 state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
-                localStorage.setItem('cartItems', JSON.stringify(state.items));
+                // localStorage.setItem('cartItems', JSON.stringify(state.items));
             } else {
                 state.finalItems = payload.updatedItems;
                 state.totalQuantity = payload.updatedItems.length;
@@ -62,15 +67,16 @@ const cartSlice = createSlice({
 
             switch (payload.type) {
                 case 'ADD': {
+                    console.log(payload.item);
                     state.finalItems.push(payload.item);
                     state.totalPrice += payload.item.totalPrice;
                     break;
                 }
                 case 'REMOVE': {
                     const updatedItem = payload.item;
-                    const existingFinalItem = state.finalItems.findIndex(val => val._id === updatedItem._id);
+                    const existingFinalItem = state.finalItems.findIndex(val => val.product_id === updatedItem.product_id);
             
-                    state.finalItems = state.finalItems.filter(val => val._id !== updatedItem._id);
+                    state.finalItems = state.finalItems.filter(val => val.product_id !== updatedItem.product_id);
                     
                     if (existingFinalItem >= 0 && state.totalPrice > 0) {
                         state.totalPrice -= updatedItem.totalPrice;
@@ -85,22 +91,22 @@ const cartSlice = createSlice({
                     break;
                 }
                 case 'INCREASE': {
-                    const finalItemIndex = state.finalItems.findIndex(val => val._id === payload.item._id);
+                    const finalItemIndex = state.finalItems.findIndex(val => val.product_id === payload.item.product_id);
                     state.finalItems[finalItemIndex] = payload.item;
                     state.totalPrice += payload.item.price;
                     // state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
                     break;
                 } 
                 case 'DECREASE': {                   
-                    const finalItemIndex = state.finalItems.findIndex(val => val._id === payload.item._id);
+                    const finalItemIndex = state.finalItems.findIndex(val => val.product_id === payload.item.product_id);
                     state.finalItems[finalItemIndex] = payload.item;
                     state.totalPrice -= payload.item.price;
                     // state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
                     break;
                 } 
                 case 'CHANGE': {
-                    const finalItemIndex = state.finalItems.findIndex(val => val._id === payload.item._id);
-                    const itemIndex = state.items.findIndex(val => val._id === payload.item._id);
+                    const finalItemIndex = state.finalItems.findIndex(val => val.product_id === payload.item.product_id);
+                    const itemIndex = state.items.findIndex(val => val.product_id === payload.item.product_id);
                     state.finalItems[finalItemIndex] = state.items[itemIndex];
                     state.totalPrice = state.finalItems.reduce( (curr, item) => { return curr + item.totalPrice; }, 0);
                     break;
@@ -115,11 +121,14 @@ const cartSlice = createSlice({
         },
         addItemToCart(state, action) {
             const newItem = action.payload;
-            const existingItem = state.items.find(item => item._id === newItem._id);
+            const existingItem = state.items.find(item => item.product_id === newItem.product_id);
 
+            state.changed = true;
+            
             const addNewItemHandler = () => {
                 state.items.push({
                     _id: newItem._id,
+                    product_id: newItem.product_id,
                     category: newItem.category,
                     img: newItem.img,
                     name: newItem.name,
@@ -149,28 +158,32 @@ const cartSlice = createSlice({
             }
         },
         changeQuantity(state, action) {
-            const existingItem = state.items.find(item => item._id === action.payload._id);
+            const existingItem = state.items.find(item => item.product_id === action.payload.product_id);
             existingItem.quantity = action.payload.quantity;
             existingItem.totalPrice = existingItem.price * existingItem.quantity;
+            state.changed = true;
         },
         decreaseCartQuantity(state, action) {
             const id = action.payload;
-            const existingItem = state.items.find(item => item._id === id);
+            const existingItem = state.items.find(item => item.product_id === id);
 
             if (existingItem.quantity === 1) {
-                state.items = state.items.filter(item => item._id !== id);
+                state.items = state.items.filter(item => item.product_id !== id);
                 state.totalQuantity--;
             } else {
                 existingItem.quantity--;
                 existingItem.totalPrice = existingItem.totalPrice - existingItem.price;
             }
+
+            state.changed = true;
         },
         removeCartItem(state, action) {
-            const _id = action.payload;
-            const existingItem = state.items.find(item => item._id === _id);
+            const id = action.payload;
+            const existingItem = state.items.find(item => item.product_id === id);
             state.totalQuantity -= existingItem.quantity;
-            state.items = state.items.filter(item => item._id !==_id);
-        },
+            state.items = state.items.filter(item => item.product_id !== id);
+            state.changed = true;
+        }, 
         showCartPopup(state, action) {
             if (action.payload) {
                 state.isShowCart = true;
