@@ -1,6 +1,4 @@
 .wrap-profile {
-    display: flex;
-    flex-wrap: wrap;
     margin: 50px 0 120px 0;
 }
 
@@ -795,4 +793,22 @@ aside {
 
 .checkbox input:checked~.checkmark:after {
     display: block;
+}
+
+@media (max-width: 767px) {
+    aside{
+        display: none;
+    }
+    .wrap-profile {
+        &.app{
+            margin-bottom: 20px;
+        }
+    }
+}
+
+@media (min-width: 1024px) {
+    .wrap-profile {
+        display: flex;
+        flex-wrap: wrap;
+    }
 }

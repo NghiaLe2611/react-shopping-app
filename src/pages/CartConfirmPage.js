@@ -15,13 +15,15 @@ import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
 import AddressModal from '../components/UI/AddressModal';
+import CouponModal from '../components/UI/CouponModal';
+import AddressForm from '../components/UI/AddressForm';
+import classes from '../scss/CartConfirm.module.scss';
 import iconShipping from '../assets/images/icon-shipping.svg';
 import iconFastShipping from '../assets/images/icon-fast-shipping.svg';
-import classes from '../scss/CartConfirm.module.scss';
-import CouponModal from '../components/UI/CouponModal';
 import imgCvv from '../assets/images/img-cvv.jpeg';
 import iconVisa from '../assets/images/icon-visa.png';
 import Swal from 'sweetalert2';
+
 
 const listPayment = [{
         id: 'p1',
@@ -356,6 +358,17 @@ const CartConfirmPage = () => {
 			const address = customerInfo ? `${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${
 				customerInfo.city && `, ${customerInfo.city.name}`
 			}` : null;
+
+            if (!address) {
+                Swal.fire({
+                    icon: 'warning',
+                    html: '<p style="font-size: 16px;font-weight:500;">Bạn cần nhập địa chỉ giao hàng.</p>',
+                    confirmButtonColor: '#2f80ed',
+                    confirmButtonText: 'Đã hiểu',
+                });
+                return;
+            }
+
 			const submitOrderHandler = (orderData) => {
 				submitOrder(
 					{
@@ -553,7 +566,17 @@ const CartConfirmPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <h3 className={classes.title}>2. Chọn hình thức thanh toán</h3>
+                                {
+                                    !userData && (
+                                        <Fragment>
+                                            <h3 className={classes.title}>2. Nhập địa chỉ giao hàng</h3>
+                                            <div className={classes.box}>
+                                                <AddressForm/>
+                                            </div>
+                                        </Fragment>
+                                    )
+                                }
+                                <h3 className={classes.title}>{`${userData ? '2' : '3'}. Chọn hình thức thanh toán`}</h3>
                                 <div className={classes.box}>
                                     <ul className={classes['list-payment']}>
                                         {
@@ -660,7 +683,6 @@ const CartConfirmPage = () => {
                                                     </form>
                                                 </Fragment>
                                             )
-                                            
                                         )
                                     }
                                 </div>
@@ -671,9 +693,7 @@ const CartConfirmPage = () => {
                                     <div className={classes['wrap-ctm-info']}>
                                         <div className={classes.head}>
                                             <span>Địa chỉ giao hàng</span>
-                                            <a href="/#" onClick={showAddressModalHandler}>
-                                                {userData ? 'Sửa' : 'Thêm'}
-                                            </a>
+                                            {userData && <a href="/#" onClick={showAddressModalHandler}>Sửa</a>}
                                         </div>
                                        {
                                             customerInfo ? (
@@ -681,12 +701,15 @@ const CartConfirmPage = () => {
                                                     <div className={classes['ctm-info']}>
                                                         <p className={classes.name}>{customerInfo.name}</p>
                                                         <p className={classes.address}>
-                                                            {`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${customerInfo.city && `, ${customerInfo.city.name}`}`}
+                                                            {customerInfo.address}
+                                                            {customerInfo.ward.name ? `, ${customerInfo.ward.name}` : null}
+                                                            {customerInfo.district.name ? `, ${customerInfo.district.name}` : null}
+                                                            {customerInfo.city.name ? `, ${customerInfo.city.name}` : null}
                                                         </p>
                                                         <p className={classes.phone}>Điện thoại: {customerInfo.phone}</p>
                                                     </div>   
                                                 </Fragment>
-                                            ) : <p style={{fontSize: 13}}>Bạn cần nhập địa chỉ giao hàng</p>
+                                            ) : <span className={classes['add-address']} onClick={showAddressModalHandler}>Bạn chưa nhập địa chỉ giao hàng</span>
                                         }
                                     </div>
                                 </div>
@@ -771,7 +794,7 @@ const CartConfirmPage = () => {
                     ) : (
                         <div className={classes.empty}>
                             <p>Giỏ hàng rỗng. Vui lòng thêm sản phẩm để mua hàng.</p>
-                            <Link to='/cart'>Tiếp tục mua sắm</Link>
+                            <Link to='/'>Tiếp tục mua sắm</Link>
                         </div>
                     )
                 }

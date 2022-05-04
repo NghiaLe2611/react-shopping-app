@@ -339,8 +339,8 @@ function App() {
 					<Route path='order/:orderId'
 						element={
 							<PrivateRoute>
-								<Root>
-									<ProfilePage />
+								<Root mobileView={true}>
+									<ProfilePage mobileView={true}/>
 								</Root>
 							</PrivateRoute>
 						}

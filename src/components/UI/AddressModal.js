@@ -4,7 +4,6 @@ import Modal from './Modal';
 import classes from '../../scss/AddressModal.module.scss';
 import { useDelayUnmount } from '../../hooks/useDelayUnmount';
 import { authActions } from '../../store/auth';
-import AddressForm from './AddressForm';
 
 const AddressModal = (props) => {
     const dispatch = useDispatch();
@@ -55,9 +54,7 @@ const AddressModal = (props) => {
                                     </ul>
                                 ) : <p>Bạn chưa có địa chỉ nào</p>}
                             </Fragment>
-                        ) : (
-                            <AddressForm closeModal={closeAddModalHandler}/>
-                        )
+                        ) : null
                     }
                 </div>
             </Modal>

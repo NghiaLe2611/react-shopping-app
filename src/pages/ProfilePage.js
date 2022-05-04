@@ -10,6 +10,7 @@ import ListReview from '../components/profile/ListReview';
 import ListOrder from '../components/profile/ListOrder';
 import OrderDetail from '../components/profile/OrderDetail';
 import classes from '../scss/Profile.module.scss';
+import useCheckMobile from '../hooks/useCheckMobile';
 // import { updateProfile } from 'firebase/auth';
 
 const profileNav = [
@@ -47,7 +48,8 @@ const profileNav = [
 	},
 ];
 
-const ProfilePage = () => {
+const ProfilePage = (props) => {
+    const {mobileView} = props;
 	const location = useLocation();
 	const userData = useSelector((state) => state.auth.userData);
 	const { displayName, photoURL, email, listAddress } = userData ? userData : {};
@@ -63,6 +65,8 @@ const ProfilePage = () => {
 
 	const { fetchData: fetchCities } = useFetch();
 	const slug = location.pathname;
+
+    const {isMobile} = useCheckMobile();
 	
 	useEffect(() => {
 		if (slug === '/tai-khoan/dia-chi' && cities.length === 0) {
@@ -139,7 +143,7 @@ const ProfilePage = () => {
 	return (
 		userData && (
 			<div className='container'>
-				<div className={classes['wrap-profile']}>
+				<div className={`${classes['wrap-profile']} ${mobileView && isMobile ? classes.app : null}`}>
 					<aside>
 						<div className={classes['wrap-avatar']}>
 							<div className={classes.avatar}>

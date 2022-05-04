@@ -5,7 +5,7 @@ import Slider from 'react-slick';
 import Skeleton from 'react-loading-skeleton';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartActions } from '../store/cart';
-import { authActions } from '../store/auth';
+// import { authActions } from '../store/auth';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
 import Modal from '../components/UI/Modal';
 import CompareModalWrapper from '../components/UI/CompareModalWrapper';
@@ -22,6 +22,7 @@ import NotFound from './NotFound';
 import RecentlyViewedProducts from '../components/detail/RecentlyViewedProducts';
 import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
+import useCheckMobile from '../hooks/useCheckMobile';
 
 function BoxThumbnail({ children }) {
     return (
@@ -46,7 +47,7 @@ const DetailPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     
-    const cart = useSelector((state) => state.cart);
+    // const cart = useSelector((state) => state.cart);
     const userData = useSelector(state => state.auth.userData);
 
     const { displayName, uuid, email } = userData ? userData : {};
@@ -62,8 +63,8 @@ const DetailPage = () => {
     const [activeModalTab, setActiveModalTab] = useState('');
     const [reviews, setReviews] = useState([]);
     const [allReviews, setAllReviews] = useState([]);
-    const [reviewsCount, setReviewsCount] = useState(0);
-    const [averagePoint, setAveragePoint] = useState(0);
+    // const [reviewsCount, setReviewsCount] = useState(0);
+    // const [averagePoint, setAveragePoint] = useState(0);
     const [arrayPercent, setArrayPercent] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [isWriteReview, setIsWriteReview] = useState(false);
@@ -74,7 +75,7 @@ const DetailPage = () => {
     const [submitReviewForm, setSubmitReviewForm] = useState(false);
     const [recentlyViewedProducts, setRecentlyViewedProducts] = useState([]);
 
-    
+    const { isMobile } = useCheckMobile();
     const { isLoading, error, fetchData: fetchProducts } = useFetch();
     const { fetchData: fetchReviews } = useFetch();
 
@@ -84,7 +85,6 @@ const DetailPage = () => {
     const { fetchData: checkProductIsLiked } = useFetch();
     const { fetchData: updateViewedProduct } = useFetch();
     const { fetchData: fetchRecentlyProducts } = useFetch();
-    const { fetchData: updateCart } = useFetch();
 
     const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
     const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
@@ -632,9 +632,7 @@ const DetailPage = () => {
                             }
                         </div>
                     </div>
-                    <div className={classes['wrap-reviews']}>
-                        {reviewsContent}
-                    </div>
+                    <div className={classes['wrap-reviews']}>{reviewsContent}</div>
                 </div>
                 <div className={classes['product-detail']}>
                     <Skeleton className={classes['title-skeleton']}/>
@@ -901,7 +899,7 @@ const DetailPage = () => {
                                             product.review_count > reviewPageSize ? (
                                                 <Pagination style={{marginTop: 30}}
                                                     pageSize={reviewPageSize} currentPage={currentPage}
-                                                    totalCount={reviewsCount}
+                                                    totalCount={product.review_count}
                                                     paginate={paginate}
                                                 />
                                             ) : null
@@ -994,7 +992,7 @@ const DetailPage = () => {
                         )
                     }
                 </div>
-                {reviewsContent}
+                {!isMobile && reviewsContent}
             </div>
         );
     };
@@ -1101,13 +1099,14 @@ const DetailPage = () => {
                             <a href="/#" className={classes['show-more']} onClick={showMoreSpecs}>Xem thêm cấu hình chi tiết</a>
                         </div>
                     </div>
+                    {isMobile && reviewsContent}
                 </Fragment>
             );
 
             infoModalContent = (
                 shouldRenderInfoModal && (
                     <Modal isShowModal={showInfoModal} animation='slide' contentClass={classes.infoModal} 
-                        close={<span className={classes['close-specs']} onClick={closeModalInfo} style={showInfoModal ? mountedBtnStyle : unmountedBtnStyle}>Đóng</span>}
+                        close={<span className={classes['close-specs']} onClick={closeModalInfo} style={showInfoModal ? mountedBtnStyle : unmountedBtnStyle}><i>&times;</i> Đóng</span>}
                         closeModal={closeModalInfo}>
                         <div className={classes['wrap-info-modal']}>
                             <div className={classes['fixed-tab']}>
@@ -1126,6 +1125,7 @@ const DetailPage = () => {
                                     }
                                     <li className={`${activeModalTab === 'thong-so' ? classes.selected : ''}`} onClick={(e) => showModalTab('thong-so')}>Thông số kỹ thuật</li>
                                     <li className={`${activeModalTab === 'danh-gia' ? classes.selected : ''}`} onClick={(e) => showModalTab('danh-gia')}>Bài viết đánh giá</li>
+                                    <li className={classes['close-specs']}><i>&times;</i></li>
                                 </ul>
                             </div>
                             {

@@ -67,7 +67,6 @@ const cartSlice = createSlice({
 
             switch (payload.type) {
                 case 'ADD': {
-                    console.log(payload.item);
                     state.finalItems.push(payload.item);
                     state.totalPrice += payload.item.totalPrice;
                     break;

@@ -364,8 +364,8 @@ body {
             display: flex;
             justify-content: center;
             li {
-                font-size: 15px;
-                padding: 12px 20px;
+                font-size: 12px;
+                padding: 10px;
                 cursor: pointer;
                 color: #333;
                 &.selected {
@@ -423,18 +423,58 @@ body {
 }
 
 #thong-so {
-    width: 70%;
     margin: 0 auto;
 }
 
 .infoModal {
-    width: 60%;
+    width: 100%;
     height: 100%;
     top: 0;
-    left: calc(100% * 1/2 - 30%);
+    left: 0;
     border-radius: 0;
     overflow-y: auto;
-    padding-top: 100px;
+    padding: 60px 1rem 20px 1rem;
+}
+
+.close-specs {
+    display: none;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 7px 15px;
+    i{
+        font-size: 18px;
+        font-style: normal;
+    }
+    // &:before,
+    // &:after {
+    //     content: "";
+    //     background-color: #333;
+    //     left: 13px;
+    //     height: 14px;
+    //     position: absolute;
+    //     top: 15px;
+    //     width: 1px;
+    // }
+    // &:before {
+    //     transform: rotate(45deg);
+    // }
+    // &:after {
+    //     transform: rotate(-45deg);
+    // }
+}
+
+.fixed-tab .close-specs{
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #e0e0e0;
+    border-radius: 0;
 }
 
 .reviewModal {
@@ -454,36 +494,6 @@ body {
         max-width: 700px;
         margin: 0 auto;
         line-height: 1.4;
-    }
-}
-
-.close-specs {
-    position: fixed;
-    z-index: 99;
-    top: 20px;
-    right: 20px;
-    color: #333;
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 15px;
-    padding: 7px 10px 7px 25px;
-    &:before,
-    &:after {
-        content: "";
-        background-color: #333;
-        left: 13px;
-        height: 14px;
-        position: absolute;
-        top: 9px;
-        width: 1px;
-    }
-    &:before {
-        transform: rotate(45deg);
-    }
-    &:after {
-        transform: rotate(-45deg);
     }
 }
 
@@ -622,7 +632,7 @@ body {
             width: 45%;
             border-radius: 4px;
             padding: 10px;
-            font-size: 15px;
+            font-size: 11px;
             text-align: center;
             &.write-review {
                 background-color: #2f80ed;
@@ -826,6 +836,9 @@ body {
     .mb {
         margin-bottom: 30px;
     }
+    .wrap-product-detail > .left{
+        margin-bottom: 50px;
+    }
 }
 
 @media (min-width: 1200px) {
@@ -843,4 +856,43 @@ body {
         width: 100%;
         height: 370px;
     }
+    .wrap-info-modal {
+        .fixed-tab {
+            ul {
+                li {
+                    font-size: 15px;
+                    padding: 12px 20px;
+                }
+            }
+        }
+    }
+    .infoModal{
+        width: 60%;
+        left: calc(100% * 1/2 - 30%);
+        padding: 100px 2rem 20px 2rem;
+    }
+    #thong-so {
+        width: 70%;
+    }
+    .close-specs {
+        position: fixed;
+        z-index: 99;
+        top: 20px;
+        right: 20px;
+    }
+    .close-specs{
+        display: flex;
+        align-items: center;
+        i{
+            font-size: 22px;
+            margin-right: 4px;
+        }
+    }
+    .fixed-tab .close-specs{
+        display: none;
+    }
+    .wrap-reviews .wrap-btn{
+        font-size: 15px;
+    }
 }
+

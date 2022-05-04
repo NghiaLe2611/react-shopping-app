@@ -1,80 +1,83 @@
 .filter {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	margin-bottom: 30px;
 }
 
 .wrap-select {
-    border: solid 1px #ced4da;
-    border-radius: 4px;
-    cursor: pointer;
-    min-width: 120px;
-    margin-right: 20px;
-    position: relative;
-    p {
-        font-size: 14px;
-        padding: 7px 10px;
-        position: relative;
-        &:after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            right: 5px;
-            transform: translateY(-50%);
-            background-image: url(../assets/images/icon-sort.svg);
-            background-repeat: no-repeat;
-            background-size: contain;
-            width: 12px;
-            height: 15px;
-        }
-        &.filter-txt{
-            padding-left: 20px;
-            &:after{
-                background-color: #000;
-                mask-size: cover;
-                mask-image: url(../assets/images/icon-filter.svg);
-                width: 18px;
-                height: 18px;
-            }
-        }
-    }
-    .list {
-        display: none;
-        position: absolute;
-        z-index: 9;
-        width: 100%;
-        left: 0;
-        top: calc(100% + 3px);
-        background-color: #fff;
-        border: solid 1px #ced4da;
-        border-radius: 4px;
-        li {
-            font-size: 14px;
-            padding: 5px 10px;
-            &:hover {
-                font-weight: bold;
-                background-color: #a1a1a11c;
-            }
-        }
-    }
-    &.selected .list {
-        display: block;
-    }
+	border: solid 1px #ced4da;
+	border-radius: 4px;
+	cursor: pointer;
+	min-width: 120px;
+	margin-right: 20px;
+	position: relative;
+	p {
+		font-size: 14px;
+		padding: 7px 10px;
+		position: relative;
+		&:after {
+			content: "";
+			position: absolute;
+			top: 50%;
+			right: 5px;
+			transform: translateY(-50%);
+			background-image: url(../assets/images/icon-sort.svg);
+			background-repeat: no-repeat;
+			background-size: contain;
+			width: 12px;
+			height: 15px;
+		}
+		&.filter-txt{
+			padding-left: 20px;
+			&:after {
+				// background-color: #000;
+				// mask-size: cover;
+				// mask-image: url(../assets/images/icon-filter.svg);
+				background-image: url(../assets/images/icon-filter.svg);
+				background-repeat: no-repeat;
+				background-size: contain;
+				width: 18px;
+				height: 18px;
+			}
+		}
+	}
+	.list {
+		display: none;
+		position: absolute;
+		z-index: 9;
+		width: 100%;
+		left: 0;
+		top: calc(100% + 3px);
+		background-color: #fff;
+		border: solid 1px #ced4da;
+		border-radius: 4px;
+		li {
+			font-size: 14px;
+			padding: 5px 10px;
+			&:hover {
+				font-weight: bold;
+				background-color: #a1a1a11c;
+			}
+		}
+	}
+	&.selected .list {
+		display: block;
+	}
 }
 
 .wrap-filter {
-    display: flex;
-    align-items: center;
-    span {
-        cursor: pointer;
-        line-height: 1;
-        display: inline-block;
-        margin: 0 5px;
-        font-size: 18px;
-        color: #a1a1a1;
-        &.selected {
-            color: #000;
-        }
-    }
+	display: flex;
+	align-items: center;
+	span {
+		cursor: pointer;
+		line-height: 1;
+		display: inline-block;
+		margin: 0 5px;
+		font-size: 18px;
+		color: #a1a1a1;
+		&.selected {
+			color: #000;
+		}
+	}
 }

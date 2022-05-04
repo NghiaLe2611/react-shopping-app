@@ -21,7 +21,8 @@ const brandList = [
     "xiaomi"
 ];
 
-const Header = () => {
+const Header = (props) => {
+    const {mobileView} = props;
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
@@ -119,18 +120,8 @@ const Header = () => {
         }
     }, [fetchCartData]);
 
-    let isInitial = true;
 
     useEffect(() => {
-        // if (cart.items.length) {
-        //     localStorage.setItem('cartItems', JSON.stringify(cart.items));
-        // }
-        console.log(cart.changed);
-        // if (isInitial) {
-        //     isInitial = false;
-        //     return;
-        // }
-
         if (userData) {
             if(cart.changed) {
                 updateCart({
@@ -149,6 +140,18 @@ const Header = () => {
             }
         }
     }, [cart.changed, updateCart]);
+
+    useEffect(() => {
+        let showCartTimer;
+        if (showCart) {
+            showCartTimer = setTimeout(() => {
+                dispatch(cartActions.showCartPopup(false));
+            }, 3000);
+        }
+        return () => {
+            clearTimeout(showCartTimer);
+        }
+    }, [showCart, dispatch]);
 
     const showCartHandler = () => {
         if (cart.items.length > 0) {
@@ -410,10 +413,21 @@ const Header = () => {
 
     return (
         <Fragment>
-            <div className={classes.header}>
-                <div className="container">
-                    { isMobile && headerSP }
-                    { !isMobile && headerPC }
+            <div className={`${classes.header} ${mobileView && isMobile ? classes.app : null}`}>
+                <div className='container'>
+                    {
+                        mobileView ? (
+                            <Fragment>
+                                { isMobile && <div>MobileViewHeader</div> }
+                                { !isMobile && headerPC }
+                            </Fragment>
+                        ) : (
+                            <Fragment>
+                                { isMobile && headerSP }
+                                { !isMobile && headerPC }
+                            </Fragment>
+                        )
+                    }
                 </div>
             </div>
             {showMenu && <div className="overlay" onClick={() => setShowMenu(false)}></div>}

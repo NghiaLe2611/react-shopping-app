@@ -13,19 +13,21 @@ import { useEffect, useState } from 'react';
 // }
 
 export default function useCheckMobile() {
-	const [width, setWidth] = useState(window.innerWidth);
-    const handleWindowSizeChange = () => {
-        setWidth(window.innerWidth);
-    }
+	// const [width, setWidth] = useState(window.innerWidth);
+    // const handleWindowSizeChange = () => {
+    //     setWidth(window.innerWidth);
+    // }
 
-    useEffect(() => {
-        window.addEventListener('resize', handleWindowSizeChange);
-        return () => {
-            window.removeEventListener('resize', handleWindowSizeChange);
-        }
-    }, []);
+    // useEffect(() => {
+    //     window.addEventListener('resize', handleWindowSizeChange);
+    //     return () => {
+    //         window.removeEventListener('resize', handleWindowSizeChange);
+    //     }
+    // }, []);
 
-    const isMobile = width <= 768;
+    // const isMobile = width <= 768;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     return { isMobile }
 }

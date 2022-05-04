@@ -14,23 +14,21 @@
         }
     }
     h3{
-        font-size: 40px;
+        font-size: 30px;
         text-align: center;
         font-weight: 500;
         margin-bottom: 20px;
         text-shadow: 2px 2px 4px #fff;
     }
     .search-order{
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        text-align: center;
         .search-ip{
             width: 300px;
             border: 1px solid #ccc;
             padding: 0.6rem 1rem;
             border-radius: 4px;
             font-size: 16px;
-            margin-right: 10px;
+            margin-bottom: 10px;
         }
         .btn-tracking{
             padding: 0.6rem 1rem;
@@ -47,4 +45,20 @@
 // Order detail
 .product-list{
     margin: 100px 0;
+}
+
+@media (min-width: 768px) {
+    .wrap-tracking{
+        h3{
+            font-size: 40px;
+        }
+        .search-order{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .search-ip{
+                margin: 0 10px 0;
+            }
+        }
+    }
 }

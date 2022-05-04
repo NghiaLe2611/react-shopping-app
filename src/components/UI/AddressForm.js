@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import useFetch from '../../hooks/useFetch';
 import { authActions } from '../../store/auth';
 import Swal from 'sweetalert2';
 import classes from '../../scss/AddressForm.module.scss';
 
-const AddressForm = (props) => {
+const AddressForm = () => {
     const dispatch = useDispatch();
+    const userData = useSelector((state) => state.auth.userData);
+    const shippingInfo = useSelector((state) => state.auth.shippingInfo);
     const [addressInfo, setAddressInfo] = useState({
 		name: null,
 		phone: null,
@@ -46,9 +48,26 @@ const AddressForm = (props) => {
         }
 	}, [fetchCities, cities]);
 
+    useEffect(() => {
+		if (!userData) {
+            if (shippingInfo) {
+                setAddressInfo(shippingInfo);
+                return;
+            }
+        }
+	}, [shippingInfo]);
+
     const onChangeAddressInput = (e) => {
 		const { name, value } = e.target;
         setAddressInfo({...addressInfo, [name]: value});
+
+        if (!value) {
+            setFormIsValid({...formIsValid, [name]: false});
+        } else {
+            let cloneObj = {...formIsValid};
+            delete cloneObj[name];
+            setFormIsValid(cloneObj);
+        }
 	};
 
     const onChangeCity = (e) => {
@@ -140,7 +159,12 @@ const AddressForm = (props) => {
 			};
 
             dispatch(authActions.setShippingAddress(newAddress));
-            props.closeModal();
+            Swal.fire({
+                icon: 'success',
+                html: `<p>Cập nhật địa chỉ thành công</p>`,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#2f80ed'
+            });
 		} else {
             Swal.fire({
                 icon: 'error',
@@ -157,7 +181,7 @@ const AddressForm = (props) => {
 				<label>Họ và tên</label>
 				<div className={classes['wrap-ip']}>
 					<input type='text' name='name' placeholder='Nhập họ tên' className={formIsValid.name === false ? classes.invalid : ''} 
-                        onChange={onChangeAddressInput} 
+                        onChange={onChangeAddressInput} defaultValue={addressInfo.name}
                     />
 				</div>
 			</div>
@@ -165,8 +189,7 @@ const AddressForm = (props) => {
 				<label>Số điện thoại</label>
 				<div className={classes['wrap-ip']}>
 					<input className={formIsValid.phone === false ? classes.invalid : ''}
-						type='text'
-						name='phone'
+						type='text' name='phone' defaultValue={addressInfo.phone}
 						placeholder='Nhập số điện thoại'
 						onKeyPress={(e) => {
 							if (!/[0-9]/.test(e.key)) {
@@ -181,7 +204,7 @@ const AddressForm = (props) => {
 				<label>Tỉnh/Thành phố</label>
 				<div className={classes['wrap-ip']}>
 					<select name='city' id='city' onChange={onChangeCity} value={addressInfo['city'].id}
-                        className={formIsValid.city === false ? classes.invalid : ''}
+                        className={formIsValid.city === false ? classes.invalid : ''} defaultValue={addressInfo.city.id}
                     >
 						<option value='0'>Chọn Tỉnh/Thành phố</option>
 						{cities.length > 0 &&
@@ -225,7 +248,7 @@ const AddressForm = (props) => {
 				<label>Địa chỉ</label>
 				<div className={classes['wrap-ip']}>
 					<textarea name='address' rows='5' placeholder='Nhập địa chỉ' onChange={onChangeAddressInput}
-                        className={formIsValid.address === false ? classes.invalid : ''}
+                        className={formIsValid.address === false ? classes.invalid : ''} defaultValue={addressInfo.address}
                     ></textarea>
 				</div>
 			</div>
