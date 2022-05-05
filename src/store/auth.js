@@ -20,7 +20,6 @@ const authSlice = createSlice({
         },
         setIsLoggingOut(state, action) {
             state.isLoggingOut = action.payload;
-            console.log('isLoggingOut', action.payload);
         }
     },
     extraReducers: {

@@ -11,6 +11,7 @@ import { authService } from '../../api/auth-service';
 import { capitalizeFirstLetter, formatCurrency, convertProductLink } from '../../helpers/helpers';
 import classes from '../../scss/Header.module.scss';
 import iconCheked from '../../assets/images/icon-check.svg';
+import Cookies from 'js-cookie';
 
 const brandList = [
     "apple",
@@ -187,6 +188,13 @@ const Header = (props) => {
             method: 'POST',
             credentials: 'include',
             withCredentials: true,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                idToken: Cookies.get('idToken')
+            }),
             // mode: 'no-cors',
         })
         .then(response => response.json())
