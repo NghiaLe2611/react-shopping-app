@@ -200,6 +200,7 @@ const Header = (props) => {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
+                Cookies.remove('idToken');
                 authService.logout();
                 document.location.href = '/';
             }
