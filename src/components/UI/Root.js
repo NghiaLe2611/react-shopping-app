@@ -1,9 +1,12 @@
 import {Fragment} from 'react';
+import useCheckMobile from '../../hooks/useCheckMobile';
 import Footer from '../partials/Footer';
 import Header from '../partials/Header';
 
 const Root = (props) => {
     const showMobileView = props.mobileView ? true : false;
+    const {isMobile} = useCheckMobile();
+
     const styleBody = `
         @media (max-width: 1024px) {
             body{
@@ -20,10 +23,10 @@ const Root = (props) => {
     return (
         <Fragment>
             <style>{styleBody}</style>
-            <Header mobileView={showMobileView}/>
-            <div className={`main ${showMobileView ? 'app' : null}`}>
+            <Header mobileView={showMobileView} title={props.title}/>
+            <main className={`${isMobile && showMobileView ? 'main app' : 'main'}`}>
                 {props.children}
-            </div>
+            </main>
             <Footer mobileView={showMobileView}/>
         </Fragment>
     )

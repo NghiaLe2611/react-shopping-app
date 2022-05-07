@@ -144,24 +144,28 @@ const ProfilePage = (props) => {
 		userData && (
 			<div className='container'>
 				<div className={`${classes['wrap-profile']} ${mobileView && isMobile ? classes.app : null}`}>
-					<aside>
-						<div className={classes['wrap-avatar']}>
-							<div className={classes.avatar}>
-								{photoURL ? <img src={photoURL} alt='avatar' /> : <i className='icon-user'></i>}
-							</div>
-							<span className={classes.username}>{displayName ? displayName : email}</span>
-						</div>
-						<ul className={classes['account-nav']}>
-							{profileNav.map((item) => (
-								<li key={item.name} className={`${item.slug === slug ? classes.active : ''}`}>
-									<Link to={item.slug}>
-										<i className={item.icon}></i>
-										{item.name}
-									</Link>
-								</li>
-							))}
-						</ul>
-					</aside>
+					{
+                        !isMobile && (
+                            <aside>
+                                <div className={classes['wrap-avatar']}>
+                                    <div className={classes.avatar}>
+                                        {photoURL ? <img src={photoURL} alt='avatar' /> : <i className='icon-user'></i>}
+                                    </div>
+                                    <span className={classes.username}>{displayName ? displayName : email}</span>
+                                </div>
+                                <ul className={classes['account-nav']}>
+                                    {profileNav.map((item) => (
+                                        <li key={item.name} className={`${item.slug === slug ? classes.active : ''}`}>
+                                            <Link to={item.slug}>
+                                                <i className={item.icon}></i>
+                                                {item.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </aside>
+                        )
+                    }
 					<div className={classes['wrap-profile-content']}>{profileContent}</div>
 				</div>
 			</div>

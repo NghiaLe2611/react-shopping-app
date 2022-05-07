@@ -5,7 +5,7 @@ const authSlice = createSlice({
     initialState: {
         userData: JSON.parse(localStorage.getItem('userData')) ? JSON.parse(localStorage.getItem('userData')) : null,
         shippingInfo: null,
-        accessToken: localStorage.getItem('access_token') ? localStorage.getItem('access_token') : '',
+        // accessToken: localStorage.getItem('access_token') ? localStorage.getItem('access_token') : '',
         isLoggingOut: false
     },
     reducers: {

@@ -1,23 +1,19 @@
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import useFetch from '../../hooks/useFetch';
-import { authActions } from '../../store/auth';
 import { formatCurrency, convertProductLink } from '../../helpers/helpers';
-import Swal from 'sweetalert2';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import classes from '../../scss/Profile.module.scss';
+import useCheckMobile from '../../hooks/useCheckMobile';
 
 const ListFavourite = (props) => {
-    const dispatch = useDispatch;
-    const { userData } = props;
     const [favorite, setFavorite] = useState([]);
     // const { favorite, uuid } = userData ? userData : {};
 
-    const { isLoading, error, fetchData: fetchFavList } = useFetch();
+    const { isLoading, fetchData: fetchFavList } = useFetch();
     const { fetchData: removeFav } = useFetch();
-    const { fetchData: fetchUser } = useFetch();
+    const {isMobile} = useCheckMobile();
 
     const getFavoriteList = useCallback(() => {
         fetchFavList({
@@ -79,20 +75,37 @@ const ListFavourite = (props) => {
                                         </div>
                                         <p className={classes.txt}>({item.review_count} nhận xét)</p>
                                     </div>
+                                    {
+                                        isMobile && (
+                                            item.sale ? (
+                                                <div className={classes['wrap-price']}>
+                                                    <div className={classes.price}>{formatCurrency(item.price - item.sale)}đ</div>
+                                                    <div className={classes['wrap-sub-price']}>
+                                                        <span className={classes['sub-price']}>{formatCurrency(item.price)}đ</span>
+                                                        <span className={classes.discount}>{Math.round((item.sale * 100)/item.price)}%</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className={classes.price}>{formatCurrency(item.price)}đ</div>
+                                            )
+                                        )
+                                    }
                                 </div>
                                 {
-                                    item.sale ? (
-                                        <div className={classes['wrap-price']}>
-                                            <div className={classes.price}>{formatCurrency(item.price - item.sale)}đ</div>
-                                            <div className={classes['wrap-sub-price']}>
-                                                <span className={classes['sub-price']}>{formatCurrency(item.price)}đ</span>
-                                                <span className={classes.discount}>{Math.round((item.sale * 100)/item.price)}%</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className={classes.price}>{formatCurrency(item.price)}đ</div>
-                                    )
-                                }
+                                        !isMobile && (
+                                            item.sale ? (
+                                                <div className={classes['wrap-price']}>
+                                                    <div className={classes.price}>{formatCurrency(item.price - item.sale)}đ</div>
+                                                    <div className={classes['wrap-sub-price']}>
+                                                        <span className={classes['sub-price']}>{formatCurrency(item.price)}đ</span>
+                                                        <span className={classes.discount}>{Math.round((item.sale * 100)/item.price)}%</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className={classes.price}>{formatCurrency(item.price)}đ</div>
+                                            )
+                                        )
+                                    }
                                 <span className={classes['remove-fav']} onClick={() => removeFromWishlist(item.product_id)}>×</span>
                             </li>
                         ))

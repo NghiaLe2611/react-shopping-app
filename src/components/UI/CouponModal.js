@@ -15,6 +15,7 @@ import couponCondition from '../../assets/images/coupon-condition.svg';
 import couponActive from '../../assets/images/coupon-active.svg';
 import freeshipCoupon from '../../assets/images/freeship.png';
 import iconCopy from '../../assets/images/icon-copy.svg';
+import useCheckMobile from '../../hooks/useCheckMobile';
 
 const couponList = [
 	{
@@ -90,6 +91,8 @@ const CouponModal = (props) => {
 	const shouldRenderCouponModal = useDelayUnmount(showCouponModal, 300);
 	const shouldRenderCouponPopup = useDelayUnmount(showCouponPopup, 300);
 
+    const {isMobile} = useCheckMobile();
+
 	// Get total discount
 	const calculateDiscount = useCallback(() => {
 		if (selectedCoupons.length) {
@@ -156,7 +159,18 @@ const CouponModal = (props) => {
 	const showInfoCoupon = (e, item) => {
 		const pos = e.target.getBoundingClientRect();
 
-		setModalStylesInline({...modalStylesInline, left: pos.left - 11 * 16 + 22 + 'px', top: pos.y + 40 + 'px'});
+        if (!isMobile) {
+            setModalStylesInline({...modalStylesInline, left: pos.left - 11 * 16 + 22 + 'px', top: pos.y + 40 + 'px'});
+        } else {
+            const styles = {
+                left: 0,
+                top: 'inherit',
+                bottom: 0,
+                width: '100%'
+            };
+
+            setModalStylesInline(styles);
+        }
 
 		timer = window.setTimeout(function () {
 			setActiveInfoCoupon(item);
@@ -247,27 +261,27 @@ const CouponModal = (props) => {
 
 	return (
 		<Fragment>
-			{' '}
+			
 			{shouldRenderCouponModal && (
 				<Modal isShowModal={showCouponModalHandler} closeModal={closeCouponModal} animation='none' contentClass={classes.couponModal}>
 					<div className={classes['wrap-coupon-modal']}>
-						<div className={classes.header}> Khuyến mãi </div>{' '}
+						<div className={classes.header}> Khuyến mãi </div>
 						<div className={classes['wrap-coupon']}>
 							<div className={classes['wrap-ip']}>
 								<img src={couponImg1} alt='coupon' />
-								<input type='text' placeholder='Nhập mã giảm giá' onChange={onChangeCoupon} value={couponCode || ''} />{' '}
+								<input type='text' placeholder='Nhập mã giảm giá' onChange={onChangeCoupon} value={couponCode || ''} />
 								<span className={classes.clear} style={{display: couponCode.length ? 'flex' : 'none'}} onClick={() => setCouponCode('')}>
-									{' '}
-									& times;{' '}
-								</span>{' '}
-							</div>{' '}
+									
+									& times;
+								</span>
+							</div>
 							<button disabled={couponCode.length ? false : true} onClick={applyCouponCode}>
-								{' '}
-								Áp dụng{' '}
-							</button>{' '}
+								
+								Áp dụng
+							</button>
 							{codeStatus && (
 								<p style={{color: 'red', fontSize: 12, width: '100%', marginTop: 10}}>
-									{' '}
+									
 									{codeStatus === 1
 										? 'Bạn cần chọn sản phẩm trước khi dùng mã giảm giá'
 										: codeStatus === 2
@@ -276,64 +290,61 @@ const CouponModal = (props) => {
 										? 'Bạn chưa đủ điều kiện để áp dụng mã'
 										: codeStatus === 4
 										? 'Mã giảm giá đã được áp dụng'
-										: null}{' '}
+										: null}
 								</p>
-							)}{' '}
-						</div>{' '}
+							)}
+						</div>
 						<div className={classes['body-scroll']}>
 							<div className={classes['coupon-list-wrapper']}>
-								<div className={classes['group-header']}> Mã giảm giá </div>{' '}
+								<div className={classes['group-header']}> Mã giảm giá </div>
 								<div className={classes['coupon-list']}>
-									{' '}
+									
 									{[...couponList]
 										.sort((val) => (val.condition <= cart.totalPrice ? -1 : 1))
 										.map((item, index) => (
 											<div key={item.id} className={`${classes['coupon-bg']} ${cart.totalPrice < item.condition ? classes.disabled : ''}`}>
-												{' '}
-												{selectedCoupons.some((val) => val.id === item.id) ? <img src={couponActive} alt='coupon-active' /> : <img src={couponBg} alt='coupon-bg' />}{' '}
+												
+												{selectedCoupons.some((val) => val.id === item.id) ? <img src={couponActive} alt='coupon-active' /> : <img src={couponBg} alt='coupon-bg' />}
 												<div className={classes['coupon-content']}>
 													<div className={classes.left}>
-														{' '}
-														{item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship' /> : <img src={couponIcon} alt='coupon-icon' />}{' '}
-													</div>{' '}
+														
+														{item.type === 'shipping' ? <img src={freeshipCoupon} alt='freeship' /> : <img src={couponIcon} alt='coupon-icon' />}
+													</div>
 													<div className={classes.right}>
 														<div className={classes['coupon-info']}>
-															<h5 className={classes.sale}> {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`} </h5>{' '}
-															<p> Cho đơn hàng từ {readPrice(item.condition)} </p>{' '}
+															<h5 className={classes.sale}> {item.type === 'shipping' ? `Giảm ${item.discount}K phí vận chuyển` : `Giảm ${item.discount}K`} </h5>
+															<p> Cho đơn hàng từ {readPrice(item.condition)} </p>
 															<button
 																className={classes['btn-info']}
 																onMouseEnter={(e) => showInfoCoupon(e, item)}
+                                                                onClick={(e) => {
+                                                                    if (isMobile) showInfoCoupon(e, item);
+                                                                }}
 																// onMouseLeave={hideInfoCoupon}
 															>
-																<span className={classes.info}> i </span>{' '}
-															</button>{' '}
-														</div>{' '}
+																<span className={classes.info}> i </span>
+															</button>
+														</div>
 														<div className={classes['coupon-action']}>
-															<p className={classes.expire}> HSD: {item.date} </p>{' '}
+															<p className={classes.expire}> HSD: {item.date} </p>
 															{cart.totalPrice >= item.condition ? (
 																selectedCoupons.some((val) => val.id === item.id) ? (
-																	<button className={classes.apply} onClick={() => addCoupon(item)}>
-																		{' '}
-																		Bỏ Chọn{' '}
-																	</button>
+																	<button className={classes.apply} onClick={() => addCoupon(item)}>Bỏ Chọn</button>
 																) : (
-																	<button className={classes.apply} onClick={() => addCoupon(item)}>
-																		{' '}
-																		Áp Dụng{' '}
-																	</button>
+																	<button className={classes.apply} onClick={() => addCoupon(item)}>Áp Dụng</button>
 																)
 															) : (
 																<img src={couponCondition} alt='condition' />
-															)}{' '}
-														</div>{' '}
-													</div>{' '}
-												</div>{' '}
+															)}
+														</div>
+													</div>
+												</div>
 											</div>
-										))}{' '}
-								</div>{' '}
-							</div>{' '}
-						</div>{' '}
-					</div>{' '}
+										))}
+								</div>
+							</div>
+						</div>
+					</div>
 				</Modal>
 			)}
 			{shouldRenderCouponPopup && activeInfoCoupon && (
@@ -347,30 +358,31 @@ const CouponModal = (props) => {
 					contentClass={`${classes['modal-info-coupon']}`}>
 					<div className={classes['wrap-info-coupon']}>
 						<p>
-							<span> Mã </span>{' '}
+							<span>Mã </span>
 							<span>
-								{' '}
-								{activeInfoCoupon.code}{' '}
+								{activeInfoCoupon.code}
 								<var onClick={copyCode}>
 									<img src={iconCopy} alt='copy-code' />
-								</var>{' '}
-							</span>{' '}
-						</p>{' '}
+								</var>
+							</span>
+						</p>
 						<p>
-							<span> Hạn sử dụng </span> <span> {activeInfoCoupon.date} </span>{' '}
-						</p>{' '}
+							<span>Hạn sử dụng </span> <span> {activeInfoCoupon.date} </span>
+						</p>
 						<p>
-							<span> Điều kiện </span>{' '}
+							<span>Điều kiện </span>
 							<span>
-								{' '}
-								• & nbsp; {activeInfoCoupon.type === 'shipping' && `Giảm ${activeInfoCoupon.discount}K phí vận chuyển`}{' '}
-								{activeInfoCoupon.type === 'discount' && `Giảm ${activeInfoCoupon.discount}K cho đơn hàng từ ${readPrice(activeInfoCoupon.condition)}`}{' '}
-								{activeInfoCoupon.type === 'special' && `Giảm ${activeInfoCoupon.discount}K (mã đặc biệt)`}{' '}
-							</span>{' '}
-						</p>{' '}
-					</div>{' '}
+								• &nbsp; {activeInfoCoupon.type === 'shipping' && `Giảm ${activeInfoCoupon.discount}K phí vận chuyển`}
+								{activeInfoCoupon.type === 'discount' && `Giảm ${activeInfoCoupon.discount}K cho đơn hàng từ ${readPrice(activeInfoCoupon.condition)}`}
+								{activeInfoCoupon.type === 'special' && `Giảm ${activeInfoCoupon.discount}K (mã đặc biệt)`}
+							</span>
+						</p>
+                        {isMobile && <div className={classes['hide-info']}>
+                            <button onClick={() => hideInfoCoupon()}>Đóng</button>
+                        </div>}
+					</div>
 				</Modal>
-			)}{' '}
+			)}
 		</Fragment>
 	);
 };

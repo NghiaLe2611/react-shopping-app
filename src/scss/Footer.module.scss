@@ -140,5 +140,21 @@
         .social {
             margin-top: 10px;
         }
+        .bottom{
+            padding: 20px 10px;
+        }
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
+    .footer{
+        .wrap-footer{
+            flex-wrap: wrap;
+            .footer-block{
+                width: 50%;
+                margin: 0 0 20px 0 !important;
+                flex: none;
+            }
+        }
     }
 }

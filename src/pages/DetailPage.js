@@ -23,6 +23,7 @@ import RecentlyViewedProducts from '../components/detail/RecentlyViewedProducts'
 import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
 import useCheckMobile from '../hooks/useCheckMobile';
+import ProductInfo from '../components/detail/ProductInfo';
 
 function BoxThumbnail({ children }) {
     return (
@@ -54,7 +55,7 @@ const DetailPage = () => {
 
     const [product, setProduct] = useState(null);
     const [isLiked, setIsLiked] = useState(false);
-    const [selectedColor, setSelectedColor] = useState(0);
+    // const [selectedColor, setSelectedColor] = useState(0);
     const [activeTab, setActiveTab] = useState(0);
     const [tabContent, setTabContent] = useState([]);
     const [isComparing, setIsComparing] = useState(false);
@@ -256,21 +257,6 @@ const DetailPage = () => {
         setListCompare(data);
     };
 
-    const handleSelectColor = (index) => {
-        setSelectedColor(index);
-    };
-
-    const getCategoryName = (category) => {
-        switch(category) {
-            case 'smartphone':
-                return 'Điện Thoại'
-            case 'tablet':
-                return 'Điện Thoại'
-            default :
-                return ''
-        }
-    };
-
     const handleSelectThumbnail = (item, index) => {
         if (item) {
             setActiveTab(index + 1);
@@ -281,32 +267,6 @@ const DetailPage = () => {
         } else {
             setActiveTab(0);
         }
-    };
-
-    const addToCartHandler = () => {
-        const color = product.variations && product.variations.colors ? product.variations.colors[selectedColor].color : null;
-        let img = product.img;
-
-        if (color) {
-            const mapItem = product.variations.colors.find(val => val.color === color);
-            img = mapItem.thumbnail;
-        }
-   
-        dispatch(cartActions.addItemToCart({
-            _id: product._id,
-            product_id: color ? product._id + '-00' + (parseInt(colorCodeList.indexOf(color)) + 1) : product._id,
-            category: product.category,
-            quantity: 1, 
-            img: img, 
-            name: product.name, 
-            price: product.sale ? product.price - product.sale : product.price, 
-            sale: product.sale ? product.sale : 0,
-            color: color
-        }));
-
-        setTimeout(() => {
-            dispatch(cartActions.showCartPopup(true));
-        }, 200);
     };
 
     const addItemToCompare = (product) => {
@@ -1004,7 +964,7 @@ const DetailPage = () => {
             productContent = (
                 <Fragment>
                     {sliderContent}
-                    <div className={classes['product-detail']}>
+                    {/* <div className={classes['product-detail']}>
                         <div className={classes['wrap-name']}>
                             <h1 className={classes['product-name']}>{product.name}</h1>
                             <p className={classes.txt} onClick={() => addItemToCompare(product)}>
@@ -1098,7 +1058,10 @@ const DetailPage = () => {
                             </ul>
                             <a href="/#" className={classes['show-more']} onClick={showMoreSpecs}>Xem thêm cấu hình chi tiết</a>
                         </div>
-                    </div>
+                    </div> */}
+                    <ProductInfo product={product} listCompare={listCompare}
+                        addItemToCompare={addItemToCompare} showMoreSpecs={showMoreSpecs}
+                    />
                     {isMobile && reviewsContent}
                 </Fragment>
             );

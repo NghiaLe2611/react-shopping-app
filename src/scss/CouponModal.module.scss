@@ -194,9 +194,7 @@
     right: inherit;
     // z-index: 999;
     &:before {
-        right: inherit;
-        left: 50%;
-        transform: translateX(-50%);
+        display: none;
     }
 }
 
@@ -250,4 +248,64 @@
     color: #068209;
     font-weight: 500;
     font-size: 14px;
+}
+
+.hide-info{
+    margin-top: 20px;
+    button{
+        width: 100%;
+        color: #fff;
+        font-size: 14px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #0b74e5;
+    }
+}
+
+@media (max-width: 767px) {
+    .couponModal{
+        width: 100%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+    }
+    .coupon-bg{
+        height: 104px;
+        .coupon-content{
+            .left{
+                width: 100px;
+            }
+            .right{
+                padding: 10px;
+                p{
+                    font-size: 11px;
+                }
+            }
+        }
+    }
+    .coupon-info{
+        .sale{
+            font-size: 14px;
+        }
+    }
+    .coupon-action{
+        align-items: flex-end;
+        p{
+            padding-bottom: 10px;
+        }
+        .apply{
+            font-size: 12px;
+        }
+    }
+}
+
+@media (min-width: 1024px) {
+    .modal-info-coupon {
+        &:before {
+            display: block;
+            right: inherit;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    }
 }

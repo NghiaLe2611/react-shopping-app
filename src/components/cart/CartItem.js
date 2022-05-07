@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { convertProductLink, formatCurrency } from '../../helpers/helpers';
 import { cartActions } from '../../store/cart';
 import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 import classes from '../../scss/CartItem.module.scss';
 import Swal from 'sweetalert2';
 
@@ -17,7 +18,7 @@ const CartItem = (props) => {
 
     useEffect(() => {
         let isExist = cart.finalItems.filter(val => val.product_id === item.product_id).length > 0;;
-
+        
         if (isExist) {
             inputRef.current.checked = true;
         } else {
@@ -121,23 +122,23 @@ const CartItem = (props) => {
         }
     };
 
-    const checkItemIsChecked = useCallback(() => {
-        let isExist = false;
+    // const checkItemIsChecked = useCallback(() => {
+    //     let isExist = false;
 
-        if (item.color) {
-            isExist = cart.finalItems.filter(val => (val.color === item.color && val.product_id === item.product_id)).length > 0;
-        } else {
-            isExist = cart.finalItems.filter(val => val.product_id === item.product_id).length > 0;
-        }
+    //     if (item.color) {
+    //         isExist = cart.finalItems.filter(val => (val.color === item.color && val.product_id === item.product_id)).length > 0;
+    //     } else {
+    //         isExist = cart.finalItems.filter(val => val.product_id === item.product_id).length > 0;
+    //     }
 
-        if (isExist) {
-            return true;
-        }
+    //     if (isExist) {
+    //         return true;
+    //     }
 
-        return false;
-    }, [cart.finalItems]);
+    //     return false;
+    // }, [cart.finalItems]);
 
-    const cartItemChecked = useMemo(() => checkItemIsChecked(), [checkItemIsChecked]);
+    // const cartItemChecked = useMemo(() => checkItemIsChecked(), [checkItemIsChecked]);
 
     return (
         <li className={classes['cart-item']}>
@@ -148,9 +149,9 @@ const CartItem = (props) => {
                 </label>
                 <span className={classes.img}><img src={item.img} alt={item.name} /></span>
                 <div className={classes['wrap-name']}>
-                    <a href={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`} className={classes.name}>
+                    <Link to={`/${item.category === 'smartphone' ? 'dien-thoai' : 'may-tinh-bang'}/${convertProductLink(item.name)}`} className={classes.name}>
                         {item.name}{ item.color && ` - ${item.color}` }
-                    </a>
+                    </Link>
                 </div>
             </div>
             <div className={classes['col-2']}>

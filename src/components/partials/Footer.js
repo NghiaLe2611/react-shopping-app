@@ -6,7 +6,7 @@ const Footer = (props) => {
     const {isMobile} = useCheckMobile();
 
     const footerContent = (
-        <div className={classes.footer}>
+        <footer className={classes.footer}>
             <div className='container'>
                 <div className={classes['wrap-footer']}>
                     <div className={classes['footer-block']}>
@@ -86,7 +86,7 @@ const Footer = (props) => {
                 <p>Địa chỉ: Tầng 4, Tòa nhà ABC, số 664 đường Nguyễn Đình Chiểu, Phường 3, Quận 3, Thành phố Hồ Chí Minh, Việt Nam. Tổng đài hỗ trợ: 12345678 - Email: cskh@hotro.shopping.vn</p>
                 <p>&copy;Copyright React Mobile App 2021-Nghia Le</p>
             </div>
-        </div>
+        </footer>
     );
     return (
 		!mobileView ? footerContent : (

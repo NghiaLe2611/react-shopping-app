@@ -252,7 +252,7 @@ const LoginPage = () => {
 	return (
         <div className='container'>
             <div className={classes['wrap-user-form']}>
-                <h3>Đăng nhập</h3>
+                <h3 className={classes.title}>Đăng nhập</h3>
                 <form className={classes['user-form']} onSubmit={loginWithEmail}>
                     <input type='text' placeholder='Email' name='email' 
                         className={isValid.email.status === false ? classes.invalid : ''}

@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 let initialItems = [], initialTotalQuantity = 0;
+const finalItemsStorage = localStorage.getItem('finalItems');
 
 try {
     const itemsStorage = localStorage.getItem('cartItems');
@@ -16,7 +17,7 @@ const cartSlice = createSlice({
     name: 'cart',
     initialState: {
         items: [],
-        finalItems: [],
+        finalItems: finalItemsStorage ? JSON.parse(finalItemsStorage) : [],
         totalQuantity: 0,
         totalPrice: 0,
         finalPrice: 0,
@@ -27,6 +28,9 @@ const cartSlice = createSlice({
     },
 
     reducers: {
+        setCartChanged(state, action) {
+            state.change = action.payload;
+        },
         setCartInfo(state, action) {
             state.items = action.payload.items;
             state.totalQuantity = action.payload.totalQuantity;
@@ -64,6 +68,7 @@ const cartSlice = createSlice({
         confirmChooseCart(state, action) {
             const payload = action.payload;
             // console.log(payload);
+            // state.changed = true;
 
             switch (payload.type) {
                 case 'ADD': {
@@ -122,8 +127,6 @@ const cartSlice = createSlice({
             const newItem = action.payload;
             const existingItem = state.items.find(item => item.product_id === newItem.product_id);
 
-            state.changed = true;
-            
             const addNewItemHandler = () => {
                 state.items.push({
                     _id: newItem._id,
@@ -155,6 +158,7 @@ const cartSlice = createSlice({
                     existingItem.totalPrice = existingItem.totalPrice + newItem.price;
                 }
             }
+            state.changed = true;
         },
         changeQuantity(state, action) {
             const existingItem = state.items.find(item => item.product_id === action.payload.product_id);
@@ -177,12 +181,25 @@ const cartSlice = createSlice({
             state.changed = true;
         },
         removeCartItem(state, action) {
-            const id = action.payload;
-            const existingItem = state.items.find(item => item.product_id === id);
-            state.totalQuantity -= existingItem.quantity;
-            state.items = state.items.filter(item => item.product_id !== id);
-            state.changed = true;
-        }, 
+            if (action.payload.type === 'MULTIPLE') {
+                state.totalQuantity -= action.payload.items.length;
+                // Filter items have different id from array to delete
+                state.items = state.items.filter(item => action.payload.items.includes(item.product_id));
+                state.changed = true;
+            } else {
+                const id = action.payload;
+                const existingItem = state.items.find(item => item.product_id === id);
+                state.totalQuantity -= existingItem.quantity;
+                state.items = state.items.filter(item => item.product_id !== id);
+                state.changed = true;
+            }
+
+            // const id = action.payload;
+            // const existingItem = state.items.find(item => item.product_id === id);
+            // state.totalQuantity -= existingItem.quantity;
+            // state.items = state.items.filter(item => item.product_id !== id);
+            // state.changed = true;
+        },
         showCartPopup(state, action) {
             if (action.payload) {
                 state.isShowCart = true;

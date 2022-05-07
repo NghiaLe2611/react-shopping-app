@@ -24,7 +24,6 @@ const TrackingPage = () => {
             trackingOrder({
 				url: `${process.env.REACT_APP_API_URL}/api/v1/orders/tracking/${searchKey}`
 			}, data => {
-				console.log(111, data);
 				if (data) {
 					setOrderDetail(data.result);
 				}
@@ -149,7 +148,7 @@ const TrackingPage = () => {
 		} 
 		
 		if(!orderDetail) {
-			content = <div>Không tìm thấy đơn hàng. Vui lòng thử lại.</div>
+			content = <div className={classes['not-found']}>Không tìm thấy đơn hàng. Vui lòng thử lại.</div>
 		}
 	}
 	

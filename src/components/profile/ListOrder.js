@@ -16,7 +16,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 
 import classes from '../../scss/Profile.module.scss';
 import noOrderImg from '../../assets/images/no-order.png';
-import Cookies from 'js-cookie';
+import useCheckMobile from '../../hooks/useCheckMobile';
 
 const pageSize = 5;
 const statusList = [
@@ -46,7 +46,8 @@ const ListOrder = (props) => {
 	const [orderCount, setOrderCount] = useState(0);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchKey, setSearchKey] = useState('');
-
+    
+    const {isMobile} = useCheckMobile();
     const slug = useLocation().pathname;
 
     const { isLoading, error: ordersError, fetchData: getOrders } = useFetch();
@@ -168,7 +169,8 @@ const ListOrder = (props) => {
             </div>
             <form className={classes['order-search']} onSubmit={onSearchOrder}>
                 <span className='icon-search'></span>
-                <input name='search' placeholder='Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm' type='search' autoComplete='off'
+                <input name='search' placeholder={isMobile ? 'Tìm đơn hàng' : 'Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm'} 
+                    type='search' autoComplete='off'
                     onChange={(e) => { setSearchKey(e.target.value); }}
                 />
                 <button className={classes.search} type='submit'>Tìm đơn hàng</button>
@@ -194,7 +196,7 @@ const ListOrder = (props) => {
                                                             {prod.name}{prod.color && ` - Màu ${prod.color}`}
                                                         </h4>
                                                     </div>
-                                                    <div className={classes.price}>{formatCurrency(prod.price)} ₫</div>
+                                                    {!isMobile && <div className={classes.price}>{formatCurrency(prod.price)} ₫</div>}
                                                 </div>
                                             ))
                                         }

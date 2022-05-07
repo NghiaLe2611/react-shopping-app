@@ -71,15 +71,7 @@ function App() {
 			});
 		};
 
-        const getUserData = (user, userDataObj) => {
-            // const userDataObj = {
-            //     uuid: user.uid,
-            //     displayName: user.displayName,
-            //     email: user.email,
-            //     photoURL: user.photoURL,
-            //     emailVerified: user.emailVerified,
-            // };
-
+        const getUserData = (userDataObj) => {
             fetchUser({
                 url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
             }, (data) => {
@@ -179,11 +171,13 @@ function App() {
 						});
 					}
        
-                    if (!accessToken) {
-                        dispatch(authActions.setToken(token));
-                    }
+                    // if (!accessToken) {
+                    //     dispatch(authActions.setToken(token));
+                    // }
+                    localStorage.setItem('access_token', token);
+
                     if (!userData) {
-                        getUserData(user, userDataObj);
+                        getUserData(userDataObj);
                     }
                 });
             } else {
@@ -192,7 +186,8 @@ function App() {
                         userData: null,
                     }),
                 );
-                dispatch(authActions.setToken(''));
+                // dispatch(authActions.setToken(''));
+                localStorage.removeItem('access_token');
                 dispatch(cartActions.clearCart());
                 if (isLoggingOut) {
                     dispatch(authActions.setIsLoggingOut(false));
@@ -223,13 +218,13 @@ function App() {
 		}
 	}, [userData]);
 
-	useEffect(() => {
-		if (accessToken) {
-			localStorage.setItem('access_token', accessToken);
-		} else {
-			localStorage.removeItem('access_token');
-		}
-	}, [accessToken]);
+	// useEffect(() => {
+	// 	if (accessToken) {
+	// 		localStorage.setItem('access_token', accessToken);
+	// 	} else {
+	// 		localStorage.removeItem('access_token');
+	// 	}
+	// }, [accessToken]);
 
 	return (
 		<Fragment>
@@ -339,7 +334,7 @@ function App() {
 					<Route path='order/:orderId'
 						element={
 							<PrivateRoute>
-								<Root mobileView={true}>
+								<Root mobileView={true} title='Đơn hàng'>
 									<ProfilePage mobileView={true}/>
 								</Root>
 							</PrivateRoute>

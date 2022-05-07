@@ -17,23 +17,6 @@ h2 {
     }
 }
 
-.cart-list {
-    margin-bottom: 200px;
-}
-
-.wrap-cart {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 50px;
-    >.left {
-        width: 70%;
-        margin-right: 20px;
-    }
-    >.right {
-        flex: 1;
-    }
-}
-
 .col-1,
 .col-2,
 .col-3,
@@ -64,6 +47,10 @@ h2 {
     span {
         cursor: pointer;
     }
+}
+
+.wrap-cart{
+    margin-bottom: 50px;
 }
 
 .block {
@@ -230,4 +217,25 @@ h2 {
 
 .checkbox input:checked~.checkmark:after {
     display: block;
+}
+
+@media (min-width: 1024px) {
+    .wrap-cart {
+        display: flex;
+        flex-wrap: wrap;
+        >.left {
+            width: 70%;
+            margin-right: 20px;
+        }
+        >.right {
+            flex: 1;
+        }
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1200px) and (orientation:portrait) {
+    .cart-btn{
+        width: 50%;
+        margin: 30px auto;
+    }
 }

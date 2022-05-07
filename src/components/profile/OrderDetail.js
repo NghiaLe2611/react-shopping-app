@@ -131,7 +131,7 @@ const OrderDetail = () => {
                 )
             } else {
                 orderContent = (
-					<Fragment>
+					<div className={classes['wrap-group']}>
 						<div className={classes.group}>
 							<div className={classes['wrap-title']}>
 								<span className='icon-letter'></span>
@@ -148,8 +148,14 @@ const OrderDetail = () => {
 								<h4 className={classes.title}>Theo dõi đơn hàng</h4>
 							</div>
 							<div className={classes.content}>
-								<div className={classes['order-date']}>Ngày đặt hàng: {convertDateTime(orderDetail.orderDate)}</div>
-								<div className={classes.time}>Dự kiến giao: {orderDetail.shippingMethod === 1 ? 'Giao trước 11:59 sáng mai' : `Giao vào ${getDayName()}`}</div>
+								<div className={classes.status}>
+                                    <div className={classes['current-step']}>
+                                        <div className={classes['step-bar']}>
+                                            <div className={classes['step-circle']}></div>
+                                        </div>
+                                        <div className={classes['step-info']}>{getOrderStatus(orderDetail.status)}</div>
+                                    </div>
+                                </div>
 							</div>
 						</div>
 						<div className={classes.group}>
@@ -241,7 +247,7 @@ const OrderDetail = () => {
                                 <span className={classes.value}>{formatCurrency(orderDetail.finalPrice)} ₫</span>
                             </div>
                         </div>
-					</Fragment>
+					</div>
 				);
             }
         }
