@@ -510,7 +510,7 @@ body {
     margin-top: 80px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 20px 20px 30px 20px;
+    padding: 20px 12px 30px 12px;
     h5 {
         margin-bottom: 25px;
         font-size: 18px;
@@ -629,7 +629,7 @@ body {
         a {
             line-height: 1;
             display: inline-block;
-            width: 45%;
+            width: 48%;
             border-radius: 4px;
             padding: 10px;
             font-size: 11px;
@@ -891,8 +891,14 @@ body {
     .fixed-tab .close-specs{
         display: none;
     }
-    .wrap-reviews .wrap-btn{
-        font-size: 15px;
+    .wrap-reviews{
+        padding: 20px 20px 30px 20px;
+        .wrap-btn{
+            a{
+                width: 45%;
+                font-size: 15px;
+            }
+        }
     }
 }
 

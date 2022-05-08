@@ -398,16 +398,15 @@ aside {
                 font-weight: normal;
                 font-size: 14px;
                 display: inline-block;
-                margin-bottom: 5px;
                 &:hover {
                     text-decoration: underline;
                 }
             }
             .rating {
                 display: flex;
-                align-items: center;
                 font-size: 14px;
                 color: #808089;
+                margin-left: 5px;
                 i {
                     font-style: normal;
                     font-size: 14px;
@@ -877,7 +876,6 @@ aside {
         .overview{
             display: flex;
             align-items: center;
-            margin: 0 20px 0 0;
             .name{
                 font-size: 16px;
             }
