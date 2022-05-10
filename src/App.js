@@ -41,7 +41,6 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 function App() {
 	const dispatch = useDispatch();
 	const userData = useSelector((state) => state.auth.userData);
-	const accessToken = useSelector((state) => state.auth.accessToken);
 	const isLoggingOut = useSelector((state) => state.auth.isLoggingOut);
 
 	const { fetchData: fetchUser } = useFetch();
@@ -126,6 +125,7 @@ function App() {
             if (user) {
                 const lastTimeLogin = user.metadata.lastLoginAt;
 				const currentTime = new Date().getTime();
+				
 				// Log out user if more than 1 day
 				if (currentTime - lastTimeLogin >= 86400000) { // 86400000: 1 day
                     console.log('Log out due to expired time');
@@ -170,10 +170,7 @@ function App() {
 							}),
 						});
 					}
-       
-                    // if (!accessToken) {
-                    //     dispatch(authActions.setToken(token));
-                    // }
+
                     localStorage.setItem('access_token', token);
 
                     if (!userData) {
@@ -186,12 +183,14 @@ function App() {
                         userData: null,
                     }),
                 );
-                // dispatch(authActions.setToken(''));
-                localStorage.removeItem('access_token');
+
                 dispatch(cartActions.clearCart());
                 if (isLoggingOut) {
                     dispatch(authActions.setIsLoggingOut(false));
                 }
+
+				localStorage.removeItem('access_token');
+
 
                 // Cookies.remove('csrfToken');
                 // Cookies.remove('session');
@@ -213,18 +212,9 @@ function App() {
 		if (userData) {
 			localStorage.setItem('userData', JSON.stringify(userData));
 		} else {
-			// console.log('remove storage');
 			localStorage.removeItem('userData');
 		}
 	}, [userData]);
-
-	// useEffect(() => {
-	// 	if (accessToken) {
-	// 		localStorage.setItem('access_token', accessToken);
-	// 	} else {
-	// 		localStorage.removeItem('access_token');
-	// 	}
-	// }, [accessToken]);
 
 	return (
 		<Fragment>

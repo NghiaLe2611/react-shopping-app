@@ -8,17 +8,16 @@ import ProductModal from '../components/detail/ProductModal';
 import { useSelector } from 'react-redux';
 import { useDelayUnmount } from '../hooks/useDelayUnmount';
 import CompareModalWrapper from '../components/UI/CompareModalWrapper';
-import 'react-loading-skeleton/dist/skeleton.css';
-import { capitalizeFirstLetter, timeSince } from '../helpers/helpers';
+import { capitalizeFirstLetter } from '../helpers/helpers';
 import NotFound from './NotFound';
+import ProductReview from '../components/detail/ProductReview';
 import RecentlyViewedProducts from '../components/detail/RecentlyViewedProducts';
 import { FacebookShareButton, FacebookMessengerShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, FacebookMessengerIcon, TwitterIcon } from 'react-share';
 import useCheckMobile from '../hooks/useCheckMobile';
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 import classes from '../scss/ProductDetail.module.scss';
-import ReviewModal from '../components/detail/ReviewModal';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 function BoxThumbnail({ children }) {
 	return (
@@ -34,17 +33,10 @@ function BoxThumbnail({ children }) {
 	)
 }
 
-const reviewPageSize = 5;
-const starArr = [1,2,3,4,5];
-const reviewSwal = withReactContent(Swal);
-
 const DetailPage = () => {
 	const { productId } = useParams();
 	const navigate = useNavigate();    
-	// const cart = useSelector((state) => state.cart);
 	const userData = useSelector(state => state.auth.userData);
-
-	const { displayName, uuid, email } = userData ? userData : {};
 
 	const [product, setProduct] = useState(null);
 	const [isLiked, setIsLiked] = useState(false);
@@ -53,21 +45,15 @@ const DetailPage = () => {
 	const [listCompare, setListCompare] = useState([{}, {}, {}]);
 	const [showInfoModal, setshowInfoModal] = useState(false);
 	const [activeModalTab, setActiveModalTab] = useState('');
-	const [reviews, setReviews] = useState([]);
-	const [allReviews, setAllReviews] = useState([]);
 	// const [reviewsCount, setReviewsCount] = useState(0);
 	// const [averagePoint, setAveragePoint] = useState(0);
-	const [arrayPercent, setArrayPercent] = useState([]);
-	const [currentPage, setCurrentPage] = useState(1);
 	const [isWriteReview, setIsWriteReview] = useState(false);
 	const [isShowAllReviews, setIsShowAllReviews] = useState(false);
 	const [recentlyViewedProducts, setRecentlyViewedProducts] = useState([]);
 
 	const { isMobile } = useCheckMobile();
-	const { isLoading, error, fetchData: fetchProducts } = useFetch();
-	const { fetchData: fetchReviews } = useFetch();
 
-	const { fetchData: postReview } = useFetch();
+	const { isLoading, error, fetchData: fetchProducts } = useFetch();
 	const { fetchData: addToFav } = useFetch();
 	const { fetchData: removeFav } = useFetch();
 	const { fetchData: checkProductIsLiked } = useFetch();
@@ -75,16 +61,7 @@ const DetailPage = () => {
 	const { fetchData: fetchRecentlyProducts } = useFetch();
 
 	const shouldRenderInfoModal = useDelayUnmount(showInfoModal, 300);
-	const shouldRenderWriteReviewModal = useDelayUnmount(isWriteReview, 300);
-	const shouldRenderReviewsModal = useDelayUnmount(isShowAllReviews, 300);
-
 	const compareModalRef = useRef();
-	const starRating = useRef([]);
-	const reviewFormRef = useRef({
-		name: '',
-		phone: '',
-		email: ''
-	});
 
 	let convertedProductId = productId;
 	const strHasParentheses = productId.match(/\(([^)]+)\)/);
@@ -131,28 +108,11 @@ const DetailPage = () => {
 		fetchProducts({
 			url: `${process.env.REACT_APP_API_URL}/api/v1/products/${convertedProductId}` 
 		}, data => {
-			// console.log(data);
 			if (data) {
 				setProduct(data);
 			}
 		});
 	}, [fetchProducts, convertedProductId]);
-
-	useEffect(() => {
-		if (product) {
-			fetchReviews({
-				url: `${process.env.REACT_APP_API_URL}/api/v1/reviews?product_id=${product._id}&page=1`
-			}, data => {
-				if (data) {
-					console.log(111);
-					setReviews(data.reviews);
-					setArrayPercent(data.pointPercent);
-					// setAveragePoint(data.rating_average);
-					// setReviewsCount(data.reviews_count);
-				}
-			});
-		}
-	}, [fetchReviews, product]);
 
 	useEffect(() => {
 		if (showInfoModal) {
@@ -190,25 +150,6 @@ const DetailPage = () => {
 			setshowInfoModal(true);
 		}
 	}, [activeModalTab]);
-
-	// useEffect(() => {
-	// 	if (product) {
-	// 		if (currentPage === 1) {
-	// 			setAllReviews(reviews);
-	// 			return;
-	// 		}
-
-	// 		if (isShowAllReviews) {
-	// 			fetchReviews({
-	// 				url: `${process.env.REACT_APP_API_URL}/api/v1/reviews?product_id=${product._id}&page=${currentPage}`
-	// 			}, data => {
-	// 				if (data) {
-	// 					setAllReviews(data.reviews);
-	// 				}
-	// 			});
-	// 		}
-	// 	}
-	// }, [fetchReviews, reviews, product, currentPage, isShowAllReviews]);
 
 	const getListCompare = (data) => {
 		setListCompare(data);
@@ -250,14 +191,6 @@ const DetailPage = () => {
 		setIsWriteReview(true);
 	};
 
-	// const closeWriteReviewModal = () => {
-	// 	setIsWriteReview(false);
-	// 	setTimeout(() => {
-	// 		setSubmitReviewForm(false);
-	// 		setComment('');
-	// 	}, 300);
-	// };
-
 	const showAllReviews = (e) => {
 		e.preventDefault();
 		setIsShowAllReviews(true);
@@ -291,29 +224,15 @@ const DetailPage = () => {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
 			url: `${process.env.REACT_APP_API_URL}/api/v1/me/wishlist/delete/${id}`
-		}, data => {
-			if (data) {
-				console.log('removeFromWishlist', data);
-			}
 		});
 	};
 
 	let reviewsContent = (
-		<Fragment>
-			<Skeleton width={'50%'} height={30} style={{marginBottom: 25}}/>
-			<Skeleton count={5} width={'40%'} height={10} style={{marginBottom: 5}}/>
-			<ul className={classes['list-review']}>
-				{
-					Array(5).fill().map((item ,index) => (
-						<li key={index}>
-							<Skeleton height={20} style={{marginBottom: 10}}/>
-							<Skeleton height={20} style={{marginBottom: 10}}/>
-							<Skeleton height={25} style={{marginBottom: 10}}/>
-						</li>
-					))
-				}
-			</ul>
-		</Fragment>
+		<ProductReview product={product}
+			writeReviewHandler={writeReviewHandler} showAllReviews={showAllReviews} 
+			isShowAllReviews={isShowAllReviews} setIsShowAllReviews={setIsShowAllReviews}
+			isWriteReview={isWriteReview} setIsWriteReview={setIsWriteReview}
+		/>
 	);
 
 	let productContent, breadcrumbsCate,
@@ -337,7 +256,8 @@ const DetailPage = () => {
 							}
 						</div>
 					</div>
-					<div className={classes['wrap-reviews']}>{reviewsContent}</div>
+					<Skeleton height={35} style={{display: 'block', width: '100%', marginBottom: 50}}/>
+					{reviewsContent}
 				</div>
 				<div className={classes['product-detail']}>
 					<Skeleton className={classes['title-skeleton']}/>
@@ -353,108 +273,6 @@ const DetailPage = () => {
 	}
 
 	if (product) {
-		if (reviews) {
-			reviewsContent = (
-				<Fragment>
-					<div className={classes['wrap-reviews']}>
-						<h5>
-							Đánh giá {product.category === 'smartphone' ? 'Điện thoại ' : product.category === 'tablet' ? 'Máy tính bảng ' : null} {product.name}
-						</h5>
-						{reviews.length ? (
-							<Fragment>
-								<div className={classes['rating-overview']}>
-									<div className={classes['rating-top']}>
-										<span className={classes.point}>{product.rating_average}</span>
-										<div className={classes['list-star']}>
-											{Array(5).fill().map((item, index) =>
-												// <span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(averagePoint) ? classes.selected : ''}`}>
-												//     <i className={`icon-star ${classes.border}`}></i>
-												// </span>
-												(product.rating_average - Math.floor(product.rating_average)).toFixed(1) === 0.5 ? (
-													<span
-														key={index}
-														className={`icon-star ${classes.inner} ${
-															index + 1 === Math.round(product.rating_average)
-																? 'icon-star-half'
-																: index + 1 < Math.round(product.rating_average)
-																? classes.selected
-																: ''
-														}`}>
-														{index + 1 !== Math.round(product.rating_average) && <i className={`icon-star ${classes.border}`}></i>}
-													</span>
-												) : (
-													<span key={index} className={`icon-star ${classes.inner} ${index + 1 <= Math.round(product.rating_average) ? classes.selected : ''}`}>
-														<i className={`icon-star ${classes.border}`}></i>
-													</span>
-												)
-											)}
-										</div>
-										<span className={classes.txt}>{product.review_count} đánh giá</span>
-									</div>
-									<ul className={classes['rating-list']}>
-										{[...starArr].reverse().map((item, index) => (
-											<li key={item}>
-												<span className={classes.star}>
-													{item}
-													<i className='icon-star'></i>
-												</span>
-												<div className={classes['timeline-star']}>
-													<p style={{width: arrayPercent && arrayPercent[index]}}></p>
-												</div>
-												<span className={classes.percent}>{arrayPercent && arrayPercent[index]}%</span>
-											</li>
-										))}
-									</ul>
-								</div>
-								<ul className={classes['list-review']}>
-									{reviews.map((item) => (
-										<li key={item._id}>
-											<p className={classes['ctm-name']}>
-												<strong>{item.customerName}</strong>
-												<span>{timeSince(item.createdAt)}</span>
-											</p>
-											<p className={classes.rating}>
-												{Array(item.star)
-													.fill()
-													.map((item, index) => (
-														<i key={index} className='icon-star'></i>
-													))}
-												{item.star < 5 &&
-													Array(5 - item.star)
-														.fill()
-														.map((item, index) => <i key={index} className={`icon-star ${classes.black}`}></i>)}
-											</p>
-											<p className={classes.comment}>{item.comment}</p>
-										</li>
-									))}
-								</ul>
-								<div className={classes['wrap-btn']}>
-									<a href='/#' className={classes['write-review']} onClick={writeReviewHandler}>
-										Viết đánh giá
-									</a>
-									<a href='/#' className={classes['show-reviews']} onClick={showAllReviews}>
-										Xem tất cả đánh giá ({product.review_count})
-									</a>
-								</div>
-							</Fragment>
-						) : (
-							<Fragment>
-								<p className={classes.empty}>Chưa có nhận xét nào. Hãy để lại nhận xét của bạn.</p>
-								<div className={classes['wrap-btn']}>
-									<a href='/#' className={classes['write-review']} onClick={writeReviewHandler}>
-										Viết đánh giá
-									</a>
-								</div>
-							</Fragment>
-						)}
-					</div>
-					<ReviewModal product={product} reviews={reviews} isWriteReview={isWriteReview}
-						isShowAllReviews={isShowAllReviews} setIsWriteReview={setIsWriteReview}
-						setIsShowAllReviews={setIsShowAllReviews}
-					/>
-				</Fragment>
-			);
-		}
 		leftContent = (
 			<div className={classes.left}>
 				<ProductSlider product={product} setActiveModalTab={setActiveModalTab} />
