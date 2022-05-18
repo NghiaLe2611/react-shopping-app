@@ -10,10 +10,11 @@ import classes from '../scss/Compare.module.scss';
 const ComparePage = () => {
 	const location = useLocation();
 
-    const { isLoading, error, fetchData: fetchProducts } = useFetch();
     const [arrayId, setArrayId] = useState([]);
     const [listCompare, setListCompare] = useState([]);
     const [isComparing, setIsComparing] = useState(false);
+
+    const { isLoading, error, fetchData: fetchProducts } = useFetch();
     const compareModalRef = useRef();
 
 	useEffect(() => {
@@ -30,11 +31,11 @@ const ComparePage = () => {
 
     useEffect(() => {
         const list = [...listCompare];
-        
+
 		if (arrayId.length > 0) {
             for (const val of arrayId) {
                 fetchProducts({ 
-                    url: `${process.env.REACT_APP_API_URL}/product/` + val
+                    url: `${process.env.REACT_APP_API_URL}/api/v1/products/${val}`
                 }, data => {
                         if (data) {
                             const found = list.findIndex(val => val._id === data._id);
@@ -44,7 +45,7 @@ const ComparePage = () => {
                         }
                     }
                 );
-            } 
+            }
 		}
 	}, [fetchProducts, arrayId]);
 
