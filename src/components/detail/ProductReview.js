@@ -94,7 +94,7 @@ const ProductReview = (props) => {
                                                 <i className='icon-star'></i>
                                             </span>
                                             <div className={classes['timeline-star']}>
-                                                <p style={{width: arrayPercent && arrayPercent[index]}}></p>
+                                                <p style={{width: arrayPercent && `${arrayPercent[index]}%`}}></p>
                                             </div>
                                             <span className={classes.percent}>{arrayPercent && arrayPercent[index]}%</span>
                                         </li>

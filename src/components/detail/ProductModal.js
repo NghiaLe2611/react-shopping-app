@@ -1,6 +1,6 @@
 import Modal from '../UI/Modal';
 import ModalSlides from '../slides/ModalSlides';
-import classes from '../../scss/ProductDetail.module.scss';
+import classes from '../../scss/ProductModal.module.scss';
 
 const ProductModal = (props) => {
 	const {product, closeModalInfo, showInfoModal, 
