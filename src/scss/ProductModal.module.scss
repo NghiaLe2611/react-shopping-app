@@ -93,7 +93,10 @@
     top: 5px;
     right: 5px;
     color: #fff;
+    display: flex;
+    align-items: center;
     i{
+        line-height: 1;
         font-size: 30px;
         font-style: normal;
     }
