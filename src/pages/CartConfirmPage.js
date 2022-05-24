@@ -693,9 +693,7 @@ const CartConfirmPage = () => {
 										</Fragment>
 									))}
 							</div>
-							<button className={classes['btn-booking']} onClick={confirmBooking}>
-								ĐẶT MUA
-							</button>
+							<button className={classes['btn-booking']} onClick={confirmBooking}>ĐẶT MUA</button>
 						</div>
 						<div className={classes.right}>
 							<div className={classes.block}>

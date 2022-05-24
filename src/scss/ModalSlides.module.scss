@@ -35,7 +35,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     >img {
         align-self: center;
     }
@@ -56,4 +55,27 @@
         }
     }
     .nav-slides {}
+}
+
+@media (max-width: 768px) {
+    .modal-slider {
+        .main-slider{
+            padding: 0 20px;
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    @media (max-width: 768px) {
+        .modal-slider {
+            .main-slider{
+                margin-bottom: 20px;
+            }
+        }
+    }
+}
+@media (min-width: 1200px){
+    .modal-slider{
+        justify-content: space-between;
+    }
 }

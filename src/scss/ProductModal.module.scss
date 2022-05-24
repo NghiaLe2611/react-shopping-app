@@ -75,6 +75,7 @@
 .modal-tab {
     display: none;
     width: 100%;
+    padding-top: 40px;
     &.show {
         display: block;
     }
@@ -87,32 +88,31 @@
 }
 
 .close-specs {
-    display: none;
-    color: #333;
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 15px;
-    padding: 7px 15px;
+    position: fixed;
+    z-index: 99;
+    top: 5px;
+    right: 5px;
+    color: #fff;
     i{
-        font-size: 18px;
+        font-size: 30px;
         font-style: normal;
     }
 }
 
-.fixed-tab .close-specs{
-    display: block;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    right: 0;
-    background-color: #e0e0e0;
-    border-radius: 0;
+.infoModal{
+    padding: 1rem;
+    top: 5%;
+    height: 90%;
 }
 
-.infoModal{
-    height: 80vh;
+@media (max-width: 768px) {
+
+    .fixed-tab{
+        overflow-x: scroll;
+        ul{
+            width: 400px;
+        }
+    }
 }
 
 @media (min-width: 1200px) {
@@ -126,25 +126,29 @@
             }
         }
     }
+    .modal-tab{
+        padding-top: 0;
+    }
     .infoModal{
         top: 0;
-        width: 60%;
-        left: calc(100% * 1/2 - 30%);
+        height: 100vh;
+        width: 50%;
+        left: calc(100% * 1/2 - 25%);
         padding: 100px 2rem 20px 2rem;
     }
     .close-specs {
-        position: fixed;
-        z-index: 99;
         top: 20px;
         right: 20px;
-        display: flex;
-        align-items: center;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #333;
+        font-size: 15px;
+        padding: 7px 15px;
         i{
             font-size: 22px;
             margin-right: 4px;
         }
-    }
-    .fixed-tab .close-specs{
-        display: none;
     }
 }

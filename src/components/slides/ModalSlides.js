@@ -20,13 +20,33 @@ const ModalSlides = (props) => {
     };
 
     const settingsNavSlides = {
-        dots: false,
-        arrows: false,
-        infinite: false,
-        slidesToShow: 10,
-        slidesToScroll: 1,
-        focusOnSelect: true
-    };
+		dots: false,
+		arrows: false,
+		infinite: false,
+		slidesToShow: 10,
+		slidesToScroll: 1,
+		focusOnSelect: true,
+		responsive: [
+            {
+				breakpoint: 1024,
+				settings: {
+					slidesToShow: 5,
+				},
+			},
+			{
+				breakpoint: 768,
+				settings: {
+					slidesToShow: 4,
+				},
+			},
+			{
+				breakpoint: 480,
+				settings: {
+					slidesToShow: 3,
+				},
+			},
+		],
+	};
 
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;

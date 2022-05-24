@@ -1,6 +1,7 @@
 import Modal from '../UI/Modal';
 import ModalSlides from '../slides/ModalSlides';
 import classes from '../../scss/ProductModal.module.scss';
+import useCheckMobile from '../../hooks/useCheckMobile';
 
 const ProductModal = (props) => {
 	const {product, closeModalInfo, showInfoModal, 
@@ -9,6 +10,8 @@ const ProductModal = (props) => {
     
     const mountedBtnStyle = { animation: "fadeIn 250ms ease-out forwards" };
     const unmountedBtnStyle = { animation: "fadeOut 250ms ease-out forwards" };
+
+	const { isMobile } = useCheckMobile();
 
     const showModalTab = (tab) => {
         setActiveModalTab(tab);
@@ -19,7 +22,7 @@ const ProductModal = (props) => {
 			contentClass={classes.infoModal}
 			close={
 				<span className={classes['close-specs']} onClick={closeModalInfo} style={showInfoModal ? mountedBtnStyle : unmountedBtnStyle}>
-					<i>&times;</i> Đóng
+					<i>&times;</i>{!isMobile && 'Đóng'}
 				</span>
 			}
 			closeModal={closeModalInfo}>
@@ -44,9 +47,9 @@ const ProductModal = (props) => {
 						<li className={`${activeModalTab === 'danh-gia' ? classes.selected : ''}`} onClick={(e) => showModalTab('danh-gia')}>
 							Bài viết đánh giá
 						</li>
-						<li className={classes['close-specs']}>
+						{/* <li className={classes['close-specs']} onClick={closeModalInfo}>
 							<i>&times;</i>
-						</li>
+						</li> */}
 					</ul>
 				</div>
 				{product.featureImgs && (

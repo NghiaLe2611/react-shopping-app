@@ -481,7 +481,6 @@ body {
 .reviewModal {
     width: 90%;
     left: 5%;
-    height: 90vh;
 }
 
 // .modal-tab {
@@ -840,6 +839,9 @@ body {
     }
     .wrap-product-detail > .left{
         margin-bottom: 50px;
+    }
+    .reviewModal{
+        height: 90vh;
     }
 }
 
