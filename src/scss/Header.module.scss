@@ -407,51 +407,6 @@
     }
 }
 
-@media (max-width: 1024px) {
-    
-}
-
-@media (max-width: 1200px) {
-    .header {
-        padding: 10px;
-        position: relative;
-    }
-    .toggle {
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        div {
-            width: 30px;
-            height: 2px;
-            background-color: #fff;
-            margin: 6px 0;
-        }
-    }
-    .change .bar1 {
-        -webkit-transform: rotate(-45deg) translate(-9px, 6px);
-        transform: rotate(-45deg) translate(-9px, 6px);
-    }
-    .change .bar2 {
-        opacity: 0;
-    }
-    .change .bar3 {
-        -webkit-transform: rotate(45deg) translate(-8px, -8px);
-        transform: rotate(45deg) translate(-8px, -8px);
-    }
-    .logo {
-        display: flex;
-        justify-content: center;
-        flex: 1 1 0;
-    }
-    .wrap-cart {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-}
-
 @media (min-width: 768px) {
     .logo {
         a {
@@ -463,6 +418,9 @@
             }
         }
     }
+    .menu {
+        display: flex;
+    }
     .wrap-cart {
         .cart {
             .quantity {
@@ -473,8 +431,16 @@
             }
         }
     }
-    .menu {
-        display: flex;
+}
+
+@media (min-width: 1024px){
+    .wrap-search{
+        margin-left: 20px;
+    }
+    .wrap-user{
+        margin-left: 60px;
+    }
+    .menu{
         >li {
             position: relative;
             >a {
@@ -525,6 +491,54 @@
                 }
             }
         }
+    }
+}
+
+@media (max-width: 1024px) {
+    .logo{
+        flex: 1 1 0;
+    }
+}
+@media (max-width: 1200px) {
+    .header {
+        padding: 10px;
+        position: relative;
+    }
+    .wrap-menu{
+        max-width: 300px;
+    }
+    .toggle {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        div {
+            width: 30px;
+            height: 2px;
+            background-color: #fff;
+            margin: 6px 0;
+        }
+    }
+    .change .bar1 {
+        -webkit-transform: rotate(-45deg) translate(-9px, 6px);
+        transform: rotate(-45deg) translate(-9px, 6px);
+    }
+    .change .bar2 {
+        opacity: 0;
+    }
+    .change .bar3 {
+        -webkit-transform: rotate(45deg) translate(-8px, -8px);
+        transform: rotate(45deg) translate(-8px, -8px);
+    }
+    .logo {
+        display: flex;
+        justify-content: center;
+    }
+    .wrap-cart {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
     }
 }
 

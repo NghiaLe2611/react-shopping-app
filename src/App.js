@@ -58,12 +58,20 @@ function App() {
             fetchUser({
                 url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
             }, (data) => {
-                    // console.log('fetchUser', data);
                     if (!data) {
+                        dispatch(
+                            authActions.updateState({
+                                userData: userDataObj
+                            })
+                        );
                         postUserData();
                     } else {
-                        // updateUser();
-                        const cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+                        let cloneData = (({ uuid, email, photoURL, emailVerified, ...val }) => val)(data);
+                        
+                        if (userDataObj.emailVerified) {
+                            cloneData = (({ uuid, displayName, email, photoURL, emailVerified, ...val }) => val)(data);
+                        }
+
                         dispatch(
                             authActions.updateState({
                                 userData: {
@@ -76,34 +84,6 @@ function App() {
                 }
             );
         };
-
-		// Update user data
-		// const updateUser = () => {
-		//     const data = {
-		//         uuid: userData.uuid,
-		//         displayName: userData.displayName,
-		//         email: userData.email,
-		//         photoURL: userData.photoURL,
-		//         emailVerified: userData.emailVerified,
-		//     };
-
-		//     updateUserInfo({
-		//         method: 'PUT',
-		//         headers: { 'Content-Type': 'application/json' },
-		//         url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`,
-		//         body: data
-		//     });
-		// };
-
-		// const onChangeToken = authApp.onIdTokenChanged(async (user) => {
-		// 	user.getIdTokenResult()
-		// 		.then((idTokenResult) => {
-		// 			console.log(idTokenResult);
-		// 		})
-		// 		.catch((error) => {
-		// 			console.log(error);
-		// 		});
-		// });
         
 		const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
@@ -151,12 +131,6 @@ function App() {
                     emailVerified: user.emailVerified,
                 };
 
-                // dispatch(
-                //     authActions.updateState({
-                //         userData: userDataObj
-                //     }),
-                // );
-
                 // Post session to server when login by firebase
                 return authApp.currentUser.getIdToken().then((token) => {
                    const prevCookie = Cookies.get('idToken');
@@ -200,18 +174,12 @@ function App() {
                 }
 
 				localStorage.removeItem('access_token');
-
-
-                // Cookies.remove('csrfToken');
-                // Cookies.remove('session');
-                // Cookies.remove('idToken');
             }
 		});
 
 		// Cleanup subscription on unmount
 		return () => {
 			unregisterAuthObserver();
-			// onChangeToken();
 		};
 	}, [dispatch]);
 

@@ -8,7 +8,6 @@ import withReactContent from 'sweetalert2-react-content';
 import { useDispatch } from 'react-redux';
 import { authActions } from '../store/auth';
 import classes from '../scss/Login.module.scss';
-import Cookies from 'js-cookie';
 
 const errorMessages = {
     email: 'Email không hợp lệ.',
@@ -145,33 +144,9 @@ const SignUpPage = () => {
                     );
 
                     if (userCredential.user.accessToken) {
-                        console.log('register', userCredential.user);
-
-                        return firebaseAuth.currentUser.getIdToken().then((token) => {
-                            const prevCookie = Cookies.get('idToken');
-                            const csrfToken = Cookies.get('csrfToken');
-                
-                            if (prevCookie === undefined || prevCookie !== token) {
-                                Cookies.set('idToken', token, {
-                                    expires: 1,
-                                }); // 1 day
-                                fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
-                                    method: 'POST',
-                                    credentials: 'include',
-                                    withCredentials: true,
-                                    headers: {
-                                        Accept: 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        idToken: token,
-                                        csrfToken: csrfToken
-                                    }),
-                                });
-                            }
-                
-                            dispatch(authActions.setToken(token));
-                        });
+                        setTimeout(() => {
+                            navigate('/');
+                        }, 1000);
                         
                         // let timerInterval;
 
@@ -224,7 +199,7 @@ const SignUpPage = () => {
         <div className="container">
             {
             <div className={classes['wrap-user-form']}>
-                <h3>Đăng ký</h3>
+                <h3 className={classes.title}>Đăng ký</h3>
                 <form className={classes['user-form']}>
                     <input type='text' placeholder='Email' name='email' 
                         className={isValid.email.status === false ? classes.invalid : ''}

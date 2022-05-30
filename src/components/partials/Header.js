@@ -44,8 +44,7 @@ const Header = (props) => {
     const { fetchData: fetchSuggestProducts } = useFetch();
     const { fetchData: getIntendedCart } = useFetch();
     const { fetchData: updateCart } = useFetch();
-    const { isMobile } = useCheckMobile();
-
+    const { isMobile, isTablet } = useCheckMobile();
     const componentRef = useRef();
     const inputRef = useRef();
 
@@ -377,9 +376,9 @@ const Header = (props) => {
 					&times;
 				</span>
 				<div className={classes.logo}>
-					<a href='/#'>
+					<Link to='/'>
 						<span className='icon-phone'></span>React Mobile
-					</a>
+					</Link>
 				</div>
 				<ul className={classes.menu}>
 					<li className={`${hoverMenu === 1 ? classes.active : ''}`}>
@@ -466,19 +465,11 @@ const Header = (props) => {
         <Fragment>
             <header className={`${classes.header} ${mobileView && isMobile ? classes.app : ''}`}>
                 <div className='container'>
-                    {
-                        mobileView ? (
-                            <Fragment>
-                                { isMobile && mobileHeader }
-                                { !isMobile && headerPC }
-                            </Fragment>
-                        ) : (
-                            <Fragment>
-                                { isMobile && headerSP }
-                                { !isMobile && headerPC }
-                            </Fragment>
-                        )
-                    }
+                    <Fragment>
+                        { isMobile ? headerSP : (
+                            isTablet ? headerSP : headerPC
+                        )}
+                    </Fragment>
                 </div>
             </header>
             {showMenu && <div className="overlay" onClick={() => setShowMenu(false)}></div>}
@@ -487,3 +478,18 @@ const Header = (props) => {
 }
 
 export default Header;
+
+
+ {/* {
+    mobileView ? (
+        <Fragment>
+            { isMobile && mobileHeader }
+            { !isMobile && headerPC }
+        </Fragment>
+    ) : (
+        <Fragment>
+            { isMobile && headerSP }
+            { !isMobile && headerPC }
+        </Fragment>
+    )
+} */}

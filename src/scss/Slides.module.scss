@@ -93,6 +93,14 @@
     }
 }
 
+@media (min-width: 768px) and (max-width: 1200px) {
+    .slides{
+       img{
+           width: 100%;
+       }
+    }
+}
+
 @media (min-width: 1200px) {
     .wrap-slides {
         width: 830px;

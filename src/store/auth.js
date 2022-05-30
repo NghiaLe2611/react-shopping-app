@@ -15,9 +15,9 @@ const authSlice = createSlice({
         setShippingAddress(state, action) {
             state.shippingInfo = action.payload;
         },
-        setToken(state, action) {
-            state.accessToken = action.payload;
-        },
+        // setToken(state, action) {
+        //     state.accessToken = action.payload;
+        // },
         setIsLoggingOut(state, action) {
             state.isLoggingOut = action.payload;
         }

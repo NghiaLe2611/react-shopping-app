@@ -96,6 +96,18 @@
     .item,.product-item{
         width: calc(33.333% - 10px);
     }
+    .product-item{
+        .product-name{
+            font-size: 17px;
+        }
+        .product-price{
+            font-size: 20px;
+        }
+        img{
+            width: 100%;
+            max-width: 250px;
+        }
+    }
 }
 
 @media (min-width: 1200px) {

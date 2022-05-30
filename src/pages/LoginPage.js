@@ -75,8 +75,6 @@ const LoginPage = () => {
                     }),
                 });
             }
-
-            dispatch(authActions.setToken(token));
         });
     };
 
@@ -195,7 +193,10 @@ const LoginPage = () => {
                 );
 
                 if (userCredential.user.accessToken) {
-                    // handleSignedInUser();
+                    setTimeout(() => {
+                        navigate('/');
+                    }, 1000);
+                    
                     // let timerInterval;
 
                     // const Toast = formAlert.mixin({
