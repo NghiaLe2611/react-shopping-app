@@ -1,7 +1,8 @@
 {
-    "prettier.jsxBracketSameLine": true,
+    "editor.fontFamily": "Cousine, 'MonoLisa','SF Mono', 'Courier New', monospace",
+    "prettier.bracketSameLine": true,
     "prettier.jsxSingleQuote": true,
-    "prettier.printWidth": 200,
+    "prettier.printWidth": 140,
     "prettier.proseWrap": "always",
     "prettier.singleQuote": true,
     "prettier.tabWidth": 4,

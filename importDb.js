@@ -1850,7 +1850,6 @@ const data = [
 	},
 ];
 
-
 async function main() {
 	// Use connect method to connect to the server
 	const db = client.db();

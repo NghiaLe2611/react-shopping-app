@@ -4,8 +4,8 @@ import 'firebase/compat/firestore';
 
 // Initialize Cloud Firestore through Firebase
 const firebaseConfig = {
-	apiKey: 'AIzaSyD-BfZjl4hBkcgrq_MEvNA1buYMqDAQUUg',
-	authDomain: 'learn-react-2816d.firebaseapp.com',
+	apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+	authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
 	databaseURL: 'https://learn-react-2816d-default-rtdb.firebaseio.com',
 	projectId: 'learn-react-2816d',
 	storageBucket: 'learn-react-2816d.appspot.com',
