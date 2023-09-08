@@ -27,7 +27,6 @@ const ModalOverlay = (props) => {
 
     useEffect(() => {
         document.addEventListener('click', handleClick);
-        return () => document.removeEventListener('click', handleClick);
         function handleClick(e) {
             if(componentRef && componentRef.current){
                 const ref = componentRef.current;
@@ -37,6 +36,8 @@ const ModalOverlay = (props) => {
                 }
             }
         }
+
+        return () => document.removeEventListener('click', handleClick);
     }, [props]);
 
     let modal = (

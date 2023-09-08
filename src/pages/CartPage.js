@@ -1,12 +1,12 @@
-import {useState, useEffect, useRef, Fragment} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
-import {cartActions} from '../store/cart';
+import { useState, useEffect, useRef, Fragment } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { cartActions } from '../store/cart';
 import CartItem from '../components/cart/CartItem';
-import {Link, useNavigate} from 'react-router-dom';
-import CouponModal from '../components/UI/CouponModal';
+import { Link, useNavigate } from 'react-router-dom';
+import CouponModal from '../components/UI/Coupon/CouponModal';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
 import AddressModal from '../components/UI/AddressModal';
-import {formatCurrency} from '../helpers/helpers';
+import { formatCurrency } from '../helpers/helpers';
 import Swal from 'sweetalert2';
 import classes from '../scss/Cart.module.scss';
 
@@ -16,32 +16,29 @@ const CartPage = () => {
 	const [customerInfo, setCustomerInfo] = useState(null);
 	const [isSelectAll, setIsSelectAll] = useState(false);
 	const [showCouponModal, setShowCouponModal] = useState(false);
-	const [showCouponPopup, setShowCouponPopup] = useState(false);
 	const [showAddressModal, setShowAddressModal] = useState(false);
 
-	const showCart = useSelector((state) => state.cart.isShowCart);
-	const cart = useSelector((state) => state.cart);
-	const userData = useSelector((state) => state.auth.userData);
-	const shippingInfo = useSelector((state) => state.auth.shippingInfo);
+	const { isShowCart, finalItems, items, totalPrice, discount } = useSelector((state) => state.cart);
+	const { userData, shippingInfo } = useSelector((state) => state.auth);
 
 	const selectAlInput = useRef();
 
 	useEffect(() => {
-        const finalItemsStorage = localStorage.getItem('finalItems');
-        if (finalItemsStorage) {
-            dispatch(
+		const finalItemsStorage = localStorage.getItem('finalItems');
+		if (finalItemsStorage) {
+			dispatch(
 				cartActions.updateCartItems({
-					updatedItems: JSON.parse(finalItemsStorage)
+					updatedItems: JSON.parse(finalItemsStorage),
 				})
 			);
-        }
-    }, []);
+		}
+	}, []);
 
 	useEffect(() => {
-		if (showCart) {
+		if (isShowCart) {
 			dispatch(cartActions.showCartPopup(false));
 		}
-	}, [showCart]);
+	}, [isShowCart]);
 
 	useEffect(() => {
 		if (showCouponModal) {
@@ -70,31 +67,24 @@ const CartPage = () => {
 		if (isSelectAll) {
 			dispatch(
 				cartActions.updateCartItems({
-					updatedItems: cart.items,
+					updatedItems: items,
 				})
 			);
 		}
+	}, [items, isSelectAll]);
 
-		// if (cart.items.length > 0) {
-		// 	localStorage.setItem('cartItems', JSON.stringify(cart.items));
-		// } else {
-		// 	setIsSelectAll(false);
-		// 	localStorage.removeItem('cartItems');
-		// }
-	}, [cart.items, isSelectAll]);
-
-    useEffect(() => {
-        if (cart.finalItems.length) {
-            localStorage.setItem('finalItems', JSON.stringify(cart.finalItems));
-        } else {
-            localStorage.removeItem('finalItems');
-        }
-    }, [cart.finalItems]);
+	useEffect(() => {
+		if (finalItems.length) {
+			localStorage.setItem('finalItems', JSON.stringify(finalItems));
+		} else {
+			localStorage.removeItem('finalItems');
+		}
+	}, [finalItems]);
 
 	const checkInputSelectHandler = () => {
-		if (cart.finalItems.length === cart.items.length) {
+		if (finalItems.length === items.length) {
 			selectAlInput.current.checked = true;
-		} else if (cart.finalItems.length === 0 || cart.finalItems.length < cart.items.length) {
+		} else if (finalItems.length === 0 || finalItems.length < items.length) {
 			selectAlInput.current.checked = false;
 		}
 	};
@@ -102,9 +92,9 @@ const CartPage = () => {
 	const selectAllHandler = (e) => {
 		if (e.target.checked) {
 			setIsSelectAll(true);
-			for (let i = 0; i < cart.items.length; i++) {
-				const item = cart.items[i];
-				let isExist = cart.finalItems.filter((val) => val.product_id === item.product_id).length > 0;
+			for (let i = 0; i < items.length; i++) {
+				const item = items[i];
+				let isExist = finalItems.filter((val) => val.product_id === item.product_id).length > 0;
 
 				if (isExist) {
 					continue;
@@ -118,7 +108,7 @@ const CartPage = () => {
 			}
 		} else {
 			setIsSelectAll(false);
-			cart.items.forEach((item) => {
+			items.forEach((item) => {
 				dispatch(
 					cartActions.confirmChooseCart({
 						type: 'REMOVE',
@@ -130,7 +120,7 @@ const CartPage = () => {
 	};
 
 	const removeCartHandler = () => {
-		if (cart.finalItems.length > 0) {
+		if (finalItems.length > 0) {
 			Swal.fire({
 				icon: 'warning',
 				html: `<p>Bạn có chắc muốn xoá những sản phẩm này ?</p>`,
@@ -140,16 +130,18 @@ const CartPage = () => {
 				cancelButtonText: 'Huỷ',
 				cancelButtonColor: '#dc3741',
 			}).then((result) => {
-                console.log(result);
+				console.log(result);
 				if (result.isConfirmed) {
-					// cart.finalItems.forEach((item) => {
+					// finalItems.forEach((item) => {
 					// 	dispatch(cartActions.removeCartItem(item.product_id));
 					// });
-                    console.log(111);
-                    dispatch(cartActions.removeCartItem({
-                        type: 'MULTIPLE',
-                        items: cart.finalItems
-                    }));
+					console.log(111);
+					dispatch(
+						cartActions.removeCartItem({
+							type: 'MULTIPLE',
+							items: finalItems,
+						})
+					);
 				}
 				return;
 			});
@@ -185,7 +177,7 @@ const CartPage = () => {
 	};
 
 	const goToCartConfirm = () => {
-		if (cart.finalItems.length > 0) {
+		if (finalItems.length > 0) {
 			navigate('/cartConfirm');
 		}
 	};
@@ -194,25 +186,34 @@ const CartPage = () => {
 		<div className='container'>
 			<Fragment>
 				<h2> GIỎ HÀNG </h2>
-				{cart.items.length > 0 ? (
+				{items.length > 0 ? (
 					<Fragment>
 						<div className={classes['wrap-cart']}>
 							<div className={classes.left}>
 								<div className={`${classes['cart-heading']} ${classes.box}`}>
 									<p className={classes['col-1']}>
 										<label className={classes.checkbox}>
-											<input type='checkbox' onChange={(e) => selectAllHandler(e)} ref={selectAlInput} /> <span className={classes.checkmark}> </span>
-											<span className='txt'>Tất cả ({cart.items.length} sản phẩm)</span>
+											<input type='checkbox' onChange={(e) => selectAllHandler(e)} ref={selectAlInput} />{' '}
+											<span className={classes.checkmark}> </span>
+											<span className='txt'>Tất cả ({items.length} sản phẩm)</span>
 										</label>
 									</p>
-									<p className={classes['col-2']}>Đơn giá </p> <p className={classes['col-3']}> Số lượng </p> <p className={classes['col-4']}>Thành tiền </p>
+									<p className={classes['col-2']}>Đơn giá </p> <p className={classes['col-3']}> Số lượng </p>{' '}
+									<p className={classes['col-4']}>Thành tiền </p>
 									<p className={classes['col-5']}>
 										<span className='icon-trash-bin' title='Xoá các mục đã chọn' onClick={removeCartHandler}></span>
 									</p>
 								</div>
 								<ul className={`${classes['cart-list']} ${classes.box}`}>
-									{cart.items.length > 0 &&
-										cart.items.map((item) => <CartItem key={item.product_id} isSelectAll={isSelectAll} item={item} checkInputSelect={checkInputSelectHandler} />)}
+									{items.length > 0 &&
+										items.map((item) => (
+											<CartItem
+												key={item.product_id}
+												isSelectAll={isSelectAll}
+												item={item}
+												checkInputSelect={checkInputSelectHandler}
+											/>
+										))}
 								</ul>
 							</div>
 							<div className={classes.right}>
@@ -221,7 +222,9 @@ const CartPage = () => {
 										<div className={`${classes['wrap-ctm-info']} ${classes['block-inner']}`}>
 											<div className={classes.head}>
 												<span> Giao tới </span>
-												<a href='/#' onClick={showAddressModalHandler}>Thay đổi</a>
+												<a href='/#' onClick={showAddressModalHandler}>
+													Thay đổi
+												</a>
 											</div>
 											{customerInfo ? (
 												<Fragment>
@@ -230,9 +233,9 @@ const CartPage = () => {
 														{customerInfo.phone}
 													</div>
 													<div className={classes.address}>
-														{`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${customerInfo.district && `, ${customerInfo.district.name}`}${
-															customerInfo.city && `, ${customerInfo.city.name}`
-														}`}
+														{`${customerInfo.address}${customerInfo.ward && `, ${customerInfo.ward.name}`}${
+															customerInfo.district && `, ${customerInfo.district.name}`
+														}${customerInfo.city && `, ${customerInfo.city.name}`}`}
 													</div>
 												</Fragment>
 											) : null}
@@ -255,23 +258,23 @@ const CartPage = () => {
 										<p>
 											<span>Tạm tính: </span>
 											<strong>
-												{formatCurrency(cart.totalPrice)}
+												{formatCurrency(totalPrice)}
 												<small>đ</small>
 											</strong>
 										</p>
 										<p>
 											<span>Giảm giá: </span>
 											<strong>
-												{cart.discount > 0 ? `-${formatCurrency(cart.discount)}` : formatCurrency(cart.discount)}
+												{discount > 0 ? `-${formatCurrency(discount)}` : formatCurrency(discount)}
 												<small>đ</small>
 											</strong>
 										</p>
 									</div>
 									<div className={`${classes.total} ${classes['block-inner']}`}>
 										Tổng cộng:
-										{cart.totalPrice > 0 ? (
+										{totalPrice > 0 ? (
 											<span className={classes.lg}>
-												{formatCurrency(cart.totalPrice - cart.discount)}
+												{formatCurrency(totalPrice - discount)}
 												<small>đ</small>
 											</span>
 										) : (
@@ -279,8 +282,11 @@ const CartPage = () => {
 										)}
 									</div>
 								</div>
-								<button className={classes['cart-btn']} onClick={goToCartConfirm} disabled={cart.finalItems.length > 0 ? false : true}>
-									Mua hàng ({cart.finalItems.length})
+								<button
+									className={classes['cart-btn']}
+									onClick={goToCartConfirm}
+									disabled={finalItems.length > 0 ? false : true}>
+									Mua hàng ({finalItems.length})
 								</button>
 							</div>
 						</div>
@@ -295,8 +301,8 @@ const CartPage = () => {
 
 			<CouponModal
 				showCouponModal={showCouponModal}
-				showCouponPopup={showCouponPopup}
-				setShowCouponPopup={setShowCouponPopup}
+				// showCouponPopup={showCouponPopup}
+				// setShowCouponPopup={setShowCouponPopup}
 				showCouponModalHandler={showCouponModalHandler}
 				closeCouponModalHandler={closeCouponModalHandler}
 				// selectedCoupons={selectedCoupons} setSelectedCoupons={setSelectedCoupons} addCoupon={onAddCoupon}

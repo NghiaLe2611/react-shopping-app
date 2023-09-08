@@ -7,7 +7,7 @@ import useFetch from '../hooks/useFetch';
 import LoadingIndicator from '../components/UI/LoadingIndicator';
 import SelectedCoupons from '../components/UI/SelectedCoupons';
 import AddressModal from '../components/UI/AddressModal';
-import CouponModal from '../components/UI/CouponModal';
+import CouponModal from '../components/UI/Coupon/CouponModal';
 import AddressForm from '../components/UI/AddressForm';
 import classes from '../scss/CartConfirm.module.scss';
 import iconShipping from '../assets/images/icon-shipping.svg';

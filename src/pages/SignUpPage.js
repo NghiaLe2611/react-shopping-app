@@ -221,7 +221,7 @@ const SignUpPage = () => {
                     {isValid.confirmPassword.message && <p className={classes.error}>{isValid.confirmPassword.message}</p>}
                     <button type='submit' className={classes.submit} onClick={registerHandler}>Đăng ký</button>
                     <p className={classes['txt-bottom']}>
-                        Bạn đã tài khoản ? <Link to='/dang-nhap'>Đăng nhập</Link>
+                        Bạn đã có tài khoản ? <Link to='/dang-nhap'>Đăng nhập</Link>
                     </p>
                 </form>
             </div>

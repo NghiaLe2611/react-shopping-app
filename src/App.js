@@ -7,20 +7,7 @@ import useFetch from './hooks/useFetch';
 import { authService } from './api/auth-service';
 import Cookies from 'js-cookie';
 import MyRoutes from './routes';
-
-// import Root from './components/UI/Root';
-// import HomePage from './pages/HomePage';
-// import DetailPage from './pages/DetailPage';
-// import CategoryPage from './pages/CategoryPage';
-// import NotFound from './pages/NotFound';
-// import BrandPage from './pages/BrandPage';
-// import CartPage from './pages/CartPage';
-// import ComparePage from './pages/ComparePage';
-
-// function getCookie(name) {
-// 	const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-// 	return v ? v[2] : null;
-// }
+import jwt from 'jsonwebtoken';
 
 function App() {
 	const dispatch = useDispatch();
@@ -54,6 +41,7 @@ function App() {
 			});
 		};
 
+		// Get user data
         const getUserData = (userDataObj) => {
             fetchUser({
                 url: `${process.env.REACT_APP_API_URL}/api/v1/me/account`
@@ -87,40 +75,44 @@ function App() {
         
 		const unregisterAuthObserver = authApp.onAuthStateChanged(async (user) => {
             if (user) {
-                const lastTimeLogin = user.metadata.lastLoginAt;
+                // const lastTimeLogin = user.metadata.lastLoginAt;
 				const currentTime = new Date().getTime();
-
-				// Log out user if more than 1 day
-				if (currentTime - lastTimeLogin >= 86400000) { // 86400000: 1 day
-                    console.log('Log out due to expired time');
-					// await authApp.signOut();
-
-					dispatch(authActions.setIsLoggingOut(true));					
-					fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
-						method: 'POST',
-						credentials: 'include',
-						withCredentials: true,
-						headers: {
-							Accept: 'application/json',
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({
-							idToken: Cookies.get('idToken')
-						}),
-						// mode: 'no-cors',
-					})
-					.then(response => response.json())
-					.then(data => {
-						if(data.success) {
-							Cookies.remove('idToken');
-							authService.logout();
-						}
-					})
-					.catch((error) => {
-						console.error(error);
-					});
-					
-					return;
+				const token = Cookies.get('idToken');
+				
+				// Log out user if more than 1h
+				if (token) {
+					const decodedToken = jwt.decode(token);
+					if (currentTime >= decodedToken.exp * 1000) {
+						console.log('Log out due to expired time');
+						// await authApp.signOut();
+	
+						dispatch(authActions.setIsLoggingOut(true));					
+						fetch(`${process.env.REACT_APP_API_URL}/sessionLogout`, {
+							method: 'POST',
+							credentials: 'include',
+							withCredentials: true,
+							headers: {
+								Accept: 'application/json',
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({
+								idToken: Cookies.get('idToken')
+							}),
+							// mode: 'no-cors',
+						})
+						.then(response => response.json())
+						.then(data => {
+							if(data.success) {
+								Cookies.remove('idToken');
+								authService.logout();
+							}
+						})
+						.catch((error) => {
+							console.error(error);
+						});
+						
+						return;
+					}
 				}
 
                 const userDataObj = {
@@ -132,7 +124,7 @@ function App() {
                 };
 
                 // Post session to server when login by firebase
-                return authApp.currentUser.getIdToken().then((token) => {
+                return authApp.currentUser.getIdToken().then(async (token) => {
                    const prevCookie = Cookies.get('idToken');
                    const csrfToken = Cookies.get('csrfToken');
        
@@ -140,19 +132,45 @@ function App() {
 						Cookies.set('idToken', token, {
 							expires: 1,
 						}); // 1 day
-						fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
-							method: 'POST',
-							credentials: 'include',
-							withCredentials: true,
-							headers: {
-								Accept: 'application/json',
-								'Content-Type': 'application/json',
-							},
-							body: JSON.stringify({
-								idToken: token,
-								csrfToken: csrfToken,
-							}),
-						});
+
+						try {
+							const response = await fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+								method: 'POST',
+								credentials: 'include',
+								withCredentials: true,
+								headers: {
+									Accept: 'application/json',
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify({
+									idToken: token,
+									csrfToken: csrfToken,
+								}),
+							});
+
+							if (!response.ok) {
+								throw new Error(`HTTP error! Status: ${response.status}`);
+							}
+
+							// const data = await response.json();
+						} catch (error) {
+							console.error('Fetch error:', error);
+						}
+
+						  
+						// fetch(`${process.env.REACT_APP_API_URL}/sessionLogin`, {
+						// 	method: 'POST',
+						// 	credentials: 'include',
+						// 	withCredentials: true,
+						// 	headers: {
+						// 		Accept: 'application/json',
+						// 		'Content-Type': 'application/json',
+						// 	},
+						// 	body: JSON.stringify({
+						// 		idToken: token,
+						// 		csrfToken: csrfToken,
+						// 	}),
+						// });
 					}
 
                     localStorage.setItem('access_token', token);
@@ -181,7 +199,7 @@ function App() {
 		return () => {
 			unregisterAuthObserver();
 		};
-	}, [dispatch]);
+	}, [dispatch, fetchUser, isLoggingOut, postUserInfo, userData]);
 
     //dispatch, fetchUser, postUserInfo
 	// userData.displayName, userData.uuid, userData.email, userData.photoURL, userData.emailVerified
